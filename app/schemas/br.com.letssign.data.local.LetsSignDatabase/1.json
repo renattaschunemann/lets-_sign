@@ -1,0 +1,1138 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "600aa53934b5fe6d3bfc54711377749c",
+    "entities": [
+      {
+        "tableName": "usuarios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `nome` TEXT NOT NULL, `email` TEXT NOT NULL, `telefone` TEXT NOT NULL, `perfil` TEXT NOT NULL, `senhaHash` TEXT NOT NULL, `dataCriacaoUtc` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefone",
+            "columnName": "telefone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "perfil",
+            "columnName": "perfil",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "senhaHash",
+            "columnName": "senhaHash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataCriacaoUtc",
+            "columnName": "dataCriacaoUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_usuarios_email",
+            "unique": true,
+            "columnNames": [
+              "email"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_usuarios_email` ON `${TABLE_NAME}` (`email`)"
+          }
+        ]
+      },
+      {
+        "tableName": "admin_signatarios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`adminId` TEXT NOT NULL, `signatarioId` TEXT NOT NULL, `nome` TEXT NOT NULL, `email` TEXT NOT NULL, `telefone` TEXT NOT NULL, `dataNascimento` TEXT NOT NULL, `dataVinculoUtc` INTEGER NOT NULL, PRIMARY KEY(`adminId`, `signatarioId`), FOREIGN KEY(`adminId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`signatarioId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "adminId",
+            "columnName": "adminId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "signatarioId",
+            "columnName": "signatarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefone",
+            "columnName": "telefone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataNascimento",
+            "columnName": "dataNascimento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataVinculoUtc",
+            "columnName": "dataVinculoUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "adminId",
+            "signatarioId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_admin_signatarios_adminId",
+            "unique": false,
+            "columnNames": [
+              "adminId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_admin_signatarios_adminId` ON `${TABLE_NAME}` (`adminId`)"
+          },
+          {
+            "name": "index_admin_signatarios_signatarioId",
+            "unique": false,
+            "columnNames": [
+              "signatarioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_admin_signatarios_signatarioId` ON `${TABLE_NAME}` (`signatarioId`)"
+          },
+          {
+            "name": "index_admin_signatarios_adminId_email",
+            "unique": true,
+            "columnNames": [
+              "adminId",
+              "email"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_admin_signatarios_adminId_email` ON `${TABLE_NAME}` (`adminId`, `email`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "usuarios",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "adminId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "usuarios",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "signatarioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "documentos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioAdminId` TEXT NOT NULL, `titulo` TEXT NOT NULL, `dataCriacaoUtc` INTEGER NOT NULL, `dataUltimaAtualizacaoUtc` INTEGER NOT NULL, `situacaoAtual` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`usuarioAdminId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioAdminId",
+            "columnName": "usuarioAdminId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "titulo",
+            "columnName": "titulo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataCriacaoUtc",
+            "columnName": "dataCriacaoUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataUltimaAtualizacaoUtc",
+            "columnName": "dataUltimaAtualizacaoUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "situacaoAtual",
+            "columnName": "situacaoAtual",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_documentos_usuarioAdminId",
+            "unique": false,
+            "columnNames": [
+              "usuarioAdminId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_documentos_usuarioAdminId` ON `${TABLE_NAME}` (`usuarioAdminId`)"
+          },
+          {
+            "name": "index_documentos_situacaoAtual",
+            "unique": false,
+            "columnNames": [
+              "situacaoAtual"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_documentos_situacaoAtual` ON `${TABLE_NAME}` (`situacaoAtual`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "usuarios",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "usuarioAdminId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "versoes_documento",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `documentoId` TEXT NOT NULL, `numeroVersao` INTEGER NOT NULL, `pdfPathInterno` TEXT NOT NULL, `sha256Original` TEXT NOT NULL, `sha256Final` TEXT, `tipoOrdem` TEXT NOT NULL, `mensagemConvite` TEXT NOT NULL, `chaveIdempotencia` TEXT NOT NULL, `etapaWizardAtual` INTEGER NOT NULL, `situacao` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`documentoId`) REFERENCES `documentos`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentoId",
+            "columnName": "documentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroVersao",
+            "columnName": "numeroVersao",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pdfPathInterno",
+            "columnName": "pdfPathInterno",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256Original",
+            "columnName": "sha256Original",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256Final",
+            "columnName": "sha256Final",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tipoOrdem",
+            "columnName": "tipoOrdem",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mensagemConvite",
+            "columnName": "mensagemConvite",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chaveIdempotencia",
+            "columnName": "chaveIdempotencia",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etapaWizardAtual",
+            "columnName": "etapaWizardAtual",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "situacao",
+            "columnName": "situacao",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_versoes_documento_documentoId",
+            "unique": false,
+            "columnNames": [
+              "documentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_versoes_documento_documentoId` ON `${TABLE_NAME}` (`documentoId`)"
+          },
+          {
+            "name": "index_versoes_documento_chaveIdempotencia",
+            "unique": true,
+            "columnNames": [
+              "chaveIdempotencia"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_versoes_documento_chaveIdempotencia` ON `${TABLE_NAME}` (`chaveIdempotencia`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "documentos",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "documentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "participantes_documento",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `versaoDocumentoId` TEXT NOT NULL, `usuarioId` TEXT, `nomeSnapshot` TEXT NOT NULL, `emailSnapshot` TEXT NOT NULL, `telefoneSnapshot` TEXT NOT NULL, `dataNascimentoSnapshot` TEXT NOT NULL, `papel` TEXT NOT NULL, `obrigatorio` INTEGER NOT NULL, `ordem` INTEGER NOT NULL, `situacao` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`versaoDocumentoId`) REFERENCES `versoes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versaoDocumentoId",
+            "columnName": "versaoDocumentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nomeSnapshot",
+            "columnName": "nomeSnapshot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "emailSnapshot",
+            "columnName": "emailSnapshot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefoneSnapshot",
+            "columnName": "telefoneSnapshot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataNascimentoSnapshot",
+            "columnName": "dataNascimentoSnapshot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "papel",
+            "columnName": "papel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "obrigatorio",
+            "columnName": "obrigatorio",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordem",
+            "columnName": "ordem",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "situacao",
+            "columnName": "situacao",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_participantes_documento_versaoDocumentoId",
+            "unique": false,
+            "columnNames": [
+              "versaoDocumentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_participantes_documento_versaoDocumentoId` ON `${TABLE_NAME}` (`versaoDocumentoId`)"
+          },
+          {
+            "name": "index_participantes_documento_usuarioId",
+            "unique": false,
+            "columnNames": [
+              "usuarioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_participantes_documento_usuarioId` ON `${TABLE_NAME}` (`usuarioId`)"
+          },
+          {
+            "name": "index_participantes_documento_versaoDocumentoId_emailSnapshot",
+            "unique": true,
+            "columnNames": [
+              "versaoDocumentoId",
+              "emailSnapshot"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_participantes_documento_versaoDocumentoId_emailSnapshot` ON `${TABLE_NAME}` (`versaoDocumentoId`, `emailSnapshot`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "versoes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "versaoDocumentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "usuarios",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "usuarioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "campos_assinatura",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `versaoDocumentoId` TEXT NOT NULL, `participanteId` TEXT NOT NULL, `numeroPagina` INTEGER NOT NULL, `normX` REAL NOT NULL, `normY` REAL NOT NULL, `normLargura` REAL NOT NULL, `normAltura` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`versaoDocumentoId`) REFERENCES `versoes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`participanteId`) REFERENCES `participantes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versaoDocumentoId",
+            "columnName": "versaoDocumentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "participanteId",
+            "columnName": "participanteId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroPagina",
+            "columnName": "numeroPagina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normX",
+            "columnName": "normX",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normY",
+            "columnName": "normY",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normLargura",
+            "columnName": "normLargura",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normAltura",
+            "columnName": "normAltura",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_campos_assinatura_versaoDocumentoId",
+            "unique": false,
+            "columnNames": [
+              "versaoDocumentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_campos_assinatura_versaoDocumentoId` ON `${TABLE_NAME}` (`versaoDocumentoId`)"
+          },
+          {
+            "name": "index_campos_assinatura_participanteId",
+            "unique": false,
+            "columnNames": [
+              "participanteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_campos_assinatura_participanteId` ON `${TABLE_NAME}` (`participanteId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "versoes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "versaoDocumentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "participantes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "participanteId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "assinaturas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `campoAssinaturaId` TEXT NOT NULL, `participanteId` TEXT NOT NULL, `tipoAssinatura` TEXT NOT NULL, `caminhoPngAssinatura` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `ipDispositivo` TEXT NOT NULL, `hashValidador` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`campoAssinaturaId`) REFERENCES `campos_assinatura`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`participanteId`) REFERENCES `participantes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "campoAssinaturaId",
+            "columnName": "campoAssinaturaId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "participanteId",
+            "columnName": "participanteId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoAssinatura",
+            "columnName": "tipoAssinatura",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "caminhoPngAssinatura",
+            "columnName": "caminhoPngAssinatura",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ipDispositivo",
+            "columnName": "ipDispositivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hashValidador",
+            "columnName": "hashValidador",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_assinaturas_campoAssinaturaId",
+            "unique": true,
+            "columnNames": [
+              "campoAssinaturaId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_assinaturas_campoAssinaturaId` ON `${TABLE_NAME}` (`campoAssinaturaId`)"
+          },
+          {
+            "name": "index_assinaturas_participanteId",
+            "unique": false,
+            "columnNames": [
+              "participanteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_assinaturas_participanteId` ON `${TABLE_NAME}` (`participanteId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "campos_assinatura",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "campoAssinaturaId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "participantes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "participanteId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "recusas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `participanteId` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `observacao` TEXT NOT NULL, `senhaConfirmada` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`participanteId`) REFERENCES `participantes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "participanteId",
+            "columnName": "participanteId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observacao",
+            "columnName": "observacao",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "senhaConfirmada",
+            "columnName": "senhaConfirmada",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_recusas_participanteId",
+            "unique": true,
+            "columnNames": [
+              "participanteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_recusas_participanteId` ON `${TABLE_NAME}` (`participanteId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "participantes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "participanteId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "cancelamentos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `versaoDocumentoId` TEXT NOT NULL, `adminId` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `motivo` TEXT NOT NULL, `senhaConfirmada` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`versaoDocumentoId`) REFERENCES `versoes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`adminId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versaoDocumentoId",
+            "columnName": "versaoDocumentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adminId",
+            "columnName": "adminId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "motivo",
+            "columnName": "motivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "senhaConfirmada",
+            "columnName": "senhaConfirmada",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cancelamentos_versaoDocumentoId",
+            "unique": true,
+            "columnNames": [
+              "versaoDocumentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cancelamentos_versaoDocumentoId` ON `${TABLE_NAME}` (`versaoDocumentoId`)"
+          },
+          {
+            "name": "index_cancelamentos_adminId",
+            "unique": false,
+            "columnNames": [
+              "adminId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cancelamentos_adminId` ON `${TABLE_NAME}` (`adminId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "versoes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "versaoDocumentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "usuarios",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "adminId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "envios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `versaoDocumentoId` TEXT NOT NULL, `chaveIdempotencia` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `statusEnvio` TEXT NOT NULL, `respostaServidorJson` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`versaoDocumentoId`) REFERENCES `versoes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versaoDocumentoId",
+            "columnName": "versaoDocumentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chaveIdempotencia",
+            "columnName": "chaveIdempotencia",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusEnvio",
+            "columnName": "statusEnvio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "respostaServidorJson",
+            "columnName": "respostaServidorJson",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_envios_versaoDocumentoId",
+            "unique": false,
+            "columnNames": [
+              "versaoDocumentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_envios_versaoDocumentoId` ON `${TABLE_NAME}` (`versaoDocumentoId`)"
+          },
+          {
+            "name": "index_envios_chaveIdempotencia",
+            "unique": true,
+            "columnNames": [
+              "chaveIdempotencia"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_envios_chaveIdempotencia` ON `${TABLE_NAME}` (`chaveIdempotencia`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "versoes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "versaoDocumentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "notificacoes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `documentoId` TEXT, `titulo` TEXT NOT NULL, `mensagem` TEXT NOT NULL, `tipoNotificacao` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `lida` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentoId",
+            "columnName": "documentoId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "titulo",
+            "columnName": "titulo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mensagem",
+            "columnName": "mensagem",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoNotificacao",
+            "columnName": "tipoNotificacao",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lida",
+            "columnName": "lida",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_notificacoes_usuarioId",
+            "unique": false,
+            "columnNames": [
+              "usuarioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notificacoes_usuarioId` ON `${TABLE_NAME}` (`usuarioId`)"
+          },
+          {
+            "name": "index_notificacoes_documentoId",
+            "unique": false,
+            "columnNames": [
+              "documentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notificacoes_documentoId` ON `${TABLE_NAME}` (`documentoId`)"
+          },
+          {
+            "name": "index_notificacoes_dataHoraUtc",
+            "unique": false,
+            "columnNames": [
+              "dataHoraUtc"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notificacoes_dataHoraUtc` ON `${TABLE_NAME}` (`dataHoraUtc`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "usuarios",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "usuarioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "eventos_historico",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `versaoDocumentoId` TEXT NOT NULL, `dataHoraUtc` INTEGER NOT NULL, `tipoEvento` TEXT NOT NULL, `autorNome` TEXT NOT NULL, `detalhe` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`versaoDocumentoId`) REFERENCES `versoes_documento`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versaoDocumentoId",
+            "columnName": "versaoDocumentoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataHoraUtc",
+            "columnName": "dataHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoEvento",
+            "columnName": "tipoEvento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "autorNome",
+            "columnName": "autorNome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detalhe",
+            "columnName": "detalhe",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_eventos_historico_versaoDocumentoId",
+            "unique": false,
+            "columnNames": [
+              "versaoDocumentoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_eventos_historico_versaoDocumentoId` ON `${TABLE_NAME}` (`versaoDocumentoId`)"
+          },
+          {
+            "name": "index_eventos_historico_dataHoraUtc",
+            "unique": false,
+            "columnNames": [
+              "dataHoraUtc"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_eventos_historico_dataHoraUtc` ON `${TABLE_NAME}` (`dataHoraUtc`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "versoes_documento",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "versaoDocumentoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '600aa53934b5fe6d3bfc54711377749c')"
+    ]
+  }
+}
