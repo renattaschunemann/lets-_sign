@@ -1,0 +1,600 @@
+CONTEXTO
+Você vai criar a fundação visual do LetsSign, aplicativo Android nativo de assinatura digital com dois perfis: Admin (cliente) e Signatário. Este é o primeiro de 9 prompts. Os próximos criarão 38 telas usando SOMENTE os tokens e componentes definidos aqui. Toda a interface em português do Brasil. Neste prompt não crie telas do app: crie a página "00 — Fundação" com o design system e uma vitrine de todos os componentes e variantes.
+
+1. FRAME DO APARELHO
+- Android, 360 x 800 dp, centralizado no canvas. Área ao redor do frame: cor-fundo-externo.
+- Status bar no topo (24 dp, ícones do sistema) e barra de navegação por gestos na base (alça de gesto, 24 dp).
+- Todo o conteúdo fica dentro do frame; rolagem acontece dentro dele. Nada de layout desktop ou padrões de iOS.
+
+2. ESTILO
+- Material Design 3, tema claro, fonte Roboto.
+- Grid de 8 dp; margens laterais de 16 dp; áreas de toque de no mínimo 48 x 48 dp.
+
+3. TOKENS DE COR (crie como variáveis com exatamente estes nomes)
+cor-primaria = #293681
+cor-sobre-primaria = #FFFFFF
+cor-primaria-container = #E8EBFA
+cor-sobre-primaria-container = #1B245E
+cor-secundaria = #4274D9
+cor-sobre-secundaria = #FFFFFF
+cor-fundo = #FFFFFF
+cor-fundo-externo = #F4F6FB
+cor-superficie = #FFFFFF
+cor-superficie-variante = #EEF1F8
+cor-texto-principal = #171A24
+cor-texto-secundario = #5C6475
+cor-texto-desabilitado = #8C94A5
+cor-desabilitado = #E5E8EF
+cor-borda = #DCE2EE
+cor-divisor = #E5E9F2
+cor-overlay = #171A24
+cor-sombra = #171A24
+cor-foco = #4274D9
+cor-sucesso = #23845B
+cor-sucesso-container = #E1F4E9
+cor-aviso = #946300
+cor-aviso-container = #FFF1CC
+cor-erro = #D64545
+cor-erro-container = #FCE8E8
+cor-info = #293681
+cor-info-container = #E8EBFA
+cor-neutro = #5C6475
+cor-neutro-container = #EEF1F8
+cor-badge = #293681
+cor-sobre-badge = #FFFFFF
+cor-campo-assinatura-vazio = #F4F6FB
+cor-campo-assinatura-selecionado = #E8EBFA
+cor-campo-assinatura-assinado = #E1F4E9
+cor-campo-assinatura-outro-participante = #E5F5FA
+cor-pagina-pdf = #FFFFFF
+cor-tinta-assinatura = #293681
+Regras: use apenas estas variáveis. Nunca escreva uma cor diretamente, nunca sugira paleta e nunca deduza valores. Se algum valor ainda estiver "[PREENCHER]", não invente: mantenha a variável com esse nome e sinalize-a na lista de variáveis.
+
+4. TIPOGRAFIA (Roboto, escala Material 3, tamanhos em sp para acompanhar a fonte do sistema)
+- Display Small 36/44 — contador em destaque.
+- Headline Small 24/32 — título de painéis de resultado.
+- Title Large 22/28 — título da top app bar.
+- Title Medium 16/24, peso 500 — títulos de cartão e de seção.
+- Body Large 16/24 — texto de corpo e campos.
+- Body Medium 14/20 — texto de apoio.
+- Label Large 14/20, peso 500 — botões.
+- Label Medium 12/16, peso 500 — selos, chips, bottom nav.
+- Label Small 11/16 — badges e legendas de miniatura.
+O layout precisa continuar funcional com fonte ampliada até 200% (textos quebram linha, nada é cortado, cartões crescem na altura).
+
+5. ESPAÇAMENTO, FORMAS E ELEVAÇÃO
+- Espaçamentos: esp-4, esp-8, esp-12, esp-16, esp-24, esp-32 (dp).
+- Formas: forma-pequena 8 dp (campos, chips, selos), forma-media 12 dp (cartões), forma-grande 16 dp (FAB, cartões de destaque), forma-extra-grande 28 dp (dialogs e cantos superiores das bottom sheets), forma-total (botões em pílula).
+- Elevação: nivel-0 (telas), nivel-1 (cartões), nivel-2 (top app bar rolada, bottom nav), nivel-3 (FAB, dialogs, bottom sheets). Sombras usam cor-sombra.
+
+6. ESPAÇO RESERVADO PARA A LOGO
+- Crie o componente e a camada "LOGO — [INSERIR POSTERIORMENTE]".
+- Retângulo com borda tracejada (cor-borda), fundo cor-superficie-variante, texto central "LOGO" (Label Large, cor-texto-secundario).
+- Variantes de tamanho: 160 x 160 dp (Splash), 120 x 48 dp (topo de Login e Cadastro), 32 x 32 dp (top app bar das telas iniciais do Admin e do Signatário).
+- Não desenhe, não estilize e não substitua por ícone ou monograma.
+Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+
+7. COMPONENTES DE BASE (Material 3)
+- Top app bar pequena (cor-superficie): ícone de navegação à esquerda, título, ações à direita.
+- Botão principal (preenchido, cor-primaria / cor-sobre-primaria), botão secundário (contornado, cor-borda), botão de texto, botão destrutivo (texto e contorno cor-erro), FAB estendido (cor-primaria-container). Estados: padrão, pressionado, desabilitado (cor-desabilitado / cor-texto-desabilitado), carregando (indicador no lugar do rótulo, toque bloqueado).
+- Campo de texto contornado com rótulo SEMPRE visível acima do valor, texto de ajuda, contador opcional e estado de erro com mensagem logo abaixo do campo (ícone error + texto cor-erro). Estados: vazio, focado (cor-foco), preenchido, erro, desabilitado.
+- Caixa de seleção, botão de opção (radio), botão segmentado, chip de filtro (selecionado com ícone check, não só cor).
+- Snackbar (com ação opcional, ex.: "Desfazer"), banner informativo/alerta (ícone + texto + ação), dialog básico, dialog em tela cheia, bottom sheet modal com alça.
+- Banner offline: ícone cloud_off + texto de conexão definido em cada tela.
+- Carregamento: skeleton (cor-superficie-variante) para listas e indicador circular para ações.
+
+8. COMPONENTES REUTILIZÁVEIS (crie cada um com suas variantes)
+- "Barra de navegação inferior (Admin / Signatário)": ver bloco 10.
+- "Indicador de etapas do wizard (1–9)": faixa horizontal com 9 etapas numeradas e nomeadas: 1 Novo fluxo, 2 Título, 3 PDF, 4 Signatários, 5 Obrigatoriedade, 6 Ordem de assinatura, 7 Páginas, 8 Campos, 9 Revisão. Mostra o texto "Etapa N de 9 — Nome". Estados por etapa: concluída (ícone check), atual (cor-primaria + negrito), futura (cor-texto-secundario). Variantes agrupadas para "Etapas 1–2" e "Etapas 7–8".
+- "Selo de situação (texto + ícone) — documento e signatário": ver bloco 9.
+- "Cartão de documento (título, situação, progresso, data)": título (Title Medium), versão, Selo de situação, progresso em texto e barra, data. Variantes: Admin (com "x de y obrigatórios assinaram" e menu de ações) e Signatário (com remetente, papel, data do convite, nº de campos e botão "Assinar").
+- "Linha de participante (nome, papel, obrigatoriedade, ordem, situação)": avatar com iniciais, nome, e-mail opcional, papel, "Obrigatório"/"Opcional", posição na ordem, Selo de situação e slot de ações. Variantes: seleção de papel, alternância de obrigatoriedade, reordenável (alça de arrastar + botões "Mover para cima" e "Mover para baixo"), acompanhamento (com data/hora) e somente leitura.
+- "Visualizador de PDF com camada de campos (modos: edição, assinatura, leitura)": página (cor-pagina-pdf) com texto simulado em barras cor-divisor, zoom (pinça + botões "Ampliar"/"Reduzir"), rolagem, controles "Página anterior"/"Próxima página", indicador "pág. x de y" e faixa de miniaturas. Camada de campos por cima.
+- "Campo de assinatura sobreposto (vazio, selecionado, assinado, de outro participante)": retângulo com o nome ou as iniciais do signatário SEMPRE em texto. vazio: borda tracejada cor-campo-assinatura-vazio + ícone draw. selecionado: borda cheia cor-campo-assinatura-selecionado + 4 alças de redimensionar (48 dp de toque). assinado: assinatura em cor-tinta-assinatura + ícone check. de outro participante: fundo cor-campo-assinatura-outro-participante + ícone lock + apenas o nome.
+- "Contador/badge de pendências": círculo cor-badge com número cor-sobre-badge e rótulo acessível (ex.: "2 pendentes").
+- "Diálogo de confirmação segura (consequências + caixa + senha)": dialog em tela cheia com texto de consequências, caixa de confirmação explícita, campo senha com mostrar/ocultar, botão destrutivo (desabilitado até marcar a caixa e preencher a senha) e botão "Voltar".
+- "Diálogo/painel de resultado (sucesso/erro com ação)": ícone grande (check_circle em cor-sucesso ou error em cor-erro), título/mensagem e até 2 ações. Variantes: dialog e tela cheia.
+- "Estado vazio (ilustração opcional + texto + ação)": ícone grande em cor-texto-secundario (sem ilustração colorida), texto e botão opcional.
+- "Estado de erro com 'Tentar novamente'": ícone error, mensagem definida por tela e botão "Tentar novamente".
+- "Lista de pendências com atalhos": cartão cor-aviso-container com ícone warning, uma linha por pendência e um atalho por linha.
+- "Item de linha do tempo": marcador + linha vertical (cor-divisor), data/hora, evento, autor e detalhe.
+- "Bottom sheet de seleção": bottom sheet com alça, título e lista de itens tocáveis.
+- "Área de desenho + seletor de estilo de texto": área de desenho com linha de base (cor-divisor) e traço cor-tinta-assinatura, botão "Limpar"; seletor com 4 estilos de escrita cursiva (fontes cursivas do Google Fonts, ex.: Dancing Script, Great Vibes, Allura, Sacramento), cada opção mostrando o nome escrito.
+
+9. SELOS DE SITUAÇÃO (texto + ícone; fundo cor-<grupo>-container, texto e ícone cor-<grupo>)
+Documento: "Rascunho" (cor-neutro, edit_note) · "Falha no envio" (cor-erro, error) · "Enviado" (cor-info, send) · "Parcialmente assinado" (cor-aviso, hourglass_top) · "Concluído" (cor-sucesso, check_circle) · "Recusado" (cor-erro, cancel) · "Cancelado" (cor-neutro, block) · "Substituído" (cor-neutro, history).
+Participante: "Aguardando vez" (cor-info, schedule) · "Pendente" (cor-aviso, pending) · "Assinado" (cor-sucesso, task_alt) · "Recusado" (cor-erro, cancel) · "Encerrado" (cor-neutro, do_not_disturb_on).
+
+10. NAVEGAÇÃO
+- Shell Admin: bottom navigation com 4 destinos: "Documentos" (description), "Signatários" (group), "Notificações" (notifications, com badge de não lidas), "Conta" (account_circle).
+- Shell Signatário: "Início" (home, com Contador/badge de pendências), "Documentos" (folder), "Notificações" (notifications, com badge), "Conta" (account_circle).
+- Item ativo: indicador em pílula cor-primaria-container + rótulo em negrito (não só cor).
+- Regra: a bottom navigation aparece só nas telas raiz (Documentos, Signatários, Início, Notificações, Conta). Fica OCULTA nos fluxos lineares (wizard do Admin e fluxo de assinatura do Signatário) e nas telas empilhadas com botão voltar.
+- Nomeie cada tela futura como "ID — Nome" (ex.: "SIG-03 — Detalhe do documento"), tanto no frame quanto na rota.
+- Quando uma tela apontar para outra ainda não criada, registre a conexão como pendente com o ID de destino; ela será ligada no prompt em que a tela existir.
+
+11. DADOS FICTÍCIOS
+- Signatários: Maria Souza, Ana Lima, João Lima, Pedro Alves, Carlos (e-mails no formato nome.sobrenome@empresa.com; Carlos: carlos@empresa.com).
+- Admin (remetente): Carla Mendes, carla.mendes@empresa.com.
+- Signatário logado nas telas do Signatário: João Lima.
+- Documentos: "Contrato de Prestação de Serviços", "Aditivo 02", "Contrato de locação — Sala 3". Datas em 26/10/2026, formato dd/mm/aaaa e hh:mm.
+
+12. ACESSIBILIDADE (vale para todo o projeto)
+- Contraste mínimo de 4,5:1 para texto, a ser validado depois que as cores forem preenchidas.
+- Informação nunca só por cor: situação, não lida, seleção e erro sempre com texto + ícone.
+- Alternativa sem gesto para arrastar, desenhar e reordenar (botões de mover; opção "Digitar" na assinatura).
+- Rótulos visíveis nos campos; erros exibidos junto ao campo.
+- Áreas de toque de 48 x 48 dp; descrição de conteúdo em todos os ícones de ação.
+- Layout suporta fonte ampliada até 200%.
+
+=====================================================================
+PROMPT 2 — TELAS COMUNS DE ENTRADA (COM-01 A COM-04)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign, app Android de assinatura digital (perfis Admin e Signatário). Este lote cria as 4 telas comuns de entrada: abertura do app, login, cadastro do Admin e resolução de links de convite. Use somente os tokens, a tipografia, os componentes e o espaço reservado da logo do Prompt 0, citando-os pelo nome. Nenhuma tela deste lote tem bottom navigation.
+
+COM-01 — Splash e verificação de sessão
+Estrutura: tela inteira em cor-fundo, sem top app bar.
+- Centro: componente "LOGO — [INSERIR POSTERIORMENTE]" em 160 x 160 dp. Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+- Abaixo da logo (esp-32): indicador de carregamento circular.
+Variantes de estado:
+- Carregando (padrão) e Redirecionando: logo + indicador.
+- Erro: logo + "Estado de erro com 'Tentar novamente'" com o texto "Não foi possível iniciar. Verifique sua conexão e tente novamente." e botão principal "Tentar novamente" (volta ao estado Carregando).
+Navegação: no protótipo, após 1,5 s vai para COM-02 (caminho sem sessão). Registre como conexões alternativas pendentes: ADM-01 (sessão Admin), SIG-01 (sessão Signatário), COM-04 (link pendente).
+UX: sem animação longa; nunca prender o usuário em carregamento infinito.
+
+COM-02 — Login
+Estrutura de cima para baixo:
+- Topo do conteúdo (esp-32 da status bar): "LOGO — [INSERIR POSTERIORMENTE]" em 120 x 48 dp, centralizado. Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+- Banner informativo (só na variante "Vindo de link"): "Entre para abrir o documento enviado a você".
+- Campo "E-mail" (teclado de e-mail, ação "Próximo"; preenchimento automático).
+- Campo "Senha" com ícone mostrar/ocultar (ação "Concluir"; preenchimento automático de senha).
+- Botão principal "Entrar" (largura total).
+- Botão de texto "Criar conta de administrador" (ação secundária).
+Hierarquia: principal = "Entrar"; secundária = "Criar conta de administrador".
+Dados fictícios: carla.mendes@empresa.com (Admin) e joao.lima@empresa.com (Signatário).
+Variantes de estado:
+- Padrão.
+- Vindo de link (com o banner acima).
+- Validando: botão "Entrar" em estado carregando, toque bloqueado.
+- Erro de formato: abaixo do campo E-mail: "Informe um e-mail válido, como nome@empresa.com."
+- Erro de credencial: mensagem acima do botão: "E-mail ou senha incorretos. Confira e tente novamente."
+- Erro de conexão: "Sem conexão. Verifique a internet e tente novamente."
+- Bloqueio temporário: "Muitas tentativas. Aguarde alguns minutos para tentar de novo." e "Entrar" desabilitado.
+Navegação: "Criar conta de administrador" → COM-03. "Entrar" → no protótipo, se o e-mail for joao.lima@empresa.com vai para SIG-01; qualquer outro e-mail válido vai para ADM-01 (ambas conexões pendentes). Na variante "Vindo de link", "Entrar" → COM-04.
+
+COM-03 — Cadastro inicial do Admin
+Estrutura de cima para baixo:
+- Top app bar com ícone voltar (→ COM-02) e título "Criar conta de administrador".
+- "LOGO — [INSERIR POSTERIORMENTE]" em 120 x 48 dp, centralizado no topo do conteúdo. Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+- Campos: "Nome completo", "E-mail", "Telefone" (máscara (DD) 00000-0000), "Senha" (mostrar/ocultar), "Confirmação de senha".
+- Indicador de requisitos de senha visível ANTES de qualquer erro, como texto de ajuda do campo Senha: "Sua senha precisa ter pelo menos 8 caracteres, com letras e números." (com ícone check que marca cada requisito atendido).
+- Caixa de seleção do aceite: "Termos de uso e privacidade".
+- Botão principal "Criar conta" (rodapé da rolagem, largura total).
+Dados fictícios: Carla Mendes, carla.mendes@empresa.com, (11) 98765-4321.
+Variantes de estado:
+- Padrão.
+- Erro de campo: "As senhas não são iguais." abaixo de Confirmação; "Sua senha precisa ter pelo menos 8 caracteres, com letras e números." em estado de erro abaixo de Senha.
+- E-mail já em uso: abaixo do campo E-mail: "Este e-mail já tem uma conta. Faça login." ("Faça login" como link → COM-02).
+- Validando: "Criar conta" em carregamento.
+- Erro de conexão: "Sem conexão. Verifique a internet e tente novamente."
+- Sucesso: snackbar "Conta criada! Vamos começar."
+Navegação: "Criar conta" → sucesso → ADM-01 (pendente).
+
+COM-04 — Entrada por link
+Estrutura: tela inteira em cor-fundo, sem top app bar, conteúdo centralizado. Nunca mostre título ou conteúdo do documento em nenhuma variante de bloqueio.
+Variantes de estado:
+- Carregando: indicador circular + "Abrindo documento…".
+- Redirecionando: mesmo layout; segue para o destino.
+- Bloqueio (outra conta): "Diálogo/painel de resultado" em tela cheia, ícone lock, texto "Este documento foi enviado para outra conta. Saia e entre com o e-mail que recebeu o convite.", botão principal "Sair e entrar com outra conta" (→ COM-02) e botão de texto "Ir para o início" (→ SIG-01, pendente).
+- Documento indisponível: ícone block, "Este documento foi cancelado pelo remetente e não pode mais ser assinado.", botão principal "Ir para o início" (→ SIG-01).
+- Já assinado: ícone task_alt, "Você já assinou este documento." e segue automaticamente para SIG-08 (pendente) após 1,5 s.
+- Link inválido: ícone link_off, "Este link não é válido ou expirou.", botão principal "Ir para o início" (→ SIG-01).
+- Sem conexão: "Estado de erro com 'Tentar novamente'" com "Sem conexão. Verifique a internet e tente novamente."
+Navegação: a partir do estado Carregando, conexões para COM-02 (sem sessão), SIG-03 (destinatário correto, pendente) e ADM-11 (notificação do Admin, pendente). No protótipo, o caminho padrão é Carregando → SIG-03.
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); situação e erro sempre com texto + ícone; rótulos visíveis e erros junto ao campo, anunciados ao leitor de tela; toque de 48 x 48 dp; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 3A — TELAS RAIZ DO ADMIN E TELAS COMUNS (ADM-01 A ADM-03, COM-05, COM-06)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Admin (cliente), logado como Carla Mendes. Este lote cria as telas raiz do Admin (Documentos e Signatários), o cadastro de signatário e as duas telas comuns de bottom navigation (Notificações e Conta, em versão Admin e Signatário). Reutilize os tokens e componentes do Prompt 0 pelo nome. Ligue agora as conexões pendentes do Prompt 1 que apontam para ADM-01.
+
+ADM-01 — Início — Painel de documentos
+Estrutura de cima para baixo:
+- Top app bar: "LOGO — [INSERIR POSTERIORMENTE]" 32 x 32 dp à esquerda + título "Documentos". Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+- Resumo com contadores por situação: linha rolável de mini cartões, cada um com Selo de situação + número.
+- Campo de busca por título.
+- Chips de filtro (rolagem horizontal): "Rascunhos", "Enviados", "Parcialmente assinados", "Concluídos", "Recusados", "Cancelados", "Falha no envio".
+- Lista de "Cartão de documento" (variante Admin): título, versão, Selo de situação, progresso "x de y obrigatórios assinaram", data da última atualização. Itens com "Falha no envio" ficam SEMPRE no topo e mostram "Envio não concluído — toque para tentar novamente." Itens em Rascunho têm menu com "Excluir rascunho".
+- FAB estendido "Novo documento" (ícone add) — ação principal.
+- Barra de navegação inferior (Admin), destino "Documentos" ativo.
+Dados fictícios: "Contrato de Prestação de Serviços" v1 Parcialmente assinado "2 de 3 obrigatórios assinaram"; "Aditivo 02" v1 Falha no envio; "Contrato de locação — Sala 3" v1 Rascunho; "Aditivo 02" v2 Enviado "0 de 2 obrigatórios assinaram"; mais um item Concluído, um Recusado e um Cancelado com os mesmos títulos e versões diferentes; datas 26/10/2026.
+Variantes de estado:
+- Carregando (skeleton).
+- Vazio: "Estado vazio" com "Você ainda não enviou documentos. Toque em 'Novo documento' para começar."
+- Vazio por filtro: "Estado vazio" com ação "Limpar filtro".
+- Lista (padrão).
+- Sem signatários cadastrados: banner no topo "Antes de enviar, cadastre quem vai assinar." com atalho "Cadastrar signatário" (→ ADM-03).
+- Erro: "Estado de erro com 'Tentar novamente'" com "Sem conexão. Verifique a internet e tente novamente."
+- Offline: lista em cache + Banner offline com "Sem conexão. Verifique a internet e tente novamente."
+- Excluir rascunho: dialog básico com título "Excluir rascunho", botão destrutivo "Excluir rascunho" e botão de texto "Voltar".
+Navegação: "Novo documento" → ADM-04 (pendente); Rascunho → MOD-05 (pendente); Falha no envio → ADM-10 (pendente); demais documentos → ADM-11 (pendente); bottom nav → ADM-02, COM-05, COM-06.
+
+ADM-02 — Signatários
+Estrutura: top app bar "Signatários"; campo de busca "Buscar por nome ou e-mail"; lista (nome, e-mail, telefone — nunca a data de nascimento); FAB estendido "Cadastrar signatário" (ícone person_add); Barra de navegação inferior (Admin) com "Signatários" ativo.
+Dados fictícios: Maria Souza, Ana Lima, João Lima, Pedro Alves, Carlos, com e-mails do Prompt 0 e telefones (11) 9xxxx-xxxx.
+Variantes: Carregando; Vazio: "Nenhum signatário cadastrado. Cadastre as pessoas que vão assinar seus documentos."; Lista; Busca sem resultado: "Nenhum signatário encontrado para 'termo'." (substitua termo pelo texto buscado, ex.: 'Paulo'); Erro com "Tentar novamente".
+Navegação: FAB → ADM-03 (novo); item → ADM-03 (edição).
+
+ADM-03 — Cadastro/edição de signatário
+Estrutura: tela empilhada sem bottom nav. Top app bar com voltar e título "Cadastrar signatário" (novo) ou "Editar signatário" (edição).
+- Banner informativo: "Estes dados serão usados para confirmar a identidade da pessoa antes de assinar. Confira com atenção."
+- Campos: "Nome completo", "E-mail", "Telefone" ((DD) 00000-0000), "Data de nascimento" (digitação dd/mm/aaaa permitida + ícone calendar_month que abre o seletor de data), "Senha" (só no novo, com o mesmo texto de requisitos do COM-03).
+- Edição: no lugar de Senha, botão secundário "Redefinir senha" e aviso "Alterações valem para os próximos envios. Documentos já enviados mantêm os dados originais."
+- Rodapé fixo: botão principal "Salvar".
+Dados fictícios (edição): Maria Souza, maria.souza@empresa.com, (11) 91234-5678, 14/03/1988.
+Variantes: Novo; Edição; Salvando (botão em carregamento); Erro de campo (mensagem abaixo do campo); E-mail vinculado a conta existente: Senha oculta e aviso "Este e-mail já possui conta no LetsSign. Ele será adicionado à sua lista sem alterar a senha."; Sucesso: volta à origem com snackbar "Signatário salvo."
+Navegação: voltar e "Salvar" → tela de origem (ADM-02, ADM-01; ADM-06 será ligada no Prompt 3b).
+
+COM-05 — Central de notificações
+Estrutura: top app bar "Notificações" com botão de texto "Marcar todas como lidas"; lista cronológica (mais recentes primeiro) com ícone do tipo, título do documento, resumo e data/hora; atualização por puxar. Não lida = marcador circular + título em negrito + rótulo acessível "Não lida" (nunca só cor).
+Crie DUAS variantes de perfil:
+- Admin (Barra de navegação inferior Admin, "Notificações" ativo, badge 2): "Maria Souza assinou 'Contrato de Prestação de Serviços'." (não lida), "Recusado por Maria Souza em 26/10/2026 às 10:05.", "Não foi possível entregar o SMS para João Lima. Reenviar convite?", "Documento concluído em 26/10/2026 às 15:42."
+- Signatário (Barra de navegação inferior Signatário, "Notificações" ativo): "Chegou a sua vez de assinar 'Aditivo 02'." (não lida) e mais itens do mesmo tipo com outros títulos fictícios.
+Variantes de estado: Carregando; Vazio: "Você não tem notificações por enquanto."; Lista; Erro com "Tentar novamente"; Offline: cache + Banner offline "Sem conexão. Verifique a internet e tente novamente."
+Navegação: item Admin → ADM-11 (pendente); item Signatário → SIG-03 (pendente); bottom nav conforme o perfil.
+
+COM-06 — Minha conta
+Estrutura: top app bar "Minha conta"; lista somente leitura: Nome, E-mail, Telefone, Perfil ("Admin" ou "Signatário"), Versão do app (1.0.0); botão secundário "Sair" (ícone logout).
+Crie DUAS variantes de perfil: Admin (Carla Mendes; bottom nav Admin, "Conta" ativo) e Signatário (João Lima; bottom nav Signatário, "Conta" ativo).
+Variantes de estado: Padrão; Confirmar saída (dialog básico): "Deseja sair? Você precisará entrar de novo para acessar seus documentos." com botão principal "Sair" e botão de texto "Voltar"; Saindo (indicador).
+Navegação: "Sair" confirmado → COM-02.
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); situação e não lida sempre com texto + ícone; rótulos visíveis e erros junto ao campo; toque de 48 x 48 dp; contador e badge anunciados ao leitor de tela; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 3B — WIZARD ETAPAS 1 A 3 (ADM-04, ADM-05, MOD-04, MOD-05, MOD-06)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Admin. Este lote cria o início do assistente linear de novo documento (etapas 1 a 3) e os dialogs de erro de PDF, saída do assistente e retomada de rascunho. Reutilize os tokens e componentes do Prompt 0 pelo nome. Ligue as conexões pendentes do Prompt 2 para ADM-04 e MOD-05.
+
+PADRÃO DO WIZARD (vale para ADM-04 a ADM-10, inclusive nos Prompts 3b e 4)
+- Bottom navigation OCULTA.
+- Top app bar: ícone voltar à esquerda (volta uma etapa mantendo os dados; na primeira etapa abre MOD-04), título "Novo documento" e ícone close à direita com rótulo acessível "Fechar" (abre MOD-04).
+- Logo abaixo: "Indicador de etapas do wizard (1–9)" sempre visível.
+- Rodapé fixo com botão principal "Avançar" (largura total). Quando desabilitado, o motivo aparece em texto logo acima do botão.
+
+ADM-04 — Novo documento — Título (etapas 1–2)
+Estrutura: padrão do wizard com indicador na variante "Etapas 1–2".
+- Campo "Título" com contador "0/120" e texto de ajuda "Dê um nome que ajude os signatários a reconhecer o documento, como 'Contrato de locação — Sala 3'."
+Variantes de estado:
+- Padrão (vazio; "Avançar" desabilitado).
+- Preenchido: "Contrato de Prestação de Serviços".
+- Erro de campo: campo em estado de erro (ícone + borda cor-erro) mantendo o texto de ajuda.
+- Nova versão: banner informativo "Versão 2 (baseada na versão 1)" e título pré-preenchido "Aditivo 02".
+Navegação: "Avançar" → ADM-05; voltar e "Fechar" → MOD-04.
+
+ADM-05 — Selecionar PDF (etapa 3)
+Estrutura: padrão do wizard, etapa 3.
+- Sem arquivo: área de seleção grande (borda tracejada cor-borda, ícone upload_file) com botão secundário "Selecionar PDF" (no protótipo, simula o seletor do sistema).
+- Com arquivo: cartão do arquivo com miniatura da 1ª página (cor-pagina-pdf), nome "contrato-prestacao-servicos.pdf", tamanho "1,2 MB", "8 páginas" e botão de texto "Trocar arquivo".
+Variantes de estado:
+- Sem arquivo ("Avançar" desabilitado).
+- Copiando/validando: indicador de progresso linear + "Validando o arquivo…".
+- Arquivo válido.
+- Trocar arquivo com campos já posicionados: dialog básico "Trocar o arquivo apaga os campos de assinatura já posicionados. Deseja continuar?" com botão destrutivo "Trocar arquivo" e botão de texto "Voltar".
+- Espaço insuficiente: banner de alerta "Não há espaço suficiente no aparelho para importar o arquivo."
+- Erro: esta tela com MOD-06 aberto por cima.
+Navegação: "Selecionar PDF" → Validando → Arquivo válido; "Avançar" → ADM-06 (pendente, Prompt 3b); voltar → ADM-04; "Fechar" → MOD-04.
+
+MOD-06 — Erro de arquivo PDF
+Estrutura: dialog básico sobre ADM-05 (overlay cor-overlay), ícone error (cor-erro), mensagem em linguagem simples e botão principal "Escolher outro arquivo".
+Variantes (uma por tipo de erro):
+- Não é PDF: "Este arquivo não é um PDF."
+- Corrompido: "Não conseguimos abrir este PDF. Ele pode estar corrompido."
+- Protegido por senha: "Este PDF é protegido por senha. Remova a proteção e tente novamente."
+- Grande demais: "O arquivo tem mais de 20 MB. Reduza o tamanho e tente novamente."
+- Sem páginas e Falha de leitura: usam o mesmo texto da variante Corrompido.
+Navegação: "Escolher outro arquivo" fecha o dialog → ADM-05 (sem arquivo).
+
+MOD-04 — Sair do assistente
+Estrutura: dialog básico sobre a etapa atual. Texto: "Deseja sair? Você pode salvar e continuar depois." Botões empilhados: principal "Salvar rascunho e sair", de texto "Continuar editando" e, separado por divisor, destrutivo "Descartar documento".
+Navegação: "Salvar rascunho e sair" → ADM-01; "Descartar documento" → ADM-01; "Continuar editando" fecha o dialog. Abre a partir de ADM-04 a ADM-10 (ligue agora em ADM-04 e ADM-05; os próximos prompts ligam as demais).
+
+MOD-05 — Retomar rascunho
+Estrutura: dialog básico sobre ADM-01: título "Contrato de locação — Sala 3", texto "Você parou na etapa 6 de 9 (Ordem de assinatura). Continuar?", data da última edição "26/10/2026". Botões: principal "Continuar" e destrutivo "Excluir rascunho".
+Variantes: Padrão; Arquivo indisponível: texto "O arquivo deste rascunho não está mais disponível. Selecione o PDF novamente."
+Navegação: Padrão "Continuar" → ADM-08 (pendente, Prompt 3b); Arquivo indisponível "Continuar" → ADM-05; "Excluir rascunho" → ADM-01.
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); erros com texto + ícone, junto ao campo; etapa atual indicada por texto, não só cor; toque de 48 x 48 dp; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 4 — WIZARD ETAPAS 7 A 9 E RESULTADO (ADM-09, MOD-03, ADM-10, MOD-01)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Admin. Este lote fecha o assistente: posicionar campos de assinatura no PDF (etapas 7–8), revisar e enviar (etapa 9) e mostrar o resultado do envio. Use o PADRÃO DO WIZARD do Prompt 3a e os componentes do Prompt 0 pelo nome. Ligue as conexões pendentes para ADM-09 e ADM-10 (inclusive a do ADM-01 "Falha no envio" → ADM-10), e ligue "Fechar" destas telas a MOD-04.
+
+ADM-09 — Visualizar páginas e posicionar campos (etapas 7–8)
+Estrutura (padrão do wizard, indicador na variante "Etapas 7–8"):
+- "Visualizador de PDF com camada de campos" no modo edição, ocupando a área central: página com zoom e rolagem, botões "Ampliar"/"Reduzir", controles "Página anterior" / "Próxima página", indicador "pág. 3 de 8" e faixa de miniaturas.
+- Botão tonal "Adicionar campo" (ícone add) acima da faixa de miniaturas.
+- "Campo de assinatura sobreposto" na página, sempre com nome ou iniciais do signatário em texto.
+- Campo selecionado: alças de redimensionar + barra de ações contextual com "Excluir campo", "Trocar signatário", botões de mover (cima, baixo, esquerda, direita) e campo numérico "Página" para mover o campo para outra página (alternativas sem arrastar).
+- Contador de campos por signatário (ex.: "Ana Lima · 2 campos").
+- "Lista de pendências com atalhos" recolhível acima do rodapé: "Sem campo: Maria Souza".
+Dados fictícios: página 3 com campos de Ana Lima e João Lima; página 5 com campo de João Lima; Maria Souza sem campo.
+Variantes de estado:
+- Carregando página (skeleton na área da página).
+- Sem campos: dica "Toque em 'Adicionar campo' e arraste até onde a pessoa deve assinar."
+- Com campos.
+- Campo selecionado.
+- Limite da página: campo encostado na borda + mensagem "O campo precisa ficar dentro da página."
+- Pendências: lista aberta com "Falta posicionar o campo de assinatura de Maria Souza." e atalho para a página.
+- Campo excluído: snackbar com ação "Desfazer".
+- Erro de renderização: "Estado de erro com 'Tentar novamente'" com "Não foi possível abrir o documento. Tente novamente."
+Navegação: "Adicionar campo" e "Trocar signatário" → MOD-03; "Avançar" → ADM-10; voltar → ADM-08.
+
+MOD-03 — Selecionar signatário do campo
+Estrutura: "Bottom sheet de seleção" sobre ADM-09, título "Para quem é este campo?". Lista de participantes com papel e nº de campos já posicionados. Participantes sem campo ficam no TOPO, com a indicação em texto "sem campo".
+Dados fictícios: Maria Souza (Contratado, sem campo); Ana Lima (Contratante, 1 campo); João Lima (Contratado, 2 campos); Carlos (Testemunha, sem campo).
+Variante de estado: Lista.
+Navegação: tocar num participante fecha o sheet → ADM-09 com o novo campo criado no centro da página visível, já no estado selecionado.
+
+ADM-10 — Revisão e confirmação de envio (etapa 9)
+Estrutura (padrão do wizard, etapa 9; o botão do rodapé é "Confirmar envio" no lugar de "Avançar"):
+- Cartão "Documento": miniatura (toque → ADM-13), título "Contrato de Prestação de Serviços", "8 páginas", "Versão 1", botão de texto "Editar".
+- Cartão "Signatários": "Linha de participante" (somente leitura) com papel, obrigatoriedade, posição na ordem e nº de campos; "Editar".
+- Cartão "Ordem": "Sequencial"; "Editar".
+- Cartão "Campos por página": ex.: "pág. 3 — 2 campos", "pág. 5 — 1 campo"; "Editar".
+- Campo de texto multilinha "Mensagem do convite" com contador "0/500" (opcional).
+- Canais do convite (informativo, sem ação): ícones mail e sms com o texto "E-mail e SMS".
+- Banner informativo: "Depois de enviado, o documento não pode ser alterado. Para mudanças, será criada uma nova versão."
+- "Lista de pendências com atalhos" (só quando houver pendência).
+- Rodapé fixo: botão principal "Confirmar envio".
+Variantes de estado:
+- Pronto para envio.
+- Com pendências: lista com "Falta posicionar o campo de assinatura de Maria Souza." (atalho → ADM-09) e "Defina pelo menos uma pessoa como obrigatória." (atalho → ADM-07); "Confirmar envio" desabilitado com o motivo visível acima dele.
+- Enviando: botão em carregamento com "Enviando…", toque bloqueado.
+- Erro: esta tela com MOD-01 (falha) por cima.
+Navegação: "Editar" de cada cartão → ADM-04, ADM-05, ADM-06, ADM-08 ou ADM-09 conforme o bloco; miniatura → ADM-13 (pendente, Prompt 5); "Confirmar envio" → Enviando → MOD-01; voltar → ADM-09.
+
+MOD-01 — Resultado do envio
+Estrutura: "Diálogo/painel de resultado" (variante dialog) sobre ADM-10, sem fechar ao tocar fora.
+Variantes de estado:
+- Enviando: indicador circular + "Enviando…".
+- Sucesso: ícone check_circle; "Documento enviado! 3 pessoas foram convidadas por e-mail e SMS."; botão principal "Acompanhar documento".
+- Falha: ícone error; "Não foi possível concluir o envio. Nenhuma solicitação foi duplicada. Tente novamente."; botão principal "Tentar novamente" e botão de texto "Tentar mais tarde".
+- Sucesso parcial de notificação: ícone warning; "Documento enviado, mas o SMS para João Lima não foi entregue. Você pode reenviar o convite no acompanhamento."; botão principal "Acompanhar documento".
+Navegação: "Acompanhar documento" → ADM-11 (pendente, Prompt 5); "Tentar novamente" → Enviando → Sucesso (permanece no MOD-01); "Tentar mais tarde" → ADM-01 (cartão com "Falha no envio" no topo).
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); signatário do campo identificado por texto; mover, redimensionar e trocar página sem arrastar; motivo de botão desabilitado sempre visível; toque de 48 x 48 dp (inclusive alças); layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 5 — ACOMPANHAMENTO DO DOCUMENTO (ADM-11 A ADM-13, MOD-07, MOD-09, MOD-11)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Admin. Este lote cria o acompanhamento do documento enviado, o histórico, o visualizador do Admin e os dialogs de cancelamento, detalhe da recusa e nova versão. São telas empilhadas, sem bottom navigation. Reutilize os componentes do Prompt 0 pelo nome. Ligue as conexões pendentes para ADM-11 (de ADM-01, COM-05, COM-04 e MOD-01) e para ADM-13 (de ADM-10).
+
+ADM-11 — Acompanhamento do documento
+Estrutura de cima para baixo:
+- Top app bar com voltar e título "Acompanhamento do documento".
+- Cabeçalho em destaque: título "Contrato de Prestação de Serviços", "Versão 1", Selo de situação geral, barra de progresso + "2 de 3 assinaturas obrigatórias concluídas.", tipo de ordem "Sequencial" e destaque "Vez de: João Lima".
+- Alerta de falha de entrega (banner de alerta): "Não foi possível entregar o SMS para João Lima. Reenviar convite?" com botão "Reenviar convite".
+- Lista de "Linha de participante" (variante acompanhamento): Ana Lima — Contratante · Obrigatório · 1º · Assinado · 26/10/2026 14:20; Maria Souza — Contratado · Obrigatório · 2º · Assinado · 26/10/2026 14:55; João Lima — Contratado · Obrigatório · 3º · Pendente; Carlos — Testemunha · Opcional · 4º · Aguardando vez.
+- Últimos eventos: 3 "Item de linha do tempo" (ex.: "26/10/2026 14:03 — Convite enviado por e-mail para Ana Lima.") + botão de texto "Ver histórico".
+- Ações conforme a situação: botão secundário "Ver documento"; e, separado por divisor no fim da tela, botão destrutivo "Cancelar documento" (só para Enviado e Parcialmente assinado).
+Variantes de estado:
+- Carregando (skeleton).
+- Atualizado / Parcialmente assinado (padrão acima). Atualização manual por puxar.
+- Enviado: progresso "0 de 3 assinaturas obrigatórias concluídas." (mesmo modelo de texto).
+- Concluído: "Documento concluído em 26/10/2026 às 15:42.", botão principal "Ver documento final"; sem "Cancelar documento"; somente leitura.
+- Recusado: "Recusado por Maria Souza em 26/10/2026 às 10:05.", botões "Ver motivo da recusa" e "Criar nova versão"; somente leitura.
+- Recusa de opcional: documento segue Parcialmente assinado; Carlos com selo "Recusado" e botão "Ver motivo da recusa".
+- Cancelado: selo "Cancelado", botão "Criar nova versão"; somente leitura.
+- Substituído: selo "Substituído" e link "Versão seguinte"; na versão 2, link "Versão anterior".
+- Offline: dados em cache + Banner offline com "Sem conexão. Verifique a internet e tente novamente." e data da última atualização ("26/10/2026 15:42").
+- Erro: "Estado de erro com 'Tentar novamente'".
+Navegação: "Ver histórico" → ADM-12; "Ver documento" e "Ver documento final" → ADM-13; "Cancelar documento" → MOD-07; "Ver motivo da recusa" → MOD-09; "Criar nova versão" → MOD-11; voltar → tela de origem.
+
+ADM-12 — Histórico do documento
+Estrutura: top app bar com voltar e título "Histórico do documento"; indicador "Versão 1"; chips de filtro "Envio", "Notificações", "Assinaturas", "Recusas", "Cancelamento"; botão com ícone swap_vert e rótulo "Mais recentes primeiro" para inverter a ordem; lista de "Item de linha do tempo" (evento, autor, data/hora, detalhe), do mais recente para o mais antigo.
+Dados fictícios (eventos da Etapa 1): "26/10/2026 14:03 — Convite enviado por e-mail para Ana Lima.", Criado, Enviado, Visualizado pelo signatário, Identidade confirmada, Assinado, Recusado (obrigatório), Falha de entrega, Reenvio.
+Variantes: Carregando; Lista; Erro com "Tentar novamente".
+Navegação: tocar num evento de recusa → MOD-09; voltar → ADM-11.
+
+ADM-13 — Visualizador de documento (Admin)
+Estrutura: top app bar com voltar e título "Visualizador de documento"; "Visualizador de PDF com camada de campos" no modo leitura, sem controles de edição.
+Variantes de estado:
+- Versão enviada: campos sobrepostos (variante vazio) com o nome de cada signatário.
+- Documento final: assinaturas aplicadas (variante assinado) e última página de registro de eventos; na top app bar, ação "Compartilhar/Salvar no dispositivo" (ícone share).
+- Baixando: indicador + "Baixando documento…".
+- Carregando página (skeleton).
+- Erro de download: "Não foi possível abrir o documento. Tente novamente." + "Tentar novamente".
+Navegação: voltar → origem (ADM-10 ou ADM-11).
+
+MOD-07 — Confirmar cancelamento
+Estrutura: "Diálogo de confirmação segura" (tela cheia) sobre ADM-11, título "Cancelar documento".
+- Consequências: "Cancelar este documento encerra o fluxo. Assinaturas já feitas deixam de valer para esta versão e todos os convidados serão avisados."
+- Caixa de confirmação: "Entendo que o documento será cancelado e não poderá mais ser assinado".
+- Campo "Senha" (mostrar/ocultar).
+- Botão destrutivo "Cancelar documento" (habilitado só com a caixa marcada e a senha preenchida) e botão de texto "Voltar".
+Variantes: Padrão; Validando (botão em carregamento, toque bloqueado); Senha incorreta: "Senha incorreta." abaixo do campo; Erro de conexão: "Sem conexão. Sua ação não foi registrada. Tente novamente."; Sucesso: fecha e mostra snackbar "Documento cancelado."
+Navegação: sucesso → ADM-11 (variante Cancelado); "Voltar" → ADM-11.
+
+MOD-09 — Detalhe da recusa
+Estrutura: "Bottom sheet de seleção" adaptado para leitura: quem recusou, papel, obrigatoriedade, data/hora, observação em destaque (texto selecionável e copiável) e efeito no documento.
+Variantes:
+- Recusa de obrigatório: "Maria Souza (Contratada, obrigatória) recusou em 26/10/2026 às 10:05: 'Solicito alterar o prazo da cláusula 4.'" + botão principal "Criar nova versão".
+- Recusa de opcional: "Carlos (Testemunha, opcional) recusou em 26/10/2026 às 11:30." + "O documento continua em andamento." (sem "Criar nova versão").
+- Sem observação: no lugar da observação, "Sem observação".
+Navegação: "Criar nova versão" → MOD-11; arrastar para baixo ou tocar fora → ADM-11 (ou ADM-12, se veio de lá).
+
+MOD-11 — Criar nova versão
+Estrutura: dialog básico. Texto: "A versão 1 continua registrada como está. Será criada a versão 2 em rascunho, com um novo fluxo de assinaturas." Opções de reaproveitamento (caixas de seleção marcadas): "Título", "Signatários e configurações", "Campos (se o PDF for o mesmo)". Texto de apoio: "Você poderá trocar o PDF". Botões: principal "Criar versão 2" e de texto "Voltar".
+Variante de estado: Padrão.
+Navegação: "Criar versão 2" → ADM-04 (variante Nova versão); "Voltar" → origem (MOD-09 ou ADM-11).
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); situações sempre com texto + ícone; ações destrutivas separadas das principais; erros junto ao campo; toque de 48 x 48 dp; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 6 — TELAS RAIZ DO SIGNATÁRIO, DETALHE, IDENTIDADE E RECUSA (SIG-01 A SIG-04, MOD-08)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Signatário, logado como João Lima; remetente dos documentos: Carla Mendes. Este lote cria as telas raiz do Signatário, o detalhe do documento, a confirmação de identidade e a recusa. Reutilize os componentes do Prompt 0 pelo nome. Ligue as conexões pendentes para SIG-01 (de COM-01, COM-02, COM-04) e SIG-03 (de COM-04, COM-05).
+
+SIG-01 — Início — Pendentes
+Estrutura de cima para baixo:
+- Top app bar: "LOGO — [INSERIR POSTERIORMENTE]" 32 x 32 dp + título "Início". Este é um espaço reservado; a logo oficial será inserida depois sem alterar o layout ao redor.
+- Contador em destaque (Display Small no número, anunciado ao leitor de tela): "Você tem 2 documentos para assinar."
+- Seção "Pendentes": "Cartão de documento" (variante Signatário) com título, remetente, papel, data do convite, nº de campos e botão principal "Assinar".
+- Seção "Aguardando sua vez": cartão com Selo "Aguardando vez" e o texto "Aguardando outra pessoa assinar antes de você." (sem botão Assinar).
+- Botão de texto "Ver documentos assinados".
+- Barra de navegação inferior (Signatário), "Início" ativo, com Contador/badge de pendências "2".
+Dados fictícios: "Aditivo 02" (Carla Mendes, Contratado, 26/10/2026, 2 campos); "Contrato de Prestação de Serviços" (Carla Mendes, Contratado, 26/10/2026, 1 campo); aguardando: "Contrato de locação — Sala 3".
+Variantes de estado: Carregando (skeleton); Vazio: "Estado vazio" com "Tudo em dia! Você não tem documentos para assinar agora."; Com pendentes (padrão); Somente aguardando (sem a seção Pendentes e contador oculto); Erro com "Tentar novamente"; Offline: cache + Banner offline "Sem conexão. Verifique a internet e tente novamente.". Atualização por puxar.
+Navegação: "Assinar" ou tocar no cartão → SIG-03; cartão aguardando → SIG-03 (variante Aguardando vez); "Ver documentos assinados" → SIG-02; bottom nav → SIG-02, COM-05 (variante Signatário), COM-06 (variante Signatário).
+
+SIG-02 — Meus documentos
+Estrutura: top app bar "Meus documentos"; campo de busca por título; chips de filtro "Assinados", "Recusados", "Encerrados"; lista de "Cartão de documento" (variante Signatário, sem botão) com título, remetente, Selo da sua situação (participante), data do evento e Selo da situação geral do documento; Barra de navegação inferior (Signatário), "Documentos" ativo.
+Dados fictícios: "Contrato de Prestação de Serviços" (Assinado / Concluído); "Aditivo 02" versão anterior (Encerrado / Cancelado); "Contrato de locação — Sala 3" (Recusado / Recusado).
+Variantes: Carregando; Vazio: "Os documentos que você assinar aparecerão aqui."; Lista; Erro com "Tentar novamente".
+Navegação: item → SIG-03 (variante correspondente, somente leitura).
+
+SIG-03 — Detalhe do documento
+Estrutura de cima para baixo (tela empilhada, sem bottom nav):
+- Top app bar com voltar e título "Detalhe do documento".
+- Cartão principal: título "Aditivo 02", remetente "Carla Mendes", data do convite "26/10/2026", "Seu papel: Contratado · Obrigatório", Selo da sua situação e Selo da situação geral.
+- Mensagem do convite (texto curto fictício enviado pelo remetente).
+- Texto: "Este documento tem 2 campos para você assinar, nas páginas 3 e 5."
+- Tipo de ordem e sua posição: "Sequencial · Sua posição: 3".
+- Participantes: "Linha de participante" (somente leitura, apenas nome e papel): Ana Lima — Contratante; Maria Souza — Contratado; João Lima — Contratado; Carlos — Testemunha.
+- Botão secundário "Ver documento" (antes das ações de decisão).
+- Rodapé fixo: botão principal "Assinar" e, abaixo, botão de texto "Recusar" (menor peso visual).
+Variantes de estado:
+- Carregando (skeleton).
+- Pendente (ações ativas).
+- Aguardando sua vez: "Assinar" e "Recusar" desabilitados e aviso visível acima deles: "Aguardando Ana Lima assinar. Você será avisado quando for a sua vez."
+- Assinado: somente leitura, sem rodapé de decisão, selo "Assinado".
+- Recusado: somente leitura, selo "Recusado".
+- Encerrado (cancelado): somente leitura com o aviso "Este documento foi cancelado pelo remetente."
+- Bloqueado temporariamente: "Assinar" desabilitado e aviso "Muitas tentativas. Tente novamente em 15 minutos ou fale com quem enviou o documento."
+- Erro com "Tentar novamente".
+Navegação: "Ver documento" → SIG-08 (pendente, Prompt 7); "Assinar" → SIG-04; "Recusar" → MOD-08; voltar → origem.
+
+SIG-04 — Confirmação de identidade
+Estrutura (início do fluxo linear de assinatura, sem bottom nav): top app bar com voltar e título "Confirmação de identidade"; texto "Para sua segurança, confirme seus dados antes de assinar."; campos VAZIOS (nunca pré-preenchidos) "Nome completo", "E-mail", "Data de nascimento" (dd/mm/aaaa, com seletor opcional); rodapé fixo com botão principal "Confirmar".
+Variantes de estado:
+- Padrão.
+- Validando: botão em carregamento.
+- Divergente: banner de erro acima dos campos (sem indicar qual campo): "Os dados não conferem com o cadastro feito pelo remetente. Confira e tente novamente. Restam 3 tentativas."
+- Bloqueado: campos e botão desabilitados + "Muitas tentativas. Tente novamente em 15 minutos ou fale com quem enviou o documento."
+- Sucesso: segue para SIG-05.
+Navegação: "Confirmar" → SIG-05 (pendente, Prompt 7); voltar e Bloqueado → SIG-03.
+
+MOD-08 — Recusar assinatura
+Estrutura: "Diálogo de confirmação segura" (tela cheia) sobre SIG-03, título "Recusar assinatura".
+- Texto de consequências (muda conforme a obrigatoriedade).
+- Campo multilinha "Observações" (opcional, contador "0/500", sugestão "Ex.: solicito alterar a cláusula 4").
+- Caixa de confirmação explícita: "Confirmo a recusa".
+- Campo "Senha" (mostrar/ocultar).
+- Botão destrutivo "Recusar assinatura" (habilitado só com a caixa marcada e a senha preenchida) e botão de texto "Voltar".
+Variantes de estado:
+- Obrigatório: "Sua recusa encerra este documento e ele não poderá ser concluído. O remetente será avisado."
+- Opcional: "Sua recusa será registrada e o remetente será avisado. O documento continua com os demais signatários."
+- Validando (toque bloqueado).
+- Senha incorreta: "Senha incorreta." abaixo do campo.
+- Erro de conexão: "Sem conexão. Sua ação não foi registrada. Tente novamente."
+- Sucesso: fecha e mostra snackbar "Recusa registrada."
+Navegação: sucesso → SIG-03 (variante Recusado); "Voltar" → SIG-03.
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); situações com texto + ícone; motivo de ação indisponível sempre visível; rótulos visíveis e erros anunciados ao leitor de tela; toque de 48 x 48 dp; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+
+=====================================================================
+PROMPT 7 — FLUXO LINEAR DE ASSINATURA E VISUALIZADOR (SIG-05 A SIG-08, MOD-10)
+=====================================================================
+
+CONTEXTO
+Produto: LetsSign. Perfil: Signatário (João Lima). Este lote completa o fluxo linear de assinatura (SIG-04 → SIG-05 → MOD-10 → SIG-07) e o visualizador somente leitura. Bottom navigation OCULTA em SIG-05, SIG-06, MOD-10 e SIG-07. Reutilize os componentes do Prompt 0 pelo nome. Ligue as conexões pendentes para SIG-05 (de SIG-04) e SIG-08 (de SIG-03 e COM-04).
+
+SIG-05 — Assinar documento
+Estrutura de cima para baixo:
+- Top app bar com voltar e título "Assinar documento".
+- Barra de progresso + "1 de 2 campos assinados".
+- "Visualizador de PDF com camada de campos" no modo assinatura: os campos de João Lima aparecem destacados e numerados ("Campo 1 de 2 — pág. 3", "Campo 2 de 2 — pág. 5"); campos de outras pessoas na variante "de outro participante" (apenas o nome, ex.: "Ana Lima").
+- Navegação guiada: botões "Campo anterior" e "Próximo campo" (levam à página e posição do campo).
+- Botão secundário "Criar assinatura" (antes de existir assinatura) ou "Refazer assinatura" (depois).
+- Rodapé fixo: botão principal "Salvar assinatura" (habilitado só com todos os campos preenchidos).
+Variantes de estado:
+- Baixando/carregando: "Baixando documento…".
+- Sem assinatura criada: dica "Toque no campo destacado para assinar." e campos na variante vazio.
+- Parcialmente preenchido: campo 1 na variante assinado; aviso "Falta 1 campo para assinar, na página 5."
+- Completo: "2 de 2 campos assinados" e "Salvar assinatura" habilitado.
+- Sair com assinaturas não salvas: dialog básico "Sair agora descarta as assinaturas não salvas. Deseja sair?" com botão destrutivo "Sair" e botão de texto "Continuar".
+- Erro: "Não foi possível abrir o documento. Tente novamente." + "Tentar novamente".
+Navegação: tocar num campo sem assinatura criada → SIG-06; tocar num campo com assinatura já criada aplica a mesma assinatura; "Criar assinatura"/"Refazer assinatura" → SIG-06; "Salvar assinatura" → MOD-10; voltar → dialog de saída → "Sair" → SIG-03.
+
+SIG-06 — Criar assinatura
+Estrutura: tela cheia com top app bar (ícone close com rótulo "Fechar", título "Criar assinatura").
+- Texto: "Escolha como sua assinatura vai aparecer."
+- Botão segmentado: "Desenhar" / "Digitar".
+- Desenhar: "Área de desenho" com o texto "Desenhe sua assinatura no espaço abaixo." e botão de texto "Limpar". A área também funciona com o aparelho girado na horizontal.
+- Digitar: campo "Nome" pré-preenchido com "João Lima" (editável) + "seletor de estilo de texto" com 4 estilos de escrita, cada um mostrando "João Lima".
+- Pré-visualização da assinatura.
+- Rodapé fixo: botão principal "Usar esta assinatura".
+Variantes de estado: Escolha (Desenhar selecionado, área vazia); Desenhando (traço em cor-tinta-assinatura); Vazio ("Usar esta assinatura" desabilitado); Pronto (desenho ou texto com estilo escolhido); Digitar selecionado.
+Navegação: "Usar esta assinatura" → SIG-05 com a assinatura aplicada a todos os campos tocados; "Fechar" → SIG-05 sem alteração.
+
+MOD-10 — Confirmar assinatura
+Estrutura: dialog sobre SIG-05. Resumo: documento "Aditivo 02", "2 campos", tipo de assinatura ("Desenhar" ou "Digitar") e pré-visualização. Aviso: "Depois de salva, a assinatura não poderá ser desfeita." Caixa de seleção: "Li e concordo com o conteúdo do documento". Botões: principal "Salvar assinatura" (habilitado só com a caixa marcada) e de texto "Revisar".
+Variantes de estado:
+- Padrão.
+- Salvando: botão em carregamento, toque duplo bloqueado.
+- Erro de conexão: "Não foi possível salvar. Sua assinatura não foi registrada. Tente novamente."
+- Documento cancelado durante a assinatura: "Este documento foi cancelado enquanto você assinava." com botão "Voltar".
+Navegação: "Salvar assinatura" → SIG-07; "Revisar" → SIG-05; "Voltar" (cancelado) → SIG-03 (variante Encerrado).
+
+SIG-07 — Assinatura registrada
+Estrutura: "Diálogo/painel de resultado" em tela cheia, sem top app bar: ícone check_circle; título do documento "Aditivo 02"; "Assinatura registrada em 26/10/2026 às 14:20."; situação atualizada; "Você ainda tem 1 documento para assinar."; botões secundário "Ver documento" e principal "Voltar ao início".
+Variantes de estado: Sucesso — aguardando outros (situação "Aguardando outros signatários" com Selo "Parcialmente assinado"); Sucesso — concluído (situação "Documento concluído" com Selo "Concluído").
+Navegação: "Voltar ao início" → SIG-01 (contador atualizado para 1); "Ver documento" → SIG-08.
+
+SIG-08 — Visualizador somente leitura
+Estrutura: top app bar com voltar, título "Visualizador" e chip com ícone lock e texto "Somente leitura"; "Visualizador de PDF com camada de campos" no modo leitura, com os campos de João Lima marcados; sem controles de edição.
+Variantes de estado:
+- Baixando: "Baixando documento…".
+- Exibindo (aguardando outras assinaturas): aviso "Este documento ainda aguarda outras assinaturas."
+- Exibindo documento final (concluído): assinaturas aplicadas e ação "Salvar/Compartilhar" (ícone share) na top app bar.
+- Erro: "Não foi possível abrir o documento. Tente novamente." + "Tentar novamente".
+Navegação: voltar → origem (SIG-03, SIG-07 ou SIG-01 quando aberto via COM-04).
+
+ACESSIBILIDADE
+Contraste mínimo de 4,5:1 (validar após preencher as cores); campos identificados por número e texto, não só cor; "Digitar" como alternativa ao gesto de desenhar; navegação entre campos por botões; toque de 48 x 48 dp; layout funcional com fonte ampliada até 200%.
+
+Não altere telas, tokens ou componentes já criados nos prompts anteriores.
+

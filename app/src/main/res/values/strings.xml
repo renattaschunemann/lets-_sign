@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LetsSign</string>
+    <string name="logo_placeholder_text">LOGO</string>
+    <string name="logo_content_description">LOGO — [INSERIR POSTERIORMENTE]</string>
+
+    <!-- Acessibilidade Geral -->
+    <string name="cd_voltar">Voltar</string>
+    <string name="cd_fechar">Fechar</string>
+    <string name="cd_limpar">Limpar</string>
+    <string name="cd_excluir">Excluir</string>
+    <string name="cd_mais_opcoes">Mais opções</string>
+    <string name="cd_compartilhar">Compartilhar</string>
+    <string name="cd_senha_visivel">Mostrar senha</string>
+    <string name="cd_senha_oculta">Ocultar senha</string>
+    <string name="cd_ordem_inverter">Inverter ordem cronológica</string>
+
+    <!-- Botões comuns -->
+    <string name="btn_entrar">Entrar</string>
+    <string name="btn_criar_conta_admin">Criar conta de administrador</string>
+    <string name="btn_criar_conta">Criar conta</string>
+    <string name="btn_tentar_novamente">Tentar novamente</string>
+    <string name="btn_tentar_mais_tarde">Tentar mais tarde</string>
+    <string name="btn_voltar_ao_inicio">Voltar ao início</string>
+    <string name="btn_ir_para_inicio">Ir para o início</string>
+    <string name="btn_sair_e_entrar_outra_conta">Sair e entrar com outra conta</string>
+    <string name="btn_avancar">Avançar</string>
+    <string name="btn_salvar">Salvar</string>
+    <string name="btn_salvar_rascunho_e_sair">Salvar rascunho e sair</string>
+    <string name="btn_continuar_editando">Continuar editando</string>
+    <string name="btn_descartar_documento">Descartar documento</string>
+    <string name="btn_continuar">Continuar</string>
+    <string name="btn_excluir_rascunho">Excluir rascunho</string>
+    <string name="btn_confirmar_envio">Confirmar envio</string>
+    <string name="btn_acompanhar_documento">Acompanhar documento</string>
+    <string name="btn_cancelar_documento">Cancelar documento</string>
+    <string name="btn_ver_documento">Ver documento</string>
+    <string name="btn_ver_documento_final">Ver documento final</string>
+    <string name="btn_ver_historico">Ver histórico</string>
+    <string name="btn_ver_motivo_recusa">Ver motivo da recusa</string>
+    <string name="btn_criar_nova_versao">Criar nova versão</string>
+    <string name="btn_assinar">Assinar</string>
+    <string name="btn_recusar">Recusar</string>
+    <string name="btn_confirmar">Confirmar</string>
+    <string name="btn_recusar_assinatura">Recusar assinatura</string>
+    <string name="btn_criar_assinatura">Criar assinatura</string>
+    <string name="btn_refazer_assinatura">Refazer assinatura</string>
+    <string name="btn_salvar_assinatura">Salvar assinatura</string>
+    <string name="btn_usar_esta_assinatura">Usar esta assinatura</string>
+    <string name="btn_revisar">Revisar</string>
+    <string name="btn_sair">Sair</string>
+    <string name="btn_desfazer">Desfazer</string>
+    <string name="btn_cadastrar_signatario">Cadastrar signatário</string>
+    <string name="btn_novo_documento">Novo documento</string>
+    <string name="btn_limpar_filtro">Limpar filtro</string>
+    <string name="btn_marcar_todas_como_lidas">Marcar todas como lidas</string>
+    <string name="btn_redefinir_senha">Redefinir senha</string>
+    <string name="btn_selecionar_pdf">Selecionar PDF</string>
+    <string name="btn_trocar_arquivo">Trocar arquivo</string>
+    <string name="btn_escolher_outro_arquivo">Escolher outro arquivo</string>
+    <string name="btn_adicionar_campo">Adicionar campo</string>
+
+    <!-- Shell Navegação -->
+    <string name="nav_documentos">Documentos</string>
+    <string name="nav_signatarios">Signatários</string>
+    <string name="nav_notificacoes">Notificações</string>
+    <string name="nav_conta">Conta</string>
+    <string name="nav_inicio">Início</string>
+    <string name="badge_pendentes">%1$d pendentes</string>
+    <string name="badge_nao_lidas">%1$d não lidas</string>
+
+    <!-- Situações do Documento -->
+    <string name="sit_doc_rascunho">Rascunho</string>
+    <string name="sit_doc_falha_envio">Falha no envio</string>
+    <string name="sit_doc_enviado">Enviado</string>
+    <string name="sit_doc_parcialmente_assinado">Parcialmente assinado</string>
+    <string name="sit_doc_concluido">Concluído</string>
+    <string name="sit_doc_recusado">Recusado</string>
+    <string name="sit_doc_cancelado">Cancelado</string>
+    <string name="sit_doc_substituido">Substituído</string>
+
+    <!-- Situações do Participante -->
+    <string name="sit_part_aguardando_vez">Aguardando vez</string>
+    <string name="sit_part_pendente">Pendente</string>
+    <string name="sit_part_assinado">Assinado</string>
+    <string name="sit_part_recusado">Recusado</string>
+    <string name="sit_part_encerrado">Encerrado</string>
+
+    <!-- Wizard Etapas -->
+    <string name="wizard_etapa_prefixo">Etapa %1$d de 9 — %2$s</string>
+    <string name="wizard_etapa_1">Novo fluxo</string>
+    <string name="wizard_etapa_2">Título</string>
+    <string name="wizard_etapa_3">PDF</string>
+    <string name="wizard_etapa_4">Signatários</string>
+    <string name="wizard_etapa_5">Obrigatoriedade</string>
+    <string name="wizard_etapa_6">Ordem de assinatura</string>
+    <string name="wizard_etapa_7">Páginas</string>
+    <string name="wizard_etapa_8">Campos</string>
+    <string name="wizard_etapa_9">Revisão</string>
+
+    <!-- Offline e Conexão -->
+    <string name="msg_sem_conexao">Sem conexão. Verifique a internet e tente novamente.</string>
+    <string name="msg_erro_iniciar">Não foi possível iniciar. Verifique sua conexão e tente novamente.</string>
+
+    <!-- Campos de Assinatura Sobrepostos -->
+    <string name="campo_outro_participante">%1$s</string>
+    <string name="campo_pagina_indicador">pág. %1$d de %2$d</string>
+    <string name="campo_anterior">Campo anterior</string>
+    <string name="campo_proximo">Próximo campo</string>
+
+    <!-- Preview provisório -->
+    <string name="tela_provisoria_aviso">Tela provisória (Fase 1)</string>
+</resources>
