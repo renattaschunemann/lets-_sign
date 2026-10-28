@@ -108,6 +108,39 @@
     <string name="campo_anterior">Campo anterior</string>
     <string name="campo_proximo">Próximo campo</string>
 
+    <!-- COM-01 a COM-04: Autenticação e Entrada -->
+    <string name="com01_titulo">Splash e verificação de sessão</string>
+    <string name="com01_erro_iniciar">Não foi possível iniciar. Verifique sua conexão e tente novamente.</string>
+
+    <string name="com02_titulo">Login</string>
+    <string name="com02_banner_vindo_link">Entre para abrir o documento enviado a você</string>
+    <string name="com02_label_email">E-mail</string>
+    <string name="com02_label_senha">Senha</string>
+    <string name="com02_placeholder_email">nome@empresa.com</string>
+    <string name="com02_erro_formato_email">Informe um e-mail válido, como nome@empresa.com.</string>
+    <string name="com02_erro_credenciais">E-mail ou senha incorretos. Confira e tente novamente.</string>
+    <string name="com02_erro_bloqueio">Muitas tentativas. Aguarde alguns minutos para tentar de novo.</string>
+
+    <string name="com03_titulo">Criar conta de administrador</string>
+    <string name="com03_label_nome">Nome completo</string>
+    <string name="com03_label_email">E-mail</string>
+    <string name="com03_label_telefone">Telefone</string>
+    <string name="com03_label_senha">Senha</string>
+    <string name="com03_label_confirmar_senha">Confirmação de senha</string>
+    <string name="com03_ajuda_senha">Sua senha precisa ter pelo menos 8 caracteres, com letras e números.</string>
+    <string name="com03_termos_uso">Termos de uso e privacidade</string>
+    <string name="com03_erro_senhas_diferentes">As senhas não são iguais.</string>
+    <string name="com03_erro_email_em_uso">Este e-mail já tem uma conta. Faça login.</string>
+    <string name="com03_link_faca_login">Faça login</string>
+    <string name="com03_sucesso_conta_criada">Conta criada! Vamos começar.</string>
+
+    <string name="com04_titulo">Entrada por link</string>
+    <string name="com04_abrindo_documento">Abrindo documento…</string>
+    <string name="com04_bloqueio_outra_conta">Este documento foi enviado para outra conta. Saia e entre com o e-mail que recebeu o convite.</string>
+    <string name="com04_doc_cancelado">Este documento foi cancelado pelo remetente e não pode mais ser assinado.</string>
+    <string name="com04_ja_assinado">Você já assinou este documento.</string>
+    <string name="com04_link_invalido">Este link não é válido ou expirou.</string>
+
     <!-- Preview provisório -->
     <string name="tela_provisoria_aviso">Tela provisória (Fase 1)</string>
 </resources>

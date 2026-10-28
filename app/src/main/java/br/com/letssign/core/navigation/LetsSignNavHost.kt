@@ -10,6 +10,10 @@ import br.com.letssign.core.navigation.shells.AdminBottomBar
 import br.com.letssign.core.navigation.shells.DestinoAdmin
 import br.com.letssign.core.navigation.shells.DestinoSignatario
 import br.com.letssign.core.navigation.shells.SignatarioBottomBar
+import br.com.letssign.presentation.cadastro.Com03CadastroAdminScreen
+import br.com.letssign.presentation.link.Com04EntradaLinkScreen
+import br.com.letssign.presentation.login.Com02LoginScreen
+import br.com.letssign.presentation.splash.Com01SplashScreen
 
 @Composable
 fun LetsSignNavHost(
@@ -25,41 +29,82 @@ fun LetsSignNavHost(
         // COMUNS (COM-01 a COM-06)
         // ==========================================
         composable<Com01SplashRoute> {
-            TelaProvisoria(
-                idTela = "COM-01",
-                nomeTela = "Splash e verificação de sessão",
-                acaoProxima = "Ir para Login (COM-02)" to { navController.navigate(Com02LoginRoute()) }
-            )
-        }
-
-        composable<Com02LoginRoute> {
-            TelaProvisoria(
-                idTela = "COM-02",
-                nomeTela = "Login",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Entrar como Admin (ADM-01)" to {
+            Com01SplashScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Com02LoginRoute()) {
+                        popUpTo(Com01SplashRoute) { inclusive = true }
+                    }
+                },
+                onNavigateToAdmin = {
                     navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Com01SplashRoute) { inclusive = true }
+                    }
+                },
+                onNavigateToSignatario = {
+                    navController.navigate(Sig01InicioPendentesRoute) {
+                        popUpTo(Com01SplashRoute) { inclusive = true }
+                    }
+                },
+                onNavigateToLink = { token ->
+                    navController.navigate(Com04EntradaLinkRoute(token)) {
                         popUpTo(Com01SplashRoute) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable<Com03CadastroAdminRoute> {
-            TelaProvisoria(
-                idTela = "COM-03",
-                nomeTela = "Cadastro inicial do Admin",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Criar conta -> ADM-01" to { navController.navigate(Adm01DocumentosRoute) }
+        composable<Com02LoginRoute> { backStackEntry ->
+            val route = backStackEntry.arguments?.let {
+                // Obter argumento se passado via route
+            }
+            Com02LoginScreen(
+                vindoDeLink = false,
+                onNavigateToCadastroAdmin = {
+                    navController.navigate(Com03CadastroAdminRoute)
+                },
+                onNavigateToAdminHome = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Com02LoginRoute()) { inclusive = true }
+                    }
+                },
+                onNavigateToSignatarioHome = {
+                    navController.navigate(Sig01InicioPendentesRoute) {
+                        popUpTo(Com02LoginRoute()) { inclusive = true }
+                    }
+                },
+                onNavigateToLink = {
+                    navController.navigate(Com04EntradaLinkRoute(""))
+                }
             )
         }
 
-        composable<Com04EntradaLinkRoute> {
-            TelaProvisoria(
-                idTela = "COM-04",
-                nomeTela = "Entrada por link",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Abrir documento (SIG-03)" to { navController.navigate(Sig03DetalheDocumentoRoute("1")) }
+        composable<Com03CadastroAdminRoute> {
+            Com03CadastroAdminScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLogin = { navController.popBackStack() },
+                onNavigateToAdminHome = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Com02LoginRoute()) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<Com04EntradaLinkRoute> { backStackEntry ->
+            Com04EntradaLinkScreen(
+                tokenOuId = "",
+                onNavigateToLogin = {
+                    navController.navigate(Com02LoginRoute(vindoDeLink = true))
+                },
+                onNavigateToSignatarioHome = {
+                    navController.navigate(Sig01InicioPendentesRoute)
+                },
+                onNavigateToDetalheDoc = { docId ->
+                    navController.navigate(Sig03DetalheDocumentoRoute(docId))
+                },
+                onNavigateToVisualizadorLeitura = { docId ->
+                    navController.navigate(Sig08VisualizadorLeituraRoute(docId))
+                }
             )
         }
 

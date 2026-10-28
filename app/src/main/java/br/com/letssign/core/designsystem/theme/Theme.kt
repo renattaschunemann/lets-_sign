@@ -63,4 +63,9 @@ object LetsSignTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalLetsSignElevation.current
+
+    val typography: androidx.compose.material3.Typography
+        @Composable
+        @ReadOnlyComposable
+        get() = MaterialTheme.typography
 }
