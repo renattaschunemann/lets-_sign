@@ -228,7 +228,9 @@ class AdminBaseTest {
         override suspend fun buscarPorId(id: String): DocumentoEntity? = db[id]
         override fun observarPorId(id: String): Flow<DocumentoEntity?> = flow.map { it.find { d -> d.id == id } }
         override fun listarPorAdmin(adminId: String): Flow<List<DocumentoEntity>> = flow.map { it.filter { d -> d.usuarioAdminId == adminId } }
-        override fun listarPorAdminESituacao(adminId: String, situacao: SituacaoDocumento): Flow<List<DocumentoEntity>> = flow.map { it.filter { d -> d.usuarioAdminId == adminId && d.situacaoAtual == situacao } }
+        override suspend fun buscarUltimoRascunho(adminId: String): DocumentoEntity? =
+            db.values.filter { it.usuarioAdminId == adminId && it.situacaoAtual == SituacaoDocumento.RASCUNHO }
+                .maxByOrNull { it.dataUltimaAtualizacaoUtc }
         override suspend fun deletar(documento: DocumentoEntity) {
             db.remove(documento.id)
             flow.value = db.values.toList()

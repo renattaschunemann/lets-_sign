@@ -23,8 +23,8 @@ interface DocumentoDao {
     @Query("SELECT * FROM documentos WHERE usuarioAdminId = :adminId ORDER BY dataUltimaAtualizacaoUtc DESC")
     fun listarPorAdmin(adminId: String): Flow<List<DocumentoEntity>>
 
-    @Query("SELECT * FROM documentos WHERE usuarioAdminId = :adminId AND situacaoAtual = :situacao ORDER BY dataUltimaAtualizacaoUtc DESC")
-    fun listarPorAdminESituacao(adminId: String, situacao: SituacaoDocumento): Flow<List<DocumentoEntity>>
+    @Query("SELECT * FROM documentos WHERE usuarioAdminId = :adminId AND situacaoAtual = 'RASCUNHO' ORDER BY dataUltimaAtualizacaoUtc DESC LIMIT 1")
+    suspend fun buscarUltimoRascunho(adminId: String): DocumentoEntity?
 
     @Delete
     suspend fun deletar(documento: DocumentoEntity)

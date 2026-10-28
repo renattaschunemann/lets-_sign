@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -29,14 +30,15 @@ import br.com.letssign.core.designsystem.theme.LetsSignTheme
 @Composable
 fun BotaoPrincipal(
     texto: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
     carregando: Boolean = false,
-    icone: ImageVector? = null
+    icone: ImageVector? = null,
+    aoClicar: () -> Unit = onClick
 ) {
     Button(
-        onClick = onClick,
+        onClick = aoClicar,
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth(),
@@ -67,14 +69,15 @@ fun BotaoPrincipal(
 @Composable
 fun BotaoSecundario(
     texto: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
     carregando: Boolean = false,
-    icone: ImageVector? = null
+    icone: ImageVector? = null,
+    aoClicar: () -> Unit = onClick
 ) {
     OutlinedButton(
-        onClick = onClick,
+        onClick = aoClicar,
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth(),
@@ -105,15 +108,51 @@ fun BotaoSecundario(
 }
 
 @Composable
-fun BotaoDestrutivo(
+fun BotaoTonal(
     texto: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
-    carregando: Boolean = false
+    carregando: Boolean = false,
+    icone: ImageVector? = null,
+    aoClicar: () -> Unit = onClick
+) {
+    FilledTonalButton(
+        onClick = aoClicar,
+        modifier = modifier.defaultMinSize(minHeight = 48.dp),
+        enabled = habilitado && !carregando,
+        shape = FormaTotal,
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = LetsSignTheme.colors.corPrimariaContainer,
+            contentColor = LetsSignTheme.colors.corSobrePrimariaContainer
+        )
+    ) {
+        if (carregando) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = LetsSignTheme.colors.corSobrePrimariaContainer,
+                strokeWidth = 2.dp
+            )
+        } else {
+            if (icone != null) {
+                Icon(icone, contentDescription = null, modifier = Modifier.size(18.dp))
+            }
+            Text(text = texto, style = androidx.compose.material3.MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Composable
+fun BotaoDestrutivo(
+    texto: String,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    habilitado: Boolean = true,
+    carregando: Boolean = false,
+    aoClicar: () -> Unit = onClick
 ) {
     OutlinedButton(
-        onClick = onClick,
+        onClick = aoClicar,
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth(),
@@ -143,13 +182,14 @@ fun BotaoDestrutivo(
 @Composable
 fun BotaoTexto(
     texto: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
-    carregando: Boolean = false
+    carregando: Boolean = false,
+    aoClicar: () -> Unit = onClick
 ) {
     TextButton(
-        onClick = onClick,
+        onClick = aoClicar,
         modifier = modifier.defaultMinSize(minHeight = 48.dp),
         enabled = habilitado && !carregando,
         colors = ButtonDefaults.textButtonColors(

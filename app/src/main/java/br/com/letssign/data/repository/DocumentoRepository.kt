@@ -220,6 +220,75 @@ class DocumentoRepository @Inject constructor(
         }
     }
 
+    suspend fun buscarUltimoRascunho(adminId: String): DocumentoEntity? {
+        return documentoDao.buscarUltimoRascunho(adminId)
+    }
+
+    suspend fun carregarRascunho(documentoId: String): RascunhoCompleto? {
+        val doc = documentoDao.buscarPorId(documentoId) ?: return null
+        val versao = versaoDao.buscarVersaoAtual(documentoId) ?: return null
+        val participantes = participanteDao.listarPorVersaoSync(versao.id)
+        return RascunhoCompleto(
+            documento = doc,
+            versao = versao,
+            participantes = participantes
+        )
+    }
+
+    suspend fun salvarRascunho(
+        adminId: String,
+        documentoId: String,
+        titulo: String,
+        pdfPathInterno: String?,
+        tipoOrdem: TipoOrdem,
+        etapaWizard: Int,
+        participantes: List<ParticipanteDocumentoEntity>
+    ): Result<String> {
+        val agora = System.currentTimeMillis()
+        val docExistente = documentoDao.buscarPorId(documentoId)
+        val doc = docExistente?.copy(
+            titulo = titulo.trim(),
+            dataUltimaAtualizacaoUtc = agora
+        ) ?: DocumentoEntity(
+            id = documentoId,
+            usuarioAdminId = adminId,
+            titulo = titulo.trim(),
+            dataCriacaoUtc = agora,
+            dataUltimaAtualizacaoUtc = agora,
+            situacaoAtual = SituacaoDocumento.RASCUNHO
+        )
+        documentoDao.inserir(doc)
+
+        val versaoExistente = versaoDao.buscarVersaoAtual(documentoId)
+        val versaoId = versaoExistente?.id ?: "versao-$documentoId-1"
+        val versao = versaoExistente?.copy(
+            pdfPathInterno = pdfPathInterno ?: versaoExistente.pdfPathInterno,
+            tipoOrdem = tipoOrdem,
+            etapaWizardAtual = etapaWizard
+        ) ?: VersaoDocumentoEntity(
+            id = versaoId,
+            documentoId = documentoId,
+            numeroVersao = 1,
+            pdfPathInterno = pdfPathInterno ?: "",
+            sha256Original = "sha256-original-$documentoId",
+            sha256Final = null,
+            tipoOrdem = tipoOrdem,
+            mensagemConvite = "Por favor, assine este documento.",
+            chaveIdempotencia = UUID.randomUUID().toString(),
+            etapaWizardAtual = etapaWizard,
+            situacao = SituacaoDocumento.RASCUNHO
+        )
+        versaoDao.inserir(versao)
+
+        participanteDao.deletarPorVersao(versaoId)
+        if (participantes.isNotEmpty()) {
+            val ajustados = participantes.map { it.copy(versaoDocumentoId = versaoId) }
+            participanteDao.inserirVarios(ajustados)
+        }
+
+        return Result.success(documentoId)
+    }
+
     suspend fun excluirRascunho(documentoId: String) {
         val doc = documentoDao.buscarPorId(documentoId)
         if (doc != null && doc.situacaoAtual == SituacaoDocumento.RASCUNHO) {
@@ -231,3 +300,9 @@ class DocumentoRepository @Inject constructor(
         }
     }
 }
+
+data class RascunhoCompleto(
+    val documento: DocumentoEntity,
+    val versao: VersaoDocumentoEntity,
+    val participantes: List<ParticipanteDocumentoEntity>
+)

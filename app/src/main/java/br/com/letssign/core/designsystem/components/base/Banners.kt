@@ -115,13 +115,14 @@ fun BannerOffline(
 
 @Composable
 fun BannerAviso(
-    mensagem: String,
+    mensagem: String = "",
+    texto: String = mensagem,
     modifier: Modifier = Modifier,
     textoAcao: String? = null,
     aoClicarAcao: (() -> Unit)? = null
 ) {
     BannerInformativo(
-        texto = mensagem,
+        texto = if (texto.isNotBlank()) texto else mensagem,
         tipo = TipoBanner.ALERTA,
         textoAcao = textoAcao,
         aoClicarAcao = aoClicarAcao,

@@ -206,4 +206,72 @@
     <string name="com06_versao_valor">1.0.0</string>
     <string name="com06_dialog_sair_titulo">Deseja sair?</string>
     <string name="com06_dialog_sair_msg">Você precisará entrar de novo para acessar seus documentos.</string>
+
+    <!-- WIZARD GERAL -->
+    <string name="wizard_btn_avancar">Avançar</string>
+    <string name="wizard_btn_voltar">Voltar</string>
+    <string name="wizard_btn_fechar">Fechar assistente</string>
+
+    <!-- ADM-04: Nome do Documento -->
+    <string name="adm04_titulo">Novo documento</string>
+    <string name="adm04_label_titulo_doc">Título do documento</string>
+    <string name="adm04_placeholder_titulo_doc">Ex.: Contrato de prestação de serviços</string>
+    <string name="adm04_dica_titulo_doc">Este nome será visto por todos os signatários.</string>
+    <string name="adm04_erro_titulo_vazio">Informe um título para o documento.</string>
+
+    <!-- ADM-05: Selecionar PDF -->
+    <string name="adm05_titulo">Selecionar PDF</string>
+    <string name="adm05_btn_escolher_pdf">Escolher arquivo PDF</string>
+    <string name="adm05_btn_substituir_pdf">Substituir PDF</string>
+    <string name="adm05_requisitos_pdf">Formatos aceitos: PDF. Tamanho máximo: 15 MB. Até 50 páginas. Sem senha.</string>
+    <string name="adm05_card_paginas_formato">%1$d páginas • %2$s</string>
+    <string name="adm05_aviso_obrigatorio">Selecione um arquivo PDF para prosseguir.</string>
+
+    <!-- ADM-06: Selecionar Signatários -->
+    <string name="adm06_titulo">Signatários</string>
+    <string name="adm06_btn_novo_signatario">Novo signatário</string>
+    <string name="adm06_busca_placeholder">Buscar por nome ou e-mail</string>
+    <string name="adm06_aviso_minimo">Selecione pelo menos 1 signatário para continuar.</string>
+    <string name="adm06_selecionados_formato">%1$d selecionado(s)</string>
+
+    <!-- ADM-07: Papéis e Obrigatoriedade -->
+    <string name="adm07_titulo">Papéis e obrigatoriedade</string>
+    <string name="adm07_label_papel">Papel</string>
+    <string name="adm07_switch_obrigatorio">Assinatura obrigatória</string>
+    <string name="adm07_aviso_minimo_obrigatorio">Pelo menos um signatário deve ter assinatura obrigatória.</string>
+
+    <!-- ADM-08: Ordem de Assinatura -->
+    <string name="adm08_titulo">Ordem de assinatura</string>
+    <string name="adm08_opcao_paralela">Paralela</string>
+    <string name="adm08_opcao_paralela_desc">Todos os signatários recebem o convite ao mesmo tempo e podem assinar em qualquer ordem.</string>
+    <string name="adm08_opcao_sequencial">Sequencial</string>
+    <string name="adm08_opcao_sequencial_desc">Os signatários assinam um de cada vez, na ordem que você definir abaixo.</string>
+    <string name="adm08_subtitulo_sequencial">Ordem dos participantes</string>
+    <string name="adm08_btn_mover_cima">Mover para cima</string>
+    <string name="adm08_btn_mover_baixo">Mover para baixo</string>
+
+    <!-- MOD-02: Novo Signatário Rápido -->
+    <string name="mod02_titulo">Novo signatário rápido</string>
+    <string name="mod02_btn_salvar">Salvar e adicionar</string>
+
+    <!-- MOD-04: Sair do Assistente -->
+    <string name="mod04_titulo">Sair do assistente?</string>
+    <string name="mod04_mensagem">Deseja salvar como rascunho ou descartar as alterações?</string>
+    <string name="mod04_btn_salvar_rascunho">Salvar rascunho</string>
+    <string name="mod04_btn_descartar">Descartar</string>
+    <string name="mod04_btn_continuar">Continuar editando</string>
+
+    <!-- MOD-05: Retomar Rascunho -->
+    <string name="mod05_titulo">Rascunho não finalizado</string>
+    <string name="mod05_mensagem">Você possui um documento não finalizado. Deseja continuar de onde parou ou iniciar um novo?</string>
+    <string name="mod05_btn_retomar">Continuar rascunho</string>
+    <string name="mod05_btn_novo">Iniciar novo</string>
+
+    <!-- MOD-06: Erro ao Carregar PDF -->
+    <string name="mod06_titulo">Erro ao carregar PDF</string>
+    <string name="mod06_erro_senha">O arquivo PDF está protegido por senha. Remova a proteção e tente novamente.</string>
+    <string name="mod06_erro_tamanho">O arquivo excede o limite máximo permitido de 15 MB.</string>
+    <string name="mod06_erro_paginas">O documento possui mais de 50 páginas. O limite máximo é de 50 páginas.</string>
+    <string name="mod06_erro_corrompido">Não foi possível ler o arquivo. Certifique-se de que é um PDF válido e não está corrompido.</string>
+    <string name="mod06_btn_outro_arquivo">Escolher outro arquivo</string>
 </resources>

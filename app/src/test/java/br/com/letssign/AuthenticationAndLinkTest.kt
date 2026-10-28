@@ -235,8 +235,9 @@ private class FakeDocDao : DocumentoDao {
     override suspend fun buscarPorId(id: String): DocumentoEntity? = map[id]
     override fun observarPorId(id: String): Flow<DocumentoEntity?> = MutableStateFlow(map[id])
     override fun listarPorAdmin(adminId: String): Flow<List<DocumentoEntity>> = MutableStateFlow(map.values.toList())
-    override fun listarPorAdminESituacao(adminId: String, situacao: SituacaoDocumento): Flow<List<DocumentoEntity>> =
-        MutableStateFlow(map.values.filter { it.situacaoAtual == situacao })
+    override suspend fun buscarUltimoRascunho(adminId: String): DocumentoEntity? =
+        map.values.filter { it.usuarioAdminId == adminId && it.situacaoAtual == SituacaoDocumento.RASCUNHO }
+            .maxByOrNull { it.dataUltimaAtualizacaoUtc }
     override suspend fun deletar(documento: DocumentoEntity) { map.remove(documento.id) }
 }
 

@@ -10,9 +10,17 @@ import br.com.letssign.core.navigation.shells.AdminBottomBar
 import br.com.letssign.core.navigation.shells.DestinoAdmin
 import br.com.letssign.core.navigation.shells.DestinoSignatario
 import br.com.letssign.core.navigation.shells.SignatarioBottomBar
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.letssign.presentation.admin.documentos.Adm01DocumentosScreen
 import br.com.letssign.presentation.admin.signatarios.Adm02SignatariosScreen
 import br.com.letssign.presentation.admin.signatarios.Adm03SignatarioFormScreen
+import br.com.letssign.presentation.admin.wizard.Adm04NovoDocTituloScreen
+import br.com.letssign.presentation.admin.wizard.Adm05SelecionarPdfScreen
+import br.com.letssign.presentation.admin.wizard.Adm06SignatariosScreen
+import br.com.letssign.presentation.admin.wizard.Adm07ObrigatoriedadeScreen
+import br.com.letssign.presentation.admin.wizard.Adm08OrdemScreen
+import br.com.letssign.presentation.admin.wizard.WizardNovoDocViewModel
 import br.com.letssign.presentation.cadastro.Com03CadastroAdminScreen
 import br.com.letssign.presentation.conta.Com06MinhaContaScreen
 import br.com.letssign.presentation.link.Com04EntradaLinkScreen
@@ -174,7 +182,7 @@ fun LetsSignNavHost(
                 aoNavegarParaNovoDocumento = { navController.navigate(Adm04NovoDocTituloRoute()) },
                 aoNavegarParaDocumento = { docId -> navController.navigate(Adm11AcompanhamentoRoute(docId)) },
                 aoNavegarParaFalhaEnvio = { docId -> navController.navigate(Adm10RevisaoEnvioRoute) },
-                aoNavegarParaRascunho = { docId -> navController.navigate(Mod05RetomarRascunhoRoute(docId)) },
+                aoNavegarParaRascunho = { docId -> navController.navigate(Adm04NovoDocTituloRoute(docId)) },
                 aoNavegarParaCadastrarSignatario = { navController.navigate(Adm03SignatarioFormRoute()) },
                 aoNavegarBottomNav = { destino ->
                     when (destino) {
@@ -209,48 +217,84 @@ fun LetsSignNavHost(
             )
         }
 
-        composable<Adm04NovoDocTituloRoute> {
-            TelaProvisoria(
-                idTela = "ADM-04",
-                nomeTela = "Novo documento — Título (Etapas 1–2)",
-                aoVoltar = { navController.navigate(Mod04SairAssistenteRoute) },
-                acaoProxima = "Avançar -> Selecionar PDF (ADM-05)" to { navController.navigate(Adm05SelecionarPdfRoute) }
+        composable<Adm04NovoDocTituloRoute> { backStackEntry ->
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(backStackEntry)
+            Adm04NovoDocTituloScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaPdf = { navController.navigate(Adm05SelecionarPdfRoute) },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
-        composable<Adm05SelecionarPdfRoute> {
-            TelaProvisoria(
-                idTela = "ADM-05",
-                nomeTela = "Selecionar PDF (Etapa 3)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Avançar -> Signatários (ADM-06)" to { navController.navigate(Adm06SignatariosRoute) }
+        composable<Adm05SelecionarPdfRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm05SelecionarPdfScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaSignatarios = { navController.navigate(Adm06SignatariosRoute) },
+                aoVoltarParaTitulo = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
-        composable<Adm06SignatariosRoute> {
-            TelaProvisoria(
-                idTela = "ADM-06",
-                nomeTela = "Selecionar signatários (Etapa 4)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Avançar -> Obrigatoriedade (ADM-07)" to { navController.navigate(Adm07ObrigatoriedadeRoute) }
+        composable<Adm06SignatariosRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm06SignatariosScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaPapeis = { navController.navigate(Adm07ObrigatoriedadeRoute) },
+                aoVoltarParaPdf = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
-        composable<Adm07ObrigatoriedadeRoute> {
-            TelaProvisoria(
-                idTela = "ADM-07",
-                nomeTela = "Definir obrigatoriedade (Etapa 5)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Avançar -> Ordem (ADM-08)" to { navController.navigate(Adm08OrdemRoute) }
+        composable<Adm07ObrigatoriedadeRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm07ObrigatoriedadeScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaOrdem = { navController.navigate(Adm08OrdemRoute) },
+                aoVoltarParaSignatarios = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
-        composable<Adm08OrdemRoute> {
-            TelaProvisoria(
-                idTela = "ADM-08",
-                nomeTela = "Definir ordem de assinatura (Etapa 6)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Avançar -> Posicionar campos (ADM-09)" to { navController.navigate(Adm09PosicionarCamposRoute) }
+        composable<Adm08OrdemRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm08OrdemScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaCampos = { navController.navigate(Adm09PosicionarCamposRoute) },
+                aoVoltarParaPapeis = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
