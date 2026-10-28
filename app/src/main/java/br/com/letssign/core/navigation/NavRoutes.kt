@@ -100,11 +100,15 @@ data class Sig05AssinarDocumentoRoute(val documentoId: String = "")
 
 /** SIG-06 — Criar assinatura (Desenhar / Digitar) */
 @Serializable
-object Sig06CriarAssinaturaRoute
+data class Sig06CriarAssinaturaRoute(val documentoId: String = "")
 
-/** SIG-07 — Assinatura registrada */
+/** SIG-07 — Revisão de campos preenchidos */
 @Serializable
 data class Sig07AssinaturaSucessoRoute(val documentoId: String = "")
+
+/** SIG-08 — Conclusão da assinatura */
+@Serializable
+data class Sig08ConclusaoRoute(val documentoId: String = "")
 
 /** SIG-08 — Visualizador somente leitura */
 @Serializable

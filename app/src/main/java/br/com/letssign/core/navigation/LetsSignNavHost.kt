@@ -36,6 +36,11 @@ import br.com.letssign.presentation.signatario.inicio.Sig01InicioPendentesScreen
 import br.com.letssign.presentation.signatario.documentos.Sig02MeusDocumentosScreen
 import br.com.letssign.presentation.signatario.detalhes.Sig03DetalheDocumentoScreen
 import br.com.letssign.presentation.signatario.identidade.Sig04ConfirmacaoIdentidadeScreen
+import br.com.letssign.presentation.signatario.assinatura.Sig05VisualizacaoDocSignatarioScreen
+import br.com.letssign.presentation.signatario.assinatura.Sig06CapturaAssinaturaScreen
+import br.com.letssign.presentation.signatario.assinatura.Sig07RevisaoCamposScreen
+import br.com.letssign.presentation.signatario.assinatura.Sig08ConclusaoAssinaturaScreen
+import br.com.letssign.presentation.signatario.assinatura.Sig08VisualizadorLeituraScreen
 
 @Composable
 fun LetsSignNavHost(
@@ -418,39 +423,46 @@ fun LetsSignNavHost(
         }
 
         composable<Sig05AssinarDocumentoRoute> {
-            TelaProvisoria(
-                idTela = "SIG-05",
-                nomeTela = "Assinar documento",
+            Sig05VisualizacaoDocSignatarioScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Criar assinatura (SIG-06)" to { navController.navigate(Sig06CriarAssinaturaRoute) }
+                aoNavegarParaCaptura = { docId -> navController.navigate(Sig06CriarAssinaturaRoute(docId)) },
+                aoNavegarParaRevisao = { docId -> navController.navigate(Sig07AssinaturaSucessoRoute(docId)) }
             )
         }
 
         composable<Sig06CriarAssinaturaRoute> {
-            TelaProvisoria(
-                idTela = "SIG-06",
-                nomeTela = "Criar assinatura",
+            Sig06CapturaAssinaturaScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Usar assinatura -> Confirmar (MOD-10)" to { navController.navigate(Mod10ConfirmarAssinaturaRoute("1")) }
+                aoAssinaturaConfirmada = { docId -> navController.navigate(Sig07AssinaturaSucessoRoute(docId)) }
             )
         }
 
         composable<Sig07AssinaturaSucessoRoute> {
-            TelaProvisoria(
-                idTela = "SIG-07",
-                nomeTela = "Assinatura registrada",
-                acaoProxima = "Voltar ao início -> SIG-01" to {
-                    navController.navigate(Sig01InicioPendentesRoute) {
-                        popUpTo(0) { inclusive = true }
+            Sig07RevisaoCamposScreen(
+                aoVoltar = { navController.popBackStack() },
+                aoConclusao = { docId ->
+                    navController.navigate(Sig08ConclusaoRoute(docId)) {
+                        popUpTo(Sig01InicioPendentesRoute) { inclusive = false }
                     }
                 }
             )
         }
 
+        composable<Sig08ConclusaoRoute> {
+            Sig08ConclusaoAssinaturaScreen(
+                aoIrParaInicio = {
+                    navController.navigate(Sig01InicioPendentesRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                aoVisualizarComprovante = {
+                    navController.navigate(Sig08VisualizadorLeituraRoute())
+                }
+            )
+        }
+
         composable<Sig08VisualizadorLeituraRoute> {
-            TelaProvisoria(
-                idTela = "SIG-08",
-                nomeTela = "Visualizador somente leitura",
+            Sig08VisualizadorLeituraScreen(
                 aoVoltar = { navController.popBackStack() }
             )
         }
