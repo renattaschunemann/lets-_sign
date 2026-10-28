@@ -32,6 +32,10 @@ import br.com.letssign.presentation.link.Com04EntradaLinkScreen
 import br.com.letssign.presentation.login.Com02LoginScreen
 import br.com.letssign.presentation.notificacoes.Com05NotificacoesScreen
 import br.com.letssign.presentation.splash.Com01SplashScreen
+import br.com.letssign.presentation.signatario.inicio.Sig01InicioPendentesScreen
+import br.com.letssign.presentation.signatario.documentos.Sig02MeusDocumentosScreen
+import br.com.letssign.presentation.signatario.detalhes.Sig03DetalheDocumentoScreen
+import br.com.letssign.presentation.signatario.identidade.Sig04ConfirmacaoIdentidadeScreen
 
 @Composable
 fun LetsSignNavHost(
@@ -368,62 +372,48 @@ fun LetsSignNavHost(
         // SIGNATÁRIO (SIG-01 a SIG-08)
         // ==========================================
         composable<Sig01InicioPendentesRoute> {
-            TelaProvisoria(
-                idTela = "SIG-01",
-                nomeTela = "Início — Pendentes",
-                acaoProxima = "Ver detalhe do documento (SIG-03)" to { navController.navigate(Sig03DetalheDocumentoRoute("1")) },
-                bottomBar = {
-                    SignatarioBottomBar(
-                        destinoAtual = DestinoSignatario.INICIO,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoSignatario.INICIO -> Unit
-                                DestinoSignatario.DOCUMENTOS -> navController.navigate(Sig02MeusDocumentosRoute)
-                                DestinoSignatario.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("SIGNATARIO"))
-                                DestinoSignatario.CONTA -> navController.navigate(Com06MinhaContaRoute("SIGNATARIO"))
-                            }
-                        }
-                    )
+            Sig01InicioPendentesScreen(
+                aoNavegarParaDetalhes = { docId -> navController.navigate(Sig03DetalheDocumentoRoute(docId)) },
+                aoNavegarParaAssinar = { docId -> navController.navigate(Sig04ConfirmacaoIdRoute(docId)) },
+                aoNavegarBottomNav = { destino ->
+                    when (destino) {
+                        DestinoSignatario.INICIO -> Unit
+                        DestinoSignatario.DOCUMENTOS -> navController.navigate(Sig02MeusDocumentosRoute)
+                        DestinoSignatario.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("SIGNATARIO"))
+                        DestinoSignatario.CONTA -> navController.navigate(Com06MinhaContaRoute("SIGNATARIO"))
+                    }
                 }
             )
         }
 
         composable<Sig02MeusDocumentosRoute> {
-            TelaProvisoria(
-                idTela = "SIG-02",
-                nomeTela = "Meus documentos",
-                acaoProxima = "Ver detalhe (SIG-03)" to { navController.navigate(Sig03DetalheDocumentoRoute("1")) },
-                bottomBar = {
-                    SignatarioBottomBar(
-                        destinoAtual = DestinoSignatario.DOCUMENTOS,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoSignatario.INICIO -> navController.navigate(Sig01InicioPendentesRoute)
-                                DestinoSignatario.DOCUMENTOS -> Unit
-                                DestinoSignatario.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("SIGNATARIO"))
-                                DestinoSignatario.CONTA -> navController.navigate(Com06MinhaContaRoute("SIGNATARIO"))
-                            }
-                        }
-                    )
+            Sig02MeusDocumentosScreen(
+                aoNavegarParaDetalhes = { docId -> navController.navigate(Sig03DetalheDocumentoRoute(docId)) },
+                aoNavegarParaAssinar = { docId -> navController.navigate(Sig04ConfirmacaoIdRoute(docId)) },
+                aoNavegarBottomNav = { destino ->
+                    when (destino) {
+                        DestinoSignatario.INICIO -> navController.navigate(Sig01InicioPendentesRoute)
+                        DestinoSignatario.DOCUMENTOS -> Unit
+                        DestinoSignatario.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("SIGNATARIO"))
+                        DestinoSignatario.CONTA -> navController.navigate(Com06MinhaContaRoute("SIGNATARIO"))
+                    }
                 }
             )
         }
 
         composable<Sig03DetalheDocumentoRoute> {
-            TelaProvisoria(
-                idTela = "SIG-03",
-                nomeTela = "Detalhe do documento",
+            Sig03DetalheDocumentoScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Assinar -> Confirmar identidade (SIG-04)" to { navController.navigate(Sig04ConfirmacaoIdRoute("1")) }
+                aoNavegarParaAssinar = { docId -> navController.navigate(Sig04ConfirmacaoIdRoute(docId)) },
+                aoNavegarParaVisualizar = { docId -> navController.navigate(Sig08VisualizadorLeituraRoute(docId)) },
+                aoRecusaConcluida = { navController.popBackStack() }
             )
         }
 
         composable<Sig04ConfirmacaoIdRoute> {
-            TelaProvisoria(
-                idTela = "SIG-04",
-                nomeTela = "Confirmação de identidade",
+            Sig04ConfirmacaoIdentidadeScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Confirmar -> Assinar documento (SIG-05)" to { navController.navigate(Sig05AssinarDocumentoRoute("1")) }
+                aoIdentidadeConfirmada = { docId -> navController.navigate(Sig05AssinarDocumentoRoute(docId)) }
             )
         }
 

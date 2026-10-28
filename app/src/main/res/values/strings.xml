@@ -59,6 +59,7 @@
     <string name="btn_trocar_arquivo">Trocar arquivo</string>
     <string name="btn_escolher_outro_arquivo">Escolher outro arquivo</string>
     <string name="btn_adicionar_campo">Adicionar campo</string>
+    <string name="btn_cancelar">Cancelar</string>
 
     <!-- Shell Navegação -->
     <string name="nav_documentos">Documentos</string>
@@ -366,4 +367,95 @@
     <string name="mod11_titulo">Criar nova versão</string>
     <string name="mod11_descricao">Um novo rascunho será criado com os mesmos signatários e configurações. Você poderá substituir o arquivo PDF ou ajustar os campos.</string>
     <string name="mod11_btn_criar_versao">Criar nova versão</string>
+
+    <!-- ========================================== -->
+    <!-- FASE 8: SIGNATÁRIO INÍCIO E DECISÃO -->
+    <!-- ========================================== -->
+
+    <!-- SIG-01: Início — Pendentes e Aguardando -->
+    <string name="sig01_titulo">Início</string>
+    <string name="sig01_aba_pendentes">Pendentes</string>
+    <string name="sig01_aba_aguardando">Aguardando vez</string>
+    <string name="sig01_banner_aguardando">Estes documentos estão em fluxo sequencial e serão liberados assim que o signatário anterior assinar.</string>
+    <string name="sig01_vazio_pendentes">Você não tem documentos pendentes para assinar.</string>
+    <string name="sig01_vazio_aguardando">Nenhum documento aguardando vez.</string>
+    <string name="sig01_contador_anunciado">%1$d documentos pendentes para assinar.</string>
+
+    <!-- SIG-02: Meus Documentos -->
+    <string name="sig02_titulo">Meus documentos</string>
+    <string name="sig02_busca_placeholder">Buscar por título do documento</string>
+    <string name="sig02_filtro_todos">Todos</string>
+    <string name="sig02_filtro_assinados">Assinados</string>
+    <string name="sig02_filtro_recusados">Recusados</string>
+    <string name="sig02_filtro_cancelados">Cancelados</string>
+    <string name="sig02_vazio">Nenhum documento encontrado.</string>
+
+    <!-- SIG-03: Detalhes do Documento -->
+    <string name="sig03_titulo">Detalhes do documento</string>
+    <string name="sig03_remetente">Remetente:</string>
+    <string name="sig03_data_envio">Data do convite:</string>
+    <string name="sig03_mensagem_convite">Mensagem do remetente:</string>
+    <string name="sig03_secao_ordem">Ordem de assinatura</string>
+    <string name="sig03_btn_assinar">Assinar documento</string>
+    <string name="sig03_btn_recusar">Recusar assinatura</string>
+    <string name="sig03_btn_visualizar">Visualizar documento</string>
+    <string name="sig03_aviso_aguardando">Este documento está em fluxo sequencial. Aguarde a assinatura dos participantes anteriores para liberar a sua vez.</string>
+
+    <!-- SIG-04: Confirmação de Identidade -->
+    <string name="sig04_titulo">Confirmar sua identidade</string>
+    <string name="sig04_subtitulo">Para garantir a autenticidade e validade jurídica, confirme seus dados cadastrais antes de assinar.</string>
+    <string name="sig04_label_nome">Nome completo</string>
+    <string name="sig04_label_nascimento">Data de nascimento</string>
+    <string name="sig04_label_senha">Sua senha de acesso</string>
+    <string name="sig04_btn_confirmar">Confirmar e prosseguir</string>
+    <string name="sig04_erro_nome">Nome completo não confere com o cadastro.</string>
+    <string name="sig04_erro_nascimento">Data de nascimento não confere.</string>
+    <string name="sig04_erro_senha">Senha incorreta.</string>
+    <string name="sig04_aviso_tentativas">Tentativa %1$d de 5. Dados incorretos podem bloquear temporariamente seu acesso.</string>
+    <string name="sig04_bloqueio_temporario">Muitas tentativas incorretas. Por segurança, tente novamente em %1$d minutos.</string>
+
+    <!-- MOD-08: Recusar Assinatura -->
+    <string name="mod08_titulo">Recusar assinatura?</string>
+    <string name="mod08_aviso">Ao recusar, o documento não poderá mais ser assinado e o remetente será notificado com a sua justificativa.</string>
+    <string name="mod08_label_motivo">Motivo da recusa</string>
+    <string name="mod08_placeholder_motivo">Explique por que você não vai assinar este documento…</string>
+    <string name="mod08_label_senha">Sua senha para confirmar</string>
+    <string name="mod08_btn_confirmar_recusa">Confirmar recusa</string>
+    <string name="mod08_erro_motivo">Informe o motivo da recusa.</string>
+
+    <!-- ========================================== -->
+    <!-- FASE 9: ASSINATURA -->
+    <!-- ========================================== -->
+
+    <!-- SIG-05: Visualização do Documento -->
+    <string name="sig05_titulo">Visualizar e assinar</string>
+    <string name="sig05_btn_proximo_campo">Próximo campo (%1$d)</string>
+    <string name="sig05_btn_assinar_campo">Assinar aqui</string>
+    <string name="sig05_btn_revisar">Revisar e concluir</string>
+
+    <!-- SIG-06: Captura de Assinatura -->
+    <string name="sig06_titulo">Sua assinatura</string>
+    <string name="sig06_aba_desenhar">Desenhar</string>
+    <string name="sig06_aba_digitar">Digitar</string>
+    <string name="sig06_btn_limpar">Limpar</string>
+    <string name="sig06_btn_confirmar">Confirmar assinatura</string>
+    <string name="sig06_dica_desenho">Desenhe sua assinatura no quadro com o dedo.</string>
+    <string name="sig06_placeholder_digitada">Digite seu nome</string>
+
+    <!-- SIG-07: Revisão de Campos Assinados -->
+    <string name="sig07_titulo">Revisar assinatura</string>
+    <string name="sig07_campos_assinados_resumo">Todos os seus campos de assinatura foram preenchidos.</string>
+    <string name="sig07_btn_finalizar">Finalizar assinatura</string>
+
+    <!-- MOD-10: Termos de Aceite -->
+    <string name="mod10_titulo">Termos e emissão</string>
+    <string name="mod10_texto_termos">Declaro que li o documento e concordo em vinculá-lo à minha assinatura eletrônica nos termos da legislação vigente, registrando meu endereço IP, data/hora e hash de integridade.</string>
+    <string name="mod10_checkbox_concordo">Li e concordo com os termos de assinatura eletrônica.</string>
+    <string name="mod10_btn_concluir_assinatura">Emitir assinatura</string>
+
+    <!-- SIG-08: Conclusão -->
+    <string name="sig08_titulo">Documento assinado com sucesso!</string>
+    <string name="sig08_subtitulo">Sua assinatura foi registrada com sucesso e o remetente foi notificado.</string>
+    <string name="sig08_btn_inicio">Ir para o início</string>
+    <string name="sig08_btn_baixar">Visualizar comprovante</string>
 </resources>

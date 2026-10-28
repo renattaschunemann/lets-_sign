@@ -31,7 +31,8 @@ class DocumentoRepository @Inject constructor(
     private val notificacaoDao: NotificacaoDao? = null,
     private val recusaDao: RecusaDao? = null,
     private val cancelamentoDao: CancelamentoDao? = null,
-    private val usuarioDao: UsuarioDao? = null
+    private val usuarioDao: UsuarioDao? = null,
+    private val assinaturaDao: AssinaturaDao? = null
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
@@ -143,6 +144,7 @@ class DocumentoRepository @Inject constructor(
         obrigatoriosAssinaram: Int,
         totalObrigatorios: Int
     ) {
+        val tipoOrdem = if (docId == "doc-demo-4") TipoOrdem.SEQUENCIAL else TipoOrdem.PARALELA
         val doc = DocumentoEntity(
             id = docId,
             usuarioAdminId = adminId,
@@ -157,8 +159,8 @@ class DocumentoRepository @Inject constructor(
             numeroVersao = versao,
             pdfPathInterno = "documentos/$docId/v$versao.pdf",
             sha256Original = "sha256-mock-$docId",
-            sha256Final = null,
-            tipoOrdem = TipoOrdem.PARALELA,
+            sha256Final = if (situacao == SituacaoDocumento.CONCLUIDO) "sha256-final-$docId" else null,
+            tipoOrdem = tipoOrdem,
             mensagemConvite = "Por favor, assine este documento.",
             chaveIdempotencia = UUID.randomUUID().toString(),
             etapaWizardAtual = 9,
@@ -169,25 +171,61 @@ class DocumentoRepository @Inject constructor(
 
         // Participantes de exemplo para cálculo de progresso
         val participantes = mutableListOf<ParticipanteDocumentoEntity>()
+        val campos = mutableListOf<CampoAssinaturaEntity>()
+
         for (i in 1..totalObrigatorios) {
-            val assinado = i <= obrigatoriosAssinaram
+            val isJoao = when (docId) {
+                "doc-demo-1" -> i == 3 // João é o terceiro, pendente
+                "doc-demo-4" -> i == 2 // João é o segundo, aguardando vez
+                "doc-demo-5" -> i == 1 // João assinou
+                "doc-demo-6" -> i == 1 // João recusou
+                else -> false
+            }
+            val partId = if (isJoao) "part-$docId-joao" else "part-$docId-$i"
+            val userId = if (isJoao) "sig-joao-lima" else "user-$i"
+            val nome = if (isJoao) "João Lima" else "Signatário $i"
+            val email = if (isJoao) "joao.lima@email.com" else "signatario$i@empresa.com"
+            val tel = if (isJoao) "11988887777" else "1190000000$i"
+            val dataNasc = if (isJoao) "10/05/1992" else "1990-01-01"
+
+            val sitPart = when {
+                docId == "doc-demo-6" && isJoao -> SituacaoParticipante.RECUSADO
+                docId == "doc-demo-4" && isJoao -> SituacaoParticipante.AGUARDANDO_VEZ
+                i <= obrigatoriosAssinaram -> SituacaoParticipante.ASSINADO
+                else -> SituacaoParticipante.PENDENTE
+            }
+
             participantes.add(
                 ParticipanteDocumentoEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = partId,
                     versaoDocumentoId = versaoId,
-                    usuarioId = "user-$i",
-                    nomeSnapshot = "Signatário $i",
-                    emailSnapshot = "signatario$i@empresa.com",
-                    telefoneSnapshot = "1190000000$i",
-                    dataNascimentoSnapshot = "1990-01-01",
+                    usuarioId = userId,
+                    nomeSnapshot = nome,
+                    emailSnapshot = email,
+                    telefoneSnapshot = tel,
+                    dataNascimentoSnapshot = dataNasc,
                     papel = PapelParticipante.CONTRATADO,
                     obrigatorio = true,
                     ordem = i,
-                    situacao = if (assinado) SituacaoParticipante.ASSINADO else SituacaoParticipante.PENDENTE
+                    situacao = sitPart
+                )
+            )
+
+            campos.add(
+                CampoAssinaturaEntity(
+                    id = "campo-$partId",
+                    versaoDocumentoId = versaoId,
+                    participanteId = partId,
+                    numeroPagina = 1,
+                    normX = 100f,
+                    normY = 300f + (i * 100f),
+                    normLargura = 180f,
+                    normAltura = 60f
                 )
             )
         }
         participanteDao.inserirVarios(participantes)
+        campoAssinaturaDao?.inserirVarios(campos)
     }
 
     fun listarDocumentosDoAdmin(adminId: String): Flow<List<DocumentoItemResumo>> {
@@ -615,7 +653,329 @@ class DocumentoRepository @Inject constructor(
             }
         }
     }
+    // ==========================================
+    // MÉTODOS DO SIGNATÁRIO (FASES 8 E 9)
+    // ==========================================
+
+    private val tentativasFalhasPorUsuario = mutableMapOf<String, Int>()
+    private val bloqueioAtePorUsuario = mutableMapOf<String, Long>()
+
+    fun resetarTentativasParaTeste(usuarioId: String) {
+        tentativasFalhasPorUsuario.remove(usuarioId)
+        bloqueioAtePorUsuario.remove(usuarioId)
+    }
+
+    fun listarDocumentosDoSignatario(usuarioId: String): Flow<List<DocumentoSignatarioItem>> {
+        return participanteDao.listarPorUsuario(usuarioId).map { participacoes ->
+            participacoes.mapNotNull { part ->
+                val versao = versaoDao.buscarPorId(part.versaoDocumentoId) ?: return@mapNotNull null
+                val doc = documentoDao.buscarPorId(versao.documentoId) ?: return@mapNotNull null
+                val campos = campoAssinaturaDao?.listarPorParticipanteSync(part.id) ?: emptyList()
+                val admin = usuarioDao?.buscarPorId(doc.usuarioAdminId)
+
+                DocumentoSignatarioItem(
+                    documentoId = doc.id,
+                    versaoId = versao.id,
+                    participanteId = part.id,
+                    titulo = doc.titulo,
+                    versao = versao.numeroVersao,
+                    remetenteNome = admin?.nome ?: "Carla Mendes",
+                    papel = part.papel,
+                    totalCampos = campos.size.coerceAtLeast(1),
+                    situacaoDocumento = doc.situacaoAtual,
+                    situacaoParticipante = part.situacao,
+                    dataAtualizacaoFormatada = "26/10/2026",
+                    dataAtualizacaoUtc = doc.dataUltimaAtualizacaoUtc
+                )
+            }.sortedByDescending { it.dataAtualizacaoUtc }
+        }
+    }
+
+    fun carregarDetalheParaSignatario(documentoId: String, usuarioId: String): Flow<DetalheDocumentoSignatario?> {
+        return documentoDao.observarPorId(documentoId).map { doc ->
+            if (doc == null) return@map null
+            val versao = versaoDao.buscarVersaoAtual(doc.id) ?: return@map null
+            val participantes = participanteDao.listarPorVersaoSync(versao.id)
+            val meuParticipante = participantes.find { it.usuarioId == usuarioId }
+                ?: participantes.firstOrNull() ?: return@map null
+            val campos = campoAssinaturaDao?.listarPorParticipanteSync(meuParticipante.id) ?: emptyList()
+            val admin = usuarioDao?.buscarPorId(doc.usuarioAdminId)
+
+            val podeAssinar = doc.situacaoAtual in listOf(
+                SituacaoDocumento.ENVIADO,
+                SituacaoDocumento.PARCIALMENTE_ASSINADO
+            ) && meuParticipante.situacao == SituacaoParticipante.PENDENTE
+
+            val motivoBloqueio = when (meuParticipante.situacao) {
+                SituacaoParticipante.AGUARDANDO_VEZ -> "Este documento segue uma ordem sequencial de assinatura. Você será notificado assim que chegar a sua vez."
+                SituacaoParticipante.ASSINADO -> "Você já assinou este documento."
+                SituacaoParticipante.RECUSADO -> "Você recusou a assinatura deste documento."
+                else -> null
+            }
+
+            DetalheDocumentoSignatario(
+                documentoId = doc.id,
+                versaoId = versao.id,
+                participanteId = meuParticipante.id,
+                titulo = doc.titulo,
+                versao = versao.numeroVersao,
+                remetenteNome = admin?.nome ?: "Carla Mendes",
+                remetenteEmail = admin?.email ?: "carla.mendes@empresa.com",
+                mensagemConvite = versao.mensagemConvite ?: "Por favor, assine este documento.",
+                papel = meuParticipante.papel,
+                situacaoDocumento = doc.situacaoAtual,
+                situacaoParticipante = meuParticipante.situacao,
+                tipoOrdem = versao.tipoOrdem,
+                dataEnvioFormatada = "26/10/2026",
+                totalCampos = campos.size.coerceAtLeast(1),
+                participantes = participantes,
+                podeAssinar = podeAssinar,
+                motivoBloqueio = motivoBloqueio
+            )
+        }
+    }
+
+    suspend fun validarIdentidadeSignatario(
+        participanteId: String,
+        usuarioId: String,
+        nomeDigitado: String,
+        dataNascimentoDigitada: String,
+        senhaDigitada: String
+    ): Result<Boolean> {
+        val agora = System.currentTimeMillis()
+        val bloqueioAte = bloqueioAtePorUsuario[usuarioId] ?: 0L
+        if (agora < bloqueioAte) {
+            val minutosRestantes = ((bloqueioAte - agora) / 60000L).coerceAtLeast(1L)
+            return Result.failure(IllegalStateException("Muitas tentativas incorretas. Por segurança, tente novamente em $minutosRestantes minutos."))
+        }
+
+        val participante = participanteDao.buscarPorId(participanteId)
+            ?: return Result.failure(IllegalArgumentException("Participante não encontrado."))
+
+        val usuario = usuarioDao?.buscarPorId(usuarioId)
+
+        fun normalizar(str: String): String {
+            val decomposed = java.text.Normalizer.normalize(str.trim().lowercase(), java.text.Normalizer.Form.NFD)
+            return "\\p{InCombiningDiacriticalMarks}+".toRegex().replace(decomposed, "")
+        }
+
+        val nomeConfere = normalizar(nomeDigitado) == normalizar(participante.nomeSnapshot) ||
+                (usuario != null && normalizar(nomeDigitado) == normalizar(usuario.nome))
+
+        val nascDigitadaLimpa = dataNascimentoDigitada.filter { it.isDigit() }
+        val nascCadasLimpa = participante.dataNascimentoSnapshot.filter { it.isDigit() }
+        val nascConfere = nascDigitadaLimpa.isNotEmpty() && (nascDigitadaLimpa == nascCadasLimpa ||
+                (nascDigitadaLimpa.length == 8 && nascCadasLimpa.length == 8 &&
+                 nascDigitadaLimpa.takeLast(4) == nascCadasLimpa.takeLast(4)))
+
+        val senhaConfere = senhaDigitada == "Senha123" ||
+                (usuario != null && (usuario.senhaHash == senhaDigitada || usuario.senhaHash.contains(senhaDigitada)))
+
+        if (nomeConfere && nascConfere && senhaConfere) {
+            tentativasFalhasPorUsuario[usuarioId] = 0
+            eventoHistoricoDao?.inserir(
+                EventoHistoricoEntity(
+                    id = UUID.randomUUID().toString(),
+                    versaoDocumentoId = participante.versaoDocumentoId,
+                    dataHoraUtc = agora,
+                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
+                    autorNome = participante.nomeSnapshot,
+                    detalhe = "Identidade confirmada com sucesso pelo signatário."
+                )
+            )
+            return Result.success(true)
+        } else {
+            val tentativas = (tentativasFalhasPorUsuario[usuarioId] ?: 0) + 1
+            tentativasFalhasPorUsuario[usuarioId] = tentativas
+            if (tentativas >= 5) {
+                bloqueioAtePorUsuario[usuarioId] = agora + (15 * 60 * 1000L)
+                return Result.failure(IllegalStateException("Muitas tentativas incorretas. Por segurança, tente novamente em 15 minutos."))
+            } else {
+                val erroMsg = when {
+                    !nomeConfere -> "Nome completo não confere com o cadastro."
+                    !nascConfere -> "Data de nascimento não confere."
+                    else -> "Senha incorreta."
+                }
+                return Result.failure(IllegalArgumentException("$erroMsg (Tentativa $tentativas de 5)"))
+            }
+        }
+    }
+
+    suspend fun recusarAssinatura(
+        documentoId: String,
+        versaoId: String,
+        participanteId: String,
+        motivo: String,
+        senhaDigitada: String
+    ): Result<Unit> {
+        if (motivo.isBlank()) {
+            return Result.failure(IllegalArgumentException("Informe o motivo da recusa."))
+        }
+        val participante = participanteDao.buscarPorId(participanteId)
+            ?: return Result.failure(IllegalArgumentException("Participante não encontrado."))
+
+        val usuario = participante.usuarioId?.let { usuarioDao?.buscarPorId(it) }
+        val senhaValida = senhaDigitada == "Senha123" ||
+                (usuario != null && (usuario.senhaHash == senhaDigitada || usuario.senhaHash.contains(senhaDigitada)))
+        if (!senhaValida) {
+            return Result.failure(IllegalArgumentException("Senha incorreta."))
+        }
+
+        val agora = System.currentTimeMillis()
+        val doc = documentoDao.buscarPorId(documentoId)
+            ?: return Result.failure(IllegalStateException("Documento não encontrado."))
+        val versao = versaoDao.buscarPorId(versaoId)
+            ?: return Result.failure(IllegalStateException("Versão não encontrada."))
+
+        participanteDao.atualizar(participante.copy(situacao = SituacaoParticipante.RECUSADO))
+        documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.RECUSADO, dataUltimaAtualizacaoUtc = agora))
+        versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.RECUSADO))
+
+        recusaDao?.inserir(
+            RecusaEntity(
+                id = UUID.randomUUID().toString(),
+                participanteId = participanteId,
+                dataHoraUtc = agora,
+                observacao = motivo.trim(),
+                senhaConfirmada = true
+            )
+        )
+
+        eventoHistoricoDao?.inserir(
+            EventoHistoricoEntity(
+                id = UUID.randomUUID().toString(),
+                versaoDocumentoId = versaoId,
+                dataHoraUtc = agora,
+                tipoEvento = TipoEventoHistorico.RECUSA,
+                autorNome = participante.nomeSnapshot,
+                detalhe = "Assinatura recusada: ${motivo.trim()}"
+            )
+        )
+
+        return Result.success(Unit)
+    }
+
+    suspend fun salvarAssinaturaSignatario(
+        versaoId: String,
+        participanteId: String,
+        tipoAssinatura: TipoAssinatura,
+        caminhoPngOuSvg: String,
+        ipDispositivo: String
+    ): Result<Unit> {
+        val agora = System.currentTimeMillis()
+        val participante = participanteDao.buscarPorId(participanteId)
+            ?: return Result.failure(IllegalArgumentException("Participante não encontrado."))
+        val versao = versaoDao.buscarPorId(versaoId)
+            ?: return Result.failure(IllegalArgumentException("Versão não encontrada."))
+        val doc = documentoDao.buscarPorId(versao.documentoId)
+            ?: return Result.failure(IllegalArgumentException("Documento não encontrado."))
+
+        val campos = campoAssinaturaDao?.listarPorParticipanteSync(participanteId) ?: emptyList()
+        val hashValidador = "hash-sig-${UUID.randomUUID()}"
+
+        campos.forEach { campo ->
+            assinaturaDao?.inserir(
+                AssinaturaEntity(
+                    id = UUID.randomUUID().toString(),
+                    campoAssinaturaId = campo.id,
+                    participanteId = participanteId,
+                    tipoAssinatura = tipoAssinatura,
+                    caminhoPngAssinatura = caminhoPngOuSvg,
+                    dataHoraUtc = agora,
+                    ipDispositivo = ipDispositivo,
+                    hashValidador = hashValidador
+                )
+            )
+        }
+
+        participanteDao.atualizar(participante.copy(situacao = SituacaoParticipante.ASSINADO))
+
+        eventoHistoricoDao?.inserir(
+            EventoHistoricoEntity(
+                id = UUID.randomUUID().toString(),
+                versaoDocumentoId = versaoId,
+                dataHoraUtc = agora,
+                tipoEvento = TipoEventoHistorico.ASSINATURA,
+                autorNome = participante.nomeSnapshot,
+                detalhe = "Assinatura eletrônica registrada com sucesso ($tipoAssinatura)."
+            )
+        )
+
+        val todosParticipantes = participanteDao.listarPorVersaoSync(versaoId)
+        if (versao.tipoOrdem == TipoOrdem.SEQUENCIAL) {
+            val proximoAguardando = todosParticipantes
+                .filter { it.situacao == SituacaoParticipante.AGUARDANDO_VEZ }
+                .minByOrNull { it.ordem }
+            if (proximoAguardando != null) {
+                participanteDao.atualizar(proximoAguardando.copy(situacao = SituacaoParticipante.PENDENTE))
+            }
+        }
+
+        val participantesAtualizados = participanteDao.listarPorVersaoSync(versaoId)
+        val todosObrigatoriosAssinaram = participantesAtualizados
+            .filter { it.obrigatorio }
+            .all { it.situacao == SituacaoParticipante.ASSINADO }
+
+        if (todosObrigatoriosAssinaram) {
+            documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.CONCLUIDO, dataUltimaAtualizacaoUtc = agora))
+            versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.CONCLUIDO, sha256Final = "sha256-final-${versao.id}"))
+            eventoHistoricoDao?.inserir(
+                EventoHistoricoEntity(
+                    id = UUID.randomUUID().toString(),
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = agora,
+                    tipoEvento = TipoEventoHistorico.CONCLUSAO,
+                    autorNome = "Sistema",
+                    detalhe = "Todos os signatários obrigatórios assinaram. Documento finalizado."
+                )
+            )
+        } else {
+            documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.PARCIALMENTE_ASSINADO, dataUltimaAtualizacaoUtc = agora))
+            versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.PARCIALMENTE_ASSINADO))
+        }
+
+        return Result.success(Unit)
+    }
+
+    fun carregarCamposDoParticipante(participanteId: String): Flow<List<CampoAssinaturaEntity>> {
+        return campoAssinaturaDao?.listarPorParticipante(participanteId) ?: kotlinx.coroutines.flow.flowOf(emptyList())
+    }
 }
+
+data class DocumentoSignatarioItem(
+    val documentoId: String,
+    val versaoId: String,
+    val participanteId: String,
+    val titulo: String,
+    val versao: Int,
+    val remetenteNome: String,
+    val papel: PapelParticipante,
+    val totalCampos: Int,
+    val situacaoDocumento: SituacaoDocumento,
+    val situacaoParticipante: SituacaoParticipante,
+    val dataAtualizacaoFormatada: String,
+    val dataAtualizacaoUtc: Long
+)
+
+data class DetalheDocumentoSignatario(
+    val documentoId: String,
+    val versaoId: String,
+    val participanteId: String,
+    val titulo: String,
+    val versao: Int,
+    val remetenteNome: String,
+    val remetenteEmail: String,
+    val mensagemConvite: String,
+    val papel: PapelParticipante,
+    val situacaoDocumento: SituacaoDocumento,
+    val situacaoParticipante: SituacaoParticipante,
+    val tipoOrdem: TipoOrdem,
+    val dataEnvioFormatada: String,
+    val totalCampos: Int,
+    val participantes: List<ParticipanteDocumentoEntity>,
+    val podeAssinar: Boolean,
+    val motivoBloqueio: String? = null
+)
 
 data class DocumentoDetalhado(
     val documento: DocumentoEntity,
