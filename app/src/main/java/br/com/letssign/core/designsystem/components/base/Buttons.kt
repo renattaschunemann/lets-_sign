@@ -20,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.AlertDialog
 import br.com.letssign.core.designsystem.theme.FormaGrande
+import br.com.letssign.core.designsystem.theme.FormaMedia
 import br.com.letssign.core.designsystem.theme.FormaTotal
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
@@ -184,6 +186,51 @@ fun FabEstendido(
         icon = { Icon(icone, contentDescription = null) },
         text = { Text(text = texto, style = androidx.compose.material3.MaterialTheme.typography.labelLarge) },
         expanded = expandido
+    )
+}
+
+@Composable
+fun DialogBasico(
+    titulo: String,
+    mensagem: String,
+    textoBotaoPrincipal: String,
+    textoBotaoSecundario: String? = null,
+    aoConfirmar: () -> Unit,
+    aoCancelar: (() -> Unit)? = null,
+    aoDispensar: () -> Unit = { aoCancelar?.invoke() }
+) {
+    AlertDialog(
+        onDismissRequest = aoDispensar,
+        title = {
+            Text(
+                text = titulo,
+                style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                color = LetsSignTheme.colors.corTextoPrincipal
+            )
+        },
+        text = {
+            Text(
+                text = mensagem,
+                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                color = LetsSignTheme.colors.corTextoSecundario
+            )
+        },
+        confirmButton = {
+            BotaoPrincipal(
+                texto = textoBotaoPrincipal,
+                onClick = aoConfirmar
+            )
+        },
+        dismissButton = if (textoBotaoSecundario != null && aoCancelar != null) {
+            {
+                BotaoTexto(
+                    texto = textoBotaoSecundario,
+                    onClick = aoCancelar
+                )
+            }
+        } else null,
+        containerColor = LetsSignTheme.colors.corSuperficie,
+        shape = FormaMedia
     )
 }
 

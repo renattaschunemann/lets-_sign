@@ -113,6 +113,22 @@ fun BannerOffline(
     )
 }
 
+@Composable
+fun BannerAviso(
+    mensagem: String,
+    modifier: Modifier = Modifier,
+    textoAcao: String? = null,
+    aoClicarAcao: (() -> Unit)? = null
+) {
+    BannerInformativo(
+        texto = mensagem,
+        tipo = TipoBanner.ALERTA,
+        textoAcao = textoAcao,
+        aoClicarAcao = aoClicarAcao,
+        modifier = modifier
+    )
+}
+
 @Preview(name = "Banner Informativo", showBackground = true)
 @Composable
 private fun BannerInformativoPreview() {

@@ -30,6 +30,8 @@ import br.com.letssign.core.designsystem.components.base.BotaoPrincipal
 import br.com.letssign.core.designsystem.theme.FormaMedia
 import br.com.letssign.core.designsystem.theme.FormaTotal
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
+import br.com.letssign.domain.model.SituacaoDocumento
+import br.com.letssign.domain.model.SituacaoParticipante
 
 /**
  * Cartão de Documento para o Painel do Admin:

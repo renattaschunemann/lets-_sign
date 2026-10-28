@@ -169,8 +169,14 @@ interface NotificacaoDao {
     @Query("SELECT * FROM notificacoes WHERE usuarioId = :usuarioId ORDER BY dataHoraUtc DESC")
     fun listarPorUsuario(usuarioId: String): Flow<List<NotificacaoEntity>>
 
+    @Query("SELECT * FROM notificacoes WHERE usuarioId = :usuarioId ORDER BY dataHoraUtc DESC")
+    suspend fun buscarPorUsuarioSync(usuarioId: String): List<NotificacaoEntity>
+
     @Query("UPDATE notificacoes SET lida = 1 WHERE id = :id")
     suspend fun marcarComoLida(id: String)
+
+    @Query("UPDATE notificacoes SET lida = 1 WHERE usuarioId = :usuarioId AND lida = 0")
+    suspend fun marcarTodasComoLidas(usuarioId: String)
 
     @Query("SELECT COUNT(*) FROM notificacoes WHERE usuarioId = :usuarioId AND lida = 0")
     fun contarNaoLidas(usuarioId: String): Flow<Int>

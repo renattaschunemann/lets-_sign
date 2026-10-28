@@ -58,3 +58,15 @@ enum class TipoEventoHistorico {
     CONCLUSAO,
     NOVA_VERSAO
 }
+
+enum class TipoNotificacao {
+    ASSINATURA_REALIZADA,
+    RECUSA,
+    LEMBRETE,
+    DOCUMENTO_CONCLUIDO,
+    NOVO_CONVITE,
+    CONVITE_RECEBIDO,
+    SUA_VEZ,
+    CANCELAMENTO,
+    FALHA_ENTREGA
+}

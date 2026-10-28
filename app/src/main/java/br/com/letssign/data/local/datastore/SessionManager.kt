@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import br.com.letssign.data.local.security.SecurityCipher
 import br.com.letssign.domain.model.PerfilUsuario
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
 data class UsuarioSessao(
@@ -17,7 +18,7 @@ data class UsuarioSessao(
     val tokenAcesso: String
 )
 
-class SessionManager(
+open class SessionManager(
     private val dataStore: DataStore<Preferences>,
     private val cipher: SecurityCipher
 ) {
@@ -30,7 +31,7 @@ class SessionManager(
         private val KEY_TOKEN = stringPreferencesKey("enc_token_acesso")
     }
 
-    val sessaoFlow: Flow<UsuarioSessao?> = dataStore.data.map { preferences ->
+    open val sessaoFlow: Flow<UsuarioSessao?> = dataStore.data.map { preferences ->
         val encId = preferences[KEY_USUARIO_ID] ?: return@map null
         val encEmail = preferences[KEY_EMAIL] ?: return@map null
         val encNome = preferences[KEY_NOME] ?: ""
@@ -64,7 +65,7 @@ class SessionManager(
         }
     }
 
-    suspend fun salvarSessao(sessao: UsuarioSessao) {
+    open suspend fun salvarSessao(sessao: UsuarioSessao) {
         val encId = cipher.encrypt(sessao.usuarioId)
         val encNome = cipher.encrypt(sessao.nome)
         val encEmail = cipher.encrypt(sessao.email)
@@ -80,7 +81,11 @@ class SessionManager(
         }
     }
 
-    suspend fun limparSessao() {
+    open suspend fun obterUsuarioId(): String? = sessaoFlow.firstOrNull()?.usuarioId
+
+    open suspend fun obterPerfil(): PerfilUsuario? = sessaoFlow.firstOrNull()?.perfil
+
+    open suspend fun limparSessao() {
         dataStore.edit { prefs ->
             prefs.remove(KEY_USUARIO_ID)
             prefs.remove(KEY_NOME)

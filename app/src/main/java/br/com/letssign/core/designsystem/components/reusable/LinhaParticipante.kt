@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.letssign.core.designsystem.theme.FormaTotal
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
+import br.com.letssign.domain.model.SituacaoParticipante
 
 enum class ModoLinhaParticipante {
     SOMENTE_LEITURA,

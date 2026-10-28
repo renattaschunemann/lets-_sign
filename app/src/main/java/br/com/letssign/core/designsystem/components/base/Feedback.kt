@@ -56,6 +56,17 @@ fun Modifier.skeletonShimmer(
 }
 
 @Composable
+fun IndicadorCarregamentoCircular(
+    modifier: Modifier = Modifier
+) {
+    androidx.compose.material3.CircularProgressIndicator(
+        modifier = modifier,
+        color = LetsSignTheme.colors.corPrimaria,
+        strokeWidth = 3.dp
+    )
+}
+
+@Composable
 fun SkeletonItem(
     modifier: Modifier = Modifier,
     altura: Dp = 64.dp,

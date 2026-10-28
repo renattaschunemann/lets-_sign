@@ -10,9 +10,14 @@ import br.com.letssign.core.navigation.shells.AdminBottomBar
 import br.com.letssign.core.navigation.shells.DestinoAdmin
 import br.com.letssign.core.navigation.shells.DestinoSignatario
 import br.com.letssign.core.navigation.shells.SignatarioBottomBar
+import br.com.letssign.presentation.admin.documentos.Adm01DocumentosScreen
+import br.com.letssign.presentation.admin.signatarios.Adm02SignatariosScreen
+import br.com.letssign.presentation.admin.signatarios.Adm03SignatarioFormScreen
 import br.com.letssign.presentation.cadastro.Com03CadastroAdminScreen
+import br.com.letssign.presentation.conta.Com06MinhaContaScreen
 import br.com.letssign.presentation.link.Com04EntradaLinkScreen
 import br.com.letssign.presentation.login.Com02LoginScreen
+import br.com.letssign.presentation.notificacoes.Com05NotificacoesScreen
 import br.com.letssign.presentation.splash.Com01SplashScreen
 
 @Composable
@@ -109,48 +114,54 @@ fun LetsSignNavHost(
         }
 
         composable<Com05NotificacoesRoute> {
-            TelaProvisoria(
-                idTela = "COM-05",
-                nomeTela = "Central de notificações",
-                aoVoltar = { navController.popBackStack() },
-                bottomBar = {
-                    AdminBottomBar(
-                        destinoAtual = DestinoAdmin.NOTIFICACOES,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
-                                DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
-                                DestinoAdmin.NOTIFICACOES -> Unit
-                                DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
-                            }
-                        }
-                    )
+            Com05NotificacoesScreen(
+                aoNavegarParaDocumentoAdmin = { docId ->
+                    navController.navigate(Adm11AcompanhamentoRoute(docId))
+                },
+                aoNavegarParaDocumentoSignatario = { docId ->
+                    navController.navigate(Sig03DetalheDocumentoRoute(docId))
+                },
+                aoNavegarBottomNavAdmin = { destino ->
+                    when (destino) {
+                        DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
+                        DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
+                        DestinoAdmin.NOTIFICACOES -> Unit
+                        DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
+                    }
+                },
+                aoNavegarBottomNavSignatario = { destino ->
+                    when (destino) {
+                        DestinoSignatario.INICIO -> navController.navigate(Sig01InicioPendentesRoute)
+                        DestinoSignatario.DOCUMENTOS -> navController.navigate(Sig02MeusDocumentosRoute)
+                        DestinoSignatario.NOTIFICACOES -> Unit
+                        DestinoSignatario.CONTA -> navController.navigate(Com06MinhaContaRoute("SIGNATARIO"))
+                    }
                 }
             )
         }
 
         composable<Com06MinhaContaRoute> {
-            TelaProvisoria(
-                idTela = "COM-06",
-                nomeTela = "Minha conta",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Sair da conta -> Login" to {
+            Com06MinhaContaScreen(
+                aoSairParaLogin = {
                     navController.navigate(Com02LoginRoute()) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                bottomBar = {
-                    AdminBottomBar(
-                        destinoAtual = DestinoAdmin.CONTA,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
-                                DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
-                                DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
-                                DestinoAdmin.CONTA -> Unit
-                            }
-                        }
-                    )
+                aoNavegarBottomNavAdmin = { destino ->
+                    when (destino) {
+                        DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
+                        DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
+                        DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
+                        DestinoAdmin.CONTA -> Unit
+                    }
+                },
+                aoNavegarBottomNavSignatario = { destino ->
+                    when (destino) {
+                        DestinoSignatario.INICIO -> navController.navigate(Sig01InicioPendentesRoute)
+                        DestinoSignatario.DOCUMENTOS -> navController.navigate(Sig02MeusDocumentosRoute)
+                        DestinoSignatario.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("SIGNATARIO"))
+                        DestinoSignatario.CONTA -> Unit
+                    }
                 }
             )
         }
@@ -159,53 +170,42 @@ fun LetsSignNavHost(
         // ADMIN (ADM-01 a ADM-13)
         // ==========================================
         composable<Adm01DocumentosRoute> {
-            TelaProvisoria(
-                idTela = "ADM-01",
-                nomeTela = "Início — Painel de documentos",
-                acaoProxima = "Novo documento (ADM-04)" to { navController.navigate(Adm04NovoDocTituloRoute()) },
-                bottomBar = {
-                    AdminBottomBar(
-                        destinoAtual = DestinoAdmin.DOCUMENTOS,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoAdmin.DOCUMENTOS -> Unit
-                                DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
-                                DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
-                                DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
-                            }
-                        }
-                    )
+            Adm01DocumentosScreen(
+                aoNavegarParaNovoDocumento = { navController.navigate(Adm04NovoDocTituloRoute()) },
+                aoNavegarParaDocumento = { docId -> navController.navigate(Adm11AcompanhamentoRoute(docId)) },
+                aoNavegarParaFalhaEnvio = { docId -> navController.navigate(Adm10RevisaoEnvioRoute) },
+                aoNavegarParaRascunho = { docId -> navController.navigate(Mod05RetomarRascunhoRoute(docId)) },
+                aoNavegarParaCadastrarSignatario = { navController.navigate(Adm03SignatarioFormRoute()) },
+                aoNavegarBottomNav = { destino ->
+                    when (destino) {
+                        DestinoAdmin.DOCUMENTOS -> Unit
+                        DestinoAdmin.SIGNATARIOS -> navController.navigate(Adm02SignatariosRoute)
+                        DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
+                        DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
+                    }
                 }
             )
         }
 
         composable<Adm02SignatariosRoute> {
-            TelaProvisoria(
-                idTela = "ADM-02",
-                nomeTela = "Signatários",
-                acaoProxima = "Cadastrar signatário (ADM-03)" to { navController.navigate(Adm03SignatarioFormRoute()) },
-                bottomBar = {
-                    AdminBottomBar(
-                        destinoAtual = DestinoAdmin.SIGNATARIOS,
-                        aoNavegarPara = { destino ->
-                            when (destino) {
-                                DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
-                                DestinoAdmin.SIGNATARIOS -> Unit
-                                DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
-                                DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
-                            }
-                        }
-                    )
+            Adm02SignatariosScreen(
+                aoNavegarParaNovoSignatario = { navController.navigate(Adm03SignatarioFormRoute()) },
+                aoNavegarParaEditarSignatario = { id -> navController.navigate(Adm03SignatarioFormRoute(id)) },
+                aoNavegarBottomNav = { destino ->
+                    when (destino) {
+                        DestinoAdmin.DOCUMENTOS -> navController.navigate(Adm01DocumentosRoute)
+                        DestinoAdmin.SIGNATARIOS -> Unit
+                        DestinoAdmin.NOTIFICACOES -> navController.navigate(Com05NotificacoesRoute("ADMIN"))
+                        DestinoAdmin.CONTA -> navController.navigate(Com06MinhaContaRoute("ADMIN"))
+                    }
                 }
             )
         }
 
         composable<Adm03SignatarioFormRoute> {
-            TelaProvisoria(
-                idTela = "ADM-03",
-                nomeTela = "Cadastro/edição de signatário",
+            Adm03SignatarioFormScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Salvar -> Voltar" to { navController.popBackStack() }
+                aoConcluirComSucesso = { navController.popBackStack() }
             )
         }
 

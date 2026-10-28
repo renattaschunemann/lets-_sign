@@ -33,24 +33,8 @@ import br.com.letssign.R
 import br.com.letssign.core.designsystem.theme.FormaPequena
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
-enum class SituacaoDocumento {
-    RASCUNHO,
-    FALHA_ENVIO,
-    ENVIADO,
-    PARCIALMENTE_ASSINADO,
-    CONCLUIDO,
-    RECUSADO,
-    CANCELADO,
-    SUBSTITUIDO
-}
-
-enum class SituacaoParticipante {
-    AGUARDANDO_VEZ,
-    PENDENTE,
-    ASSINADO,
-    RECUSADO,
-    ENCERRADO
-}
+import br.com.letssign.domain.model.SituacaoDocumento
+import br.com.letssign.domain.model.SituacaoParticipante
 
 /**
  * Selo de situação acessível (WCAG 2.1 AA):
@@ -73,6 +57,12 @@ fun SeloSituacaoDocumento(
             corConteudo = LetsSignTheme.colors.corNeutro
             icone = Icons.Filled.EditNote
             texto = stringResource(R.string.sit_doc_rascunho)
+        }
+        SituacaoDocumento.ENVIANDO -> {
+            corContainer = LetsSignTheme.colors.corInfoContainer
+            corConteudo = LetsSignTheme.colors.corInfo
+            icone = Icons.Filled.Schedule
+            texto = stringResource(R.string.sit_doc_enviado)
         }
         SituacaoDocumento.FALHA_ENVIO -> {
             corContainer = LetsSignTheme.colors.corErroContainer

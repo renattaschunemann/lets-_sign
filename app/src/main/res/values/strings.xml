@@ -143,4 +143,67 @@
 
     <!-- Preview provisório -->
     <string name="tela_provisoria_aviso">Tela provisória (Fase 1)</string>
+
+    <!-- ADM-01: Painel de Documentos -->
+    <string name="adm01_titulo">Documentos</string>
+    <string name="adm01_busca_placeholder">Buscar documento por título</string>
+    <string name="adm01_progresso_assinaturas">%1$d de %2$d obrigatórios assinaram</string>
+    <string name="adm01_falha_envio_aviso">Envio não concluído — toque para tentar novamente.</string>
+    <string name="adm01_filtro_todos">Todos</string>
+    <string name="adm01_filtro_rascunhos">Rascunhos</string>
+    <string name="adm01_filtro_enviados">Enviados</string>
+    <string name="adm01_filtro_parcialmente">Parcialmente assinados</string>
+    <string name="adm01_filtro_concluidos">Concluídos</string>
+    <string name="adm01_filtro_recusados">Recusados</string>
+    <string name="adm01_filtro_cancelados">Cancelados</string>
+    <string name="adm01_filtro_falha">Falha no envio</string>
+    <string name="adm01_vazio_titulo">Você ainda não enviou documentos. Toque em \'Novo documento\' para começar.</string>
+    <string name="adm01_vazio_filtro_titulo">Nenhum documento encontrado com o filtro selecionado.</string>
+    <string name="adm01_banner_sem_signatarios">Antes de enviar, cadastre quem vai assinar.</string>
+    <string name="adm01_dialog_excluir_rascunho_titulo">Excluir rascunho</string>
+    <string name="adm01_dialog_excluir_rascunho_msg">Tem certeza de que deseja excluir este rascunho? Esta ação não pode ser desfeita.</string>
+    <string name="adm01_dialog_voltar">Voltar</string>
+
+    <!-- ADM-02: Signatários -->
+    <string name="adm02_titulo">Signatários</string>
+    <string name="adm02_busca_placeholder">Buscar por nome ou e-mail</string>
+    <string name="adm02_vazio_titulo">Nenhum signatário cadastrado. Cadastre as pessoas que vão assinar seus documentos.</string>
+    <string name="adm02_vazio_busca_formato">Nenhum signatário encontrado para \'%1$s\'.</string>
+
+    <!-- ADM-03: Cadastro/Edição de Signatário -->
+    <string name="adm03_titulo_novo">Cadastrar signatário</string>
+    <string name="adm03_titulo_edicao">Editar signatário</string>
+    <string name="adm03_banner_info">Estes dados serão usados para confirmar a identidade da pessoa antes de assinar. Confira com atenção.</string>
+    <string name="adm03_label_nome">Nome completo</string>
+    <string name="adm03_label_email">E-mail</string>
+    <string name="adm03_label_telefone">Telefone</string>
+    <string name="adm03_label_nascimento">Data de nascimento</string>
+    <string name="adm03_label_senha">Senha</string>
+    <string name="adm03_placeholder_nascimento">dd/mm/aaaa</string>
+    <string name="adm03_aviso_email_existente">Este e-mail já possui conta no LetsSign. Ele será adicionado à sua lista sem alterar a senha.</string>
+    <string name="adm03_aviso_edicao_proximos">Alterações valem para os próximos envios. Documentos já enviados mantêm os dados originais.</string>
+    <string name="adm03_sucesso_salvo">Signatário salvo.</string>
+    <string name="adm03_erro_nome_invalido">Informe o nome completo.</string>
+    <string name="adm03_erro_data_invalida">Data de nascimento inválida.</string>
+    <string name="adm03_erro_menor_idade">O signatário deve ser maior de 18 anos.</string>
+
+    <!-- COM-05: Central de Notificações -->
+    <string name="com05_titulo">Notificações</string>
+    <string name="com05_filtro_todas">Todas</string>
+    <string name="com05_filtro_nao_lidas">Não lidas</string>
+    <string name="com05_vazio_titulo">Você não tem notificações por enquanto.</string>
+    <string name="com05_cd_nao_lida">Não lida</string>
+
+    <!-- COM-06: Minha Conta -->
+    <string name="com06_titulo">Minha conta</string>
+    <string name="com06_label_nome">Nome</string>
+    <string name="com06_label_email">E-mail</string>
+    <string name="com06_label_telefone">Telefone</string>
+    <string name="com06_label_perfil">Perfil</string>
+    <string name="com06_perfil_admin">Administrador</string>
+    <string name="com06_perfil_signatario">Signatário</string>
+    <string name="com06_label_versao">Versão do app</string>
+    <string name="com06_versao_valor">1.0.0</string>
+    <string name="com06_dialog_sair_titulo">Deseja sair?</string>
+    <string name="com06_dialog_sair_msg">Você precisará entrar de novo para acessar seus documentos.</string>
 </resources>

@@ -33,6 +33,9 @@ interface AdminSignatarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun inserirVarios(relacoes: List<AdminSignatarioEntity>)
 
+    @Update
+    suspend fun atualizar(relacao: AdminSignatarioEntity)
+
     @Query("SELECT * FROM admin_signatarios WHERE adminId = :adminId ORDER BY nome ASC")
     fun listarSignatariosDoAdmin(adminId: String): Flow<List<AdminSignatarioEntity>>
 
