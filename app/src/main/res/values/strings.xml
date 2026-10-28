@@ -274,4 +274,96 @@
     <string name="mod06_erro_paginas">O documento possui mais de 50 páginas. O limite máximo é de 50 páginas.</string>
     <string name="mod06_erro_corrompido">Não foi possível ler o arquivo. Certifique-se de que é um PDF válido e não está corrompido.</string>
     <string name="mod06_btn_outro_arquivo">Escolher outro arquivo</string>
+
+    <!-- ADM-09: Posicionar Campos -->
+    <string name="adm09_titulo">Posicionar campos</string>
+    <string name="adm09_btn_adicionar_campo">Adicionar campo</string>
+    <string name="adm09_btn_excluir_campo">Excluir</string>
+    <string name="adm09_btn_atribuir_campo">Atribuir a…</string>
+    <string name="adm09_badge_pendencias_formato">Falta campo para: %1$s</string>
+    <string name="adm09_todos_posicionados">Todos os participantes têm campo atribuído</string>
+    <string name="adm09_aviso_pendencias">Cada signatário deve ter ao menos 1 campo de assinatura posicionado no documento.</string>
+
+    <!-- MOD-03: Atribuir a -->
+    <string name="mod03_titulo">Atribuir campo a</string>
+    <string name="mod03_qtd_campos_formato">%1$d campo(s)</string>
+    <string name="mod03_nenhum_campo">Nenhum campo</string>
+
+    <!-- ADM-10: Revisar e Enviar -->
+    <string name="adm10_titulo">Revisar e enviar</string>
+    <string name="adm10_secao_resumo">Resumo do documento</string>
+    <string name="adm10_secao_participantes">Signatários e ordem</string>
+    <string name="adm10_label_mensagem">Mensagem de convite</string>
+    <string name="adm10_dica_mensagem">Esta mensagem acompanhará o convite aos signatários.</string>
+    <string name="adm10_placeholder_mensagem">Ex.: Por favor, assine este documento até sexta-feira.</string>
+    <string name="adm10_btn_enviar">Enviar para assinatura</string>
+    <string name="adm10_resumo_arquivo_formato">%1$s • %2$d páginas</string>
+    <string name="adm10_campos_total_formato">%1$d campo(s) posicionado(s)</string>
+
+    <!-- MOD-01: Resultado do Envio -->
+    <string name="mod01_titulo_enviando">Enviando documento…</string>
+    <string name="mod01_subtitulo_enviando">Não feche o aplicativo enquanto registramos os dados com segurança.</string>
+    <string name="mod01_titulo_sucesso">Documento enviado com sucesso!</string>
+    <string name="mod01_subtitulo_sucesso">Os participantes receberão o convite por e-mail e SMS para assinar.</string>
+    <string name="mod01_btn_concluir">Ir para Documentos</string>
+    <string name="mod01_titulo_erro">Falha ao enviar documento</string>
+    <string name="mod01_subtitulo_erro">Não foi possível conectar ao servidor. O documento foi salvo com o status Falha no envio para que você possa tentar novamente.</string>
+    <string name="mod01_btn_tentar_novamente">Tentar novamente</string>
+    <string name="mod01_btn_voltar_inicio">Voltar ao início</string>
+
+    <!-- ADM-11: Acompanhamento de Documento -->
+    <string name="adm11_titulo">Acompanhamento</string>
+    <string name="adm11_secao_status">Status do documento</string>
+    <string name="adm11_secao_signatarios">Signatários e progresso</string>
+    <string name="adm11_badge_vez_de">Vez de assinar</string>
+    <string name="adm11_badge_aguardando">Aguardando vez</string>
+    <string name="adm11_btn_ver_documento">Visualizar documento</string>
+    <string name="adm11_btn_trilha_auditoria">Trilha de auditoria</string>
+    <string name="adm11_btn_reenviar_convite">Reenviar convite</string>
+    <string name="adm11_btn_copiar_link">Copiar link de assinatura</string>
+    <string name="adm11_btn_cancelar_documento">Cancelar documento</string>
+    <string name="adm11_btn_baixar_original">Baixar original</string>
+    <string name="adm11_btn_baixar_assinado">Baixar documento assinado</string>
+    <string name="adm11_btn_ver_motivo_recusa">Ver motivo da recusa</string>
+    <string name="adm11_btn_nova_versao">Criar nova versão</string>
+    <string name="adm11_sucesso_link_copiado">Link copiado para a área de transferência.</string>
+    <string name="adm11_sucesso_convite_reenviado">Convite reenviado com sucesso.</string>
+
+    <!-- ADM-12: Trilha de Auditoria -->
+    <string name="adm12_titulo">Trilha de auditoria</string>
+    <string name="adm12_filtro_todos">Todos</string>
+    <string name="adm12_filtro_assinaturas">Assinaturas</string>
+    <string name="adm12_filtro_envios">Envios e notificações</string>
+    <string name="adm12_card_integridade_titulo">Integridade do documento</string>
+    <string name="adm12_sha256_original_rotulo">Hash SHA-256 Original:</string>
+    <string name="adm12_sha256_final_rotulo">Hash SHA-256 Final:</string>
+    <string name="adm12_btn_copiar_hash">Copiar hash</string>
+    <string name="adm12_sucesso_hash_copiado">Hash copiado com sucesso.</string>
+    <string name="adm12_vazio">Nenhum evento registrado nesta categoria.</string>
+
+    <!-- ADM-13: Visualizador do Administrador -->
+    <string name="adm13_titulo">Visualizar documento</string>
+    <string name="adm13_btn_baixar">Baixar PDF</string>
+
+    <!-- MOD-07: Cancelar Documento -->
+    <string name="mod07_titulo">Cancelar documento?</string>
+    <string name="mod07_aviso">Ao cancelar, nenhum signatário poderá mais assinar este documento. Esta ação é irreversível.</string>
+    <string name="mod07_label_motivo">Motivo do cancelamento</string>
+    <string name="mod07_placeholder_motivo">Explique o motivo do cancelamento…</string>
+    <string name="mod07_label_senha">Sua senha de administrador</string>
+    <string name="mod07_btn_confirmar_cancelamento">Confirmar cancelamento</string>
+    <string name="mod07_erro_motivo_vazio">Informe o motivo do cancelamento.</string>
+    <string name="mod07_erro_senha_incorreta">Senha incorreta. Confira e tente novamente.</string>
+
+    <!-- MOD-09: Detalhe da Recusa -->
+    <string name="mod09_titulo">Documento recusado</string>
+    <string name="mod09_rotulo_recusado_por">Recusado por:</string>
+    <string name="mod09_rotulo_data_hora">Data e hora:</string>
+    <string name="mod09_rotulo_justificativa">Justificativa apresentada:</string>
+    <string name="mod09_btn_fechar">Fechar</string>
+
+    <!-- MOD-11: Criar Nova Versão -->
+    <string name="mod11_titulo">Criar nova versão</string>
+    <string name="mod11_descricao">Um novo rascunho será criado com os mesmos signatários e configurações. Você poderá substituir o arquivo PDF ou ajustar os campos.</string>
+    <string name="mod11_btn_criar_versao">Criar nova versão</string>
 </resources>

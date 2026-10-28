@@ -21,6 +21,8 @@ import br.com.letssign.presentation.admin.wizard.Adm06SignatariosScreen
 import br.com.letssign.presentation.admin.wizard.Adm07ObrigatoriedadeScreen
 import br.com.letssign.presentation.admin.wizard.Adm08OrdemScreen
 import br.com.letssign.presentation.admin.wizard.WizardNovoDocViewModel
+import br.com.letssign.presentation.admin.wizard.Adm09PosicionarCamposScreen
+import br.com.letssign.presentation.admin.wizard.Adm10RevisaoEnvioScreen
 import br.com.letssign.presentation.cadastro.Com03CadastroAdminScreen
 import br.com.letssign.presentation.conta.Com06MinhaContaScreen
 import br.com.letssign.presentation.link.Com04EntradaLinkScreen
@@ -298,21 +300,41 @@ fun LetsSignNavHost(
             )
         }
 
-        composable<Adm09PosicionarCamposRoute> {
-            TelaProvisoria(
-                idTela = "ADM-09",
-                nomeTela = "Visualizar páginas e posicionar campos (Etapas 7–8)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Avançar -> Revisão e envio (ADM-10)" to { navController.navigate(Adm10RevisaoEnvioRoute) }
+        composable<Adm09PosicionarCamposRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm09PosicionarCamposScreen(
+                viewModel = wizardViewModel,
+                aoAvancarParaRevisao = { navController.navigate(Adm10RevisaoEnvioRoute) },
+                aoVoltarParaOrdem = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 
-        composable<Adm10RevisaoEnvioRoute> {
-            TelaProvisoria(
-                idTela = "ADM-10",
-                nomeTela = "Revisão e confirmação de envio (Etapa 9)",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Confirmar envio -> Resultado (MOD-01)" to { navController.navigate(Mod01ResultadoEnvioRoute) }
+        composable<Adm10RevisaoEnvioRoute> { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry<Adm04NovoDocTituloRoute>() }.getOrNull() ?: backStackEntry
+            }
+            val wizardViewModel: WizardNovoDocViewModel = hiltViewModel(parentEntry)
+            Adm10RevisaoEnvioScreen(
+                viewModel = wizardViewModel,
+                aoFinalizarEnvioComSucesso = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                },
+                aoVoltarParaCampos = { navController.popBackStack() },
+                aoSairParaInicio = {
+                    navController.navigate(Adm01DocumentosRoute) {
+                        popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                    }
+                }
             )
         }
 

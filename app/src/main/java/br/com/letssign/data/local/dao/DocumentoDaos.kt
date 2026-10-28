@@ -107,6 +107,12 @@ interface CampoAssinaturaDao {
     @Query("SELECT * FROM campos_assinatura WHERE versaoDocumentoId = :versaoDocumentoId")
     fun listarPorVersao(versaoDocumentoId: String): Flow<List<CampoAssinaturaEntity>>
 
+    @Query("SELECT * FROM campos_assinatura WHERE versaoDocumentoId = :versaoDocumentoId")
+    suspend fun listarPorVersaoSync(versaoDocumentoId: String): List<CampoAssinaturaEntity>
+
+    @Query("DELETE FROM campos_assinatura WHERE versaoDocumentoId = :versaoDocumentoId")
+    suspend fun deletarPorVersao(versaoDocumentoId: String)
+
     @Query("SELECT * FROM campos_assinatura WHERE versaoDocumentoId = :versaoDocumentoId AND numeroPagina = :numeroPagina")
     fun listarPorVersaoEPagina(versaoDocumentoId: String, numeroPagina: Int): Flow<List<CampoAssinaturaEntity>>
 

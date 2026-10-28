@@ -1,15 +1,8 @@
 package br.com.letssign.data.repository
 
-import br.com.letssign.data.local.dao.DocumentoDao
-import br.com.letssign.data.local.dao.ParticipanteDocumentoDao
-import br.com.letssign.data.local.dao.VersaoDocumentoDao
-import br.com.letssign.data.local.entities.DocumentoEntity
-import br.com.letssign.data.local.entities.ParticipanteDocumentoEntity
-import br.com.letssign.data.local.entities.VersaoDocumentoEntity
-import br.com.letssign.domain.model.PapelParticipante
-import br.com.letssign.domain.model.SituacaoDocumento
-import br.com.letssign.domain.model.SituacaoParticipante
-import br.com.letssign.domain.model.TipoOrdem
+import br.com.letssign.data.local.dao.*
+import br.com.letssign.data.local.entities.*
+import br.com.letssign.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
@@ -32,7 +25,10 @@ data class DocumentoItemResumo(
 class DocumentoRepository @Inject constructor(
     private val documentoDao: DocumentoDao,
     private val versaoDao: VersaoDocumentoDao,
-    private val participanteDao: ParticipanteDocumentoDao
+    private val participanteDao: ParticipanteDocumentoDao,
+    private val campoAssinaturaDao: CampoAssinaturaDao? = null,
+    private val eventoHistoricoDao: EventoHistoricoDao? = null,
+    private val notificacaoDao: NotificacaoDao? = null
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
@@ -289,11 +285,92 @@ class DocumentoRepository @Inject constructor(
         return Result.success(documentoId)
     }
 
+    suspend fun salvarCampos(versaoDocumentoId: String, campos: List<CampoAssinaturaEntity>) {
+        campoAssinaturaDao?.deletarPorVersao(versaoDocumentoId)
+        if (campos.isNotEmpty()) {
+            campoAssinaturaDao?.inserirVarios(campos)
+        }
+    }
+
+    suspend fun carregarCampos(versaoDocumentoId: String): List<CampoAssinaturaEntity> {
+        return campoAssinaturaDao?.listarPorVersaoSync(versaoDocumentoId) ?: emptyList()
+    }
+
+    suspend fun enviarDocumento(
+        adminId: String,
+        documentoId: String,
+        mensagemConvite: String,
+        simularFalha: Boolean = false
+    ): Result<Unit> {
+        val agora = System.currentTimeMillis()
+        val doc = documentoDao.buscarPorId(documentoId)
+            ?: return Result.failure(IllegalStateException("Documento não encontrado."))
+        val versao = versaoDao.buscarVersaoAtual(documentoId)
+            ?: return Result.failure(IllegalStateException("Versão do documento não encontrada."))
+
+        if (simularFalha) {
+            // Salva com status FALHA_ENVIO
+            documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.FALHA_ENVIO, dataUltimaAtualizacaoUtc = agora))
+            versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.FALHA_ENVIO, mensagemConvite = mensagemConvite))
+            return Result.failure(Exception("Não foi possível conectar ao servidor."))
+        }
+
+        // Sucesso
+        documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.ENVIADO, dataUltimaAtualizacaoUtc = agora))
+        versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.ENVIADO, mensagemConvite = mensagemConvite))
+
+        // Atualizar participantes conforme TipoOrdem
+        val participantes = participanteDao.listarPorVersaoSync(versao.id)
+        val atualizados = if (versao.tipoOrdem == TipoOrdem.SEQUENCIAL) {
+            val ordenados = participantes.sortedBy { it.ordem }
+            ordenados.mapIndexed { index, part ->
+                if (index == 0) part.copy(situacao = SituacaoParticipante.PENDENTE)
+                else part.copy(situacao = SituacaoParticipante.AGUARDANDO_VEZ)
+            }
+        } else {
+            participantes.map { it.copy(situacao = SituacaoParticipante.PENDENTE) }
+        }
+        participanteDao.inserirVarios(atualizados)
+
+        // Registrar evento na trilha de auditoria
+        eventoHistoricoDao?.inserir(
+            EventoHistoricoEntity(
+                id = UUID.randomUUID().toString(),
+                versaoDocumentoId = versao.id,
+                dataHoraUtc = agora,
+                tipoEvento = TipoEventoHistorico.ENVIO,
+                autorNome = "Carla Mendes",
+                detalhe = "Documento enviado para assinatura."
+            )
+        )
+
+        // Registrar notificações
+        atualizados.filter { it.situacao == SituacaoParticipante.PENDENTE }.forEach { part ->
+            part.usuarioId?.let { uid ->
+                notificacaoDao?.inserir(
+                    NotificacaoEntity(
+                        id = UUID.randomUUID().toString(),
+                        usuarioId = uid,
+                        documentoId = doc.id,
+                        titulo = doc.titulo,
+                        mensagem = "Você foi convidado para assinar '${doc.titulo}'.",
+                        tipoNotificacao = TipoNotificacao.NOVO_CONVITE.name,
+                        dataHoraUtc = agora,
+                        lida = false
+                    )
+                )
+            }
+        }
+
+        return Result.success(Unit)
+    }
+
     suspend fun excluirRascunho(documentoId: String) {
         val doc = documentoDao.buscarPorId(documentoId)
-        if (doc != null && doc.situacaoAtual == SituacaoDocumento.RASCUNHO) {
+        if (doc != null && (doc.situacaoAtual == SituacaoDocumento.RASCUNHO || doc.situacaoAtual == SituacaoDocumento.FALHA_ENVIO)) {
             val versao = versaoDao.buscarVersaoAtual(documentoId)
             if (versao != null) {
+                campoAssinaturaDao?.deletarPorVersao(versao.id)
                 participanteDao.deletarPorVersao(versao.id)
             }
             documentoDao.deletar(doc)
@@ -304,5 +381,6 @@ class DocumentoRepository @Inject constructor(
 data class RascunhoCompleto(
     val documento: DocumentoEntity,
     val versao: VersaoDocumentoEntity,
-    val participantes: List<ParticipanteDocumentoEntity>
+    val participantes: List<ParticipanteDocumentoEntity>,
+    val campos: List<CampoAssinaturaEntity> = emptyList()
 )

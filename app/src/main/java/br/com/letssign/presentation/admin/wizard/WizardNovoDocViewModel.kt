@@ -13,6 +13,7 @@ import br.com.letssign.data.local.entities.AdminSignatarioEntity
 import br.com.letssign.data.local.entities.ParticipanteDocumentoEntity
 import br.com.letssign.data.repository.DocumentoRepository
 import br.com.letssign.data.repository.SignatarioRepository
+import br.com.letssign.data.local.entities.CampoAssinaturaEntity
 import br.com.letssign.domain.model.PapelParticipante
 import br.com.letssign.domain.model.SituacaoParticipante
 import br.com.letssign.domain.model.TipoOrdem
@@ -26,13 +27,29 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
+data class CampoVisual(
+    val id: String = UUID.randomUUID().toString(),
+    val signatarioId: String,
+    val numeroPagina: Int = 1,
+    val normX: Float = 0.25f,
+    val normY: Float = 0.5f,
+    val normLargura: Float = 0.5f,
+    val normAltura: Float = 0.08f
+)
+
+enum class EstadoEnvio {
+    ENVIANDO,
+    SUCESSO,
+    ERRO
+}
+
 data class WizardNovoDocUiState(
     val documentoId: String = UUID.randomUUID().toString(),
     val titulo: String = "",
     val pdfPath: String? = null,
     val pdfNome: String? = null,
     val pdfTamanhoBytes: Long = 0,
-    val pdfTotalPaginas: Int = 0,
+    val pdfTotalPaginas: Int = 1,
     val signatariosCadastrados: List<AdminSignatarioEntity> = emptyList(),
     val signatariosSelecionadosIds: Set<String> = emptySet(),
     val buscaSignatarios: String = "",
@@ -48,7 +65,13 @@ data class WizardNovoDocUiState(
     val rascunhoPendenteId: String? = null,
     val carregando: Boolean = false,
     val rascunhoSalvo: Boolean = false,
-    val rascunhoDescartado: Boolean = false
+    val rascunhoDescartado: Boolean = false,
+    val campos: List<CampoVisual> = emptyList(),
+    val campoSelecionadoId: String? = null,
+    val paginaAtualPdf: Int = 1,
+    val mensagemConvite: String = "",
+    val mostrarModalAtribuirCampo: Boolean = false,
+    val estadoModalResultado: EstadoEnvio? = null
 ) {
     val signatariosFiltrados: List<AdminSignatarioEntity>
         get() = if (buscaSignatarios.isBlank()) {
@@ -79,6 +102,18 @@ data class WizardNovoDocUiState(
 
     val podeAvancarEtapa5: Boolean
         get() = true
+
+    val camposNaPaginaAtual: List<CampoVisual>
+        get() = campos.filter { it.numeroPagina == paginaAtualPdf }
+
+    val participantesSemCampo: List<String>
+        get() = signatariosSelecionadosIds.filter { sigId -> campos.none { it.signatarioId == sigId } }
+
+    val todosParticipantesTemCampo: Boolean
+        get() = signatariosSelecionadosIds.isNotEmpty() && participantesSemCampo.isEmpty()
+
+    val podeAvancarEtapa7: Boolean
+        get() = todosParticipantesTemCampo
 }
 
 @HiltViewModel
@@ -160,6 +195,20 @@ class WizardNovoDocViewModel @Inject constructor(
         val obrigatorios = rascunho.participantes.associate { (it.usuarioId ?: it.id) to it.obrigatorio }
         val ordem = rascunho.participantes.sortedBy { it.ordem }.mapNotNull { it.usuarioId }
 
+        val camposSalvos = documentoRepository.carregarCampos(rascunho.versao.id)
+        val camposVisuais = camposSalvos.map { ce ->
+            val sigId = ce.participanteId.removePrefix("part-$docId-")
+            CampoVisual(
+                id = ce.id,
+                signatarioId = sigId,
+                numeroPagina = ce.numeroPagina,
+                normX = ce.normX,
+                normY = ce.normY,
+                normLargura = ce.normLargura,
+                normAltura = ce.normAltura
+            )
+        }
+
         _uiState.update {
             it.copy(
                 documentoId = docId,
@@ -171,7 +220,8 @@ class WizardNovoDocViewModel @Inject constructor(
                 obrigatorioPorSignatario = obrigatorios,
                 ordemSignatarios = ordem.ifEmpty { selecionadosIds.toList() },
                 tipoOrdem = rascunho.versao.tipoOrdem,
-                etapaAtual = rascunho.versao.etapaWizardAtual.coerceIn(1, 6)
+                etapaAtual = rascunho.versao.etapaWizardAtual.coerceIn(1, 9),
+                campos = camposVisuais
             )
         }
     }
@@ -317,6 +367,117 @@ class WizardNovoDocViewModel @Inject constructor(
         }
     }
 
+    fun adicionarCampo() {
+        val estado = _uiState.value
+        // Atribui preferencialmente a quem ainda não tem campo, ou ao primeiro signatário
+        val participanteAlvo = estado.participantesSemCampo.firstOrNull()
+            ?: estado.signatariosSelecionadosIds.firstOrNull()
+            ?: return
+
+        val offsetContador = estado.camposNaPaginaAtual.size
+        val novoY = (0.25f + (offsetContador * 0.12f)).coerceAtMost(0.75f)
+
+        val novoCampo = CampoVisual(
+            id = UUID.randomUUID().toString(),
+            signatarioId = participanteAlvo,
+            numeroPagina = estado.paginaAtualPdf,
+            normX = 0.25f,
+            normY = novoY,
+            normLargura = 0.5f,
+            normAltura = 0.08f
+        )
+
+        _uiState.update {
+            it.copy(
+                campos = it.campos + novoCampo,
+                campoSelecionadoId = novoCampo.id
+            )
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun selecionarCampo(campoId: String?) {
+        _uiState.update { it.copy(campoSelecionadoId = campoId) }
+    }
+
+    fun abrirModalAtribuirCampo() {
+        _uiState.update { it.copy(mostrarModalAtribuirCampo = true) }
+    }
+
+    fun fecharModalAtribuirCampo() {
+        _uiState.update { it.copy(mostrarModalAtribuirCampo = false) }
+    }
+
+    fun atribuirCampo(campoId: String, novoSignatarioId: String) {
+        _uiState.update { estado ->
+            val atualizados = estado.campos.map {
+                if (it.id == campoId) it.copy(signatarioId = novoSignatarioId) else it
+            }
+            estado.copy(campos = atualizados, mostrarModalAtribuirCampo = false)
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun excluirCampo(campoId: String) {
+        _uiState.update { estado ->
+            val atualizados = estado.campos.filterNot { it.id == campoId }
+            val novoSel = if (estado.campoSelecionadoId == campoId) null else estado.campoSelecionadoId
+            estado.copy(campos = atualizados, campoSelecionadoId = novoSel)
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun mudarPaginaPdf(pagina: Int) {
+        val total = _uiState.value.pdfTotalPaginas.coerceAtLeast(1)
+        val novaPagina = pagina.coerceIn(1, total)
+        _uiState.update { it.copy(paginaAtualPdf = novaPagina, campoSelecionadoId = null) }
+    }
+
+    fun atualizarMensagemConvite(mensagem: String) {
+        _uiState.update { it.copy(mensagemConvite = mensagem) }
+    }
+
+    fun fecharModalResultado() {
+        _uiState.update { it.copy(estadoModalResultado = null) }
+    }
+
+    fun enviarDocumento(simularFalha: Boolean = false, aoSucesso: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(estadoModalResultado = EstadoEnvio.ENVIANDO) }
+            val estado = _uiState.value
+
+            // Salva os campos antes do envio
+            val versaoId = "versao-${estado.documentoId}-1"
+            val camposEntity = estado.campos.map { cv ->
+                CampoAssinaturaEntity(
+                    id = cv.id,
+                    versaoDocumentoId = versaoId,
+                    participanteId = "part-${estado.documentoId}-${cv.signatarioId}",
+                    numeroPagina = cv.numeroPagina,
+                    normX = cv.normX,
+                    normY = cv.normY,
+                    normLargura = cv.normLargura,
+                    normAltura = cv.normAltura
+                )
+            }
+            documentoRepository.salvarCampos(versaoId, camposEntity)
+
+            val resultado = documentoRepository.enviarDocumento(
+                adminId = adminIdAtual,
+                documentoId = estado.documentoId,
+                mensagemConvite = estado.mensagemConvite,
+                simularFalha = simularFalha
+            )
+
+            if (resultado.isSuccess) {
+                _uiState.update { it.copy(estadoModalResultado = EstadoEnvio.SUCESSO) }
+                aoSucesso?.invoke()
+            } else {
+                _uiState.update { it.copy(estadoModalResultado = EstadoEnvio.ERRO) }
+            }
+        }
+    }
+
     fun avancarEtapa(): Boolean {
         val estado = _uiState.value
         val podeAvancar = when (estado.etapaAtual) {
@@ -325,11 +486,16 @@ class WizardNovoDocViewModel @Inject constructor(
             3 -> estado.podeAvancarEtapa3
             4 -> estado.podeAvancarEtapa4
             5 -> estado.podeAvancarEtapa5
+            7 -> estado.podeAvancarEtapa7
             else -> true
         }
 
         if (podeAvancar) {
-            val proxima = (estado.etapaAtual + 1).coerceAtMost(6)
+            val proxima = when (estado.etapaAtual) {
+                5 -> 7 // Da etapa 5 (Ordem) vai para 7 (Campos)
+                7 -> 9 // Da etapa 7 (Campos) vai para 9 (Revisão)
+                else -> (estado.etapaAtual + 1).coerceAtMost(9)
+            }
             _uiState.update { it.copy(etapaAtual = proxima) }
             salvarRascunhoAutomatico()
             return true
@@ -340,7 +506,12 @@ class WizardNovoDocViewModel @Inject constructor(
     fun voltarEtapa(aoSair: () -> Unit) {
         val etapa = _uiState.value.etapaAtual
         if (etapa > 1) {
-            _uiState.update { it.copy(etapaAtual = etapa - 1) }
+            val anterior = when (etapa) {
+                9 -> 7
+                7 -> 5
+                else -> etapa - 1
+            }
+            _uiState.update { it.copy(etapaAtual = anterior) }
         } else {
             _uiState.update { it.copy(mostrarModalSair = true) }
         }
@@ -406,5 +577,20 @@ class WizardNovoDocViewModel @Inject constructor(
             etapaWizard = estado.etapaAtual,
             participantes = participantes
         )
+
+        val versaoId = "versao-${estado.documentoId}-1"
+        val camposEntity = estado.campos.map { cv ->
+            CampoAssinaturaEntity(
+                id = cv.id,
+                versaoDocumentoId = versaoId,
+                participanteId = "part-${estado.documentoId}-${cv.signatarioId}",
+                numeroPagina = cv.numeroPagina,
+                normX = cv.normX,
+                normY = cv.normY,
+                normLargura = cv.normLargura,
+                normAltura = cv.normAltura
+            )
+        }
+        documentoRepository.salvarCampos(versaoId, camposEntity)
     }
 }
