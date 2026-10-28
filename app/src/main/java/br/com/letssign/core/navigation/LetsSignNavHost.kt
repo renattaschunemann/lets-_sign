@@ -13,6 +13,9 @@ import br.com.letssign.core.navigation.shells.SignatarioBottomBar
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.letssign.presentation.admin.documentos.Adm01DocumentosScreen
+import br.com.letssign.presentation.admin.documentos.Adm11AcompanhamentoScreen
+import br.com.letssign.presentation.admin.documentos.Adm12AuditoriaScreen
+import br.com.letssign.presentation.admin.documentos.Adm13VisualizadorAdminScreen
 import br.com.letssign.presentation.admin.signatarios.Adm02SignatariosScreen
 import br.com.letssign.presentation.admin.signatarios.Adm03SignatarioFormScreen
 import br.com.letssign.presentation.admin.wizard.Adm04NovoDocTituloScreen
@@ -339,27 +342,24 @@ fun LetsSignNavHost(
         }
 
         composable<Adm11AcompanhamentoRoute> {
-            TelaProvisoria(
-                idTela = "ADM-11",
-                nomeTela = "Acompanhamento do documento",
+            Adm11AcompanhamentoScreen(
                 aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Ver histórico (ADM-12)" to { navController.navigate(Adm12HistoricoRoute("1")) }
+                aoNavegarParaVisualizador = { versaoId -> navController.navigate(Adm13VisualizadorRoute(versaoId)) },
+                aoNavegarParaAuditoria = { versaoId -> navController.navigate(Adm12HistoricoRoute(versaoId)) },
+                aoNavegarParaNovaVersaoCriada = { novoDocId ->
+                    navController.navigate(Adm04NovoDocTituloRoute(novoDocId))
+                }
             )
         }
 
         composable<Adm12HistoricoRoute> {
-            TelaProvisoria(
-                idTela = "ADM-12",
-                nomeTela = "Histórico do documento",
-                aoVoltar = { navController.popBackStack() },
-                acaoProxima = "Ver documento (ADM-13)" to { navController.navigate(Adm13VisualizadorRoute("1")) }
+            Adm12AuditoriaScreen(
+                aoVoltar = { navController.popBackStack() }
             )
         }
 
         composable<Adm13VisualizadorRoute> {
-            TelaProvisoria(
-                idTela = "ADM-13",
-                nomeTela = "Visualizador de documento (Admin)",
+            Adm13VisualizadorAdminScreen(
                 aoVoltar = { navController.popBackStack() }
             )
         }
