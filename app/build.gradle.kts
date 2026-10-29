@@ -20,6 +20,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "APP_LINK_DOMAIN", "\"links.letssign.com.br\"")
+
+        ndk {
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = false
+            isUniversalApk = false
+        }
     }
 
     buildTypes {
