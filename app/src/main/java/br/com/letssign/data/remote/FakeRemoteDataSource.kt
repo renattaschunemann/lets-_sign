@@ -119,6 +119,10 @@ class FakeRemoteDataSource(
             senhaHash = "Senha123"
         )
         usuariosDb[carla.email] = carla
+        usuariosDb["carla.mendes@empresa.com"] = carla.copy(email = "carla.mendes@empresa.com")
+        usuariosDb["carla.mendes@empresa.com.br"] = carla.copy(email = "carla.mendes@empresa.com.br")
+        usuariosDb["carla@empresa.com"] = carla.copy(email = "carla@empresa.com")
+        usuariosDb["admin@letssign.com.br"] = carla.copy(email = "admin@letssign.com.br")
 
         // Usuário padrão de demonstração João Lima (Signatário)
         val joao = RemoteUsuarioDto(
@@ -130,6 +134,9 @@ class FakeRemoteDataSource(
             senhaHash = "Senha123"
         )
         usuariosDb[joao.email] = joao
+        usuariosDb["joao.lima@empresa.com"] = joao.copy(email = "joao.lima@empresa.com")
+        usuariosDb["joao@empresa.com.br"] = joao.copy(email = "joao@empresa.com.br")
+        usuariosDb["joao.lima@empresa.com.br"] = joao.copy(email = "joao.lima@empresa.com.br")
     }
 
     private suspend fun simularRede() {
@@ -144,10 +151,11 @@ class FakeRemoteDataSource(
     override suspend fun autenticar(email: String, senhaHash: String): RemoteUsuarioDto {
         simularRede()
         val emailNormalizado = email.trim().lowercase()
+        val senhaDigitada = senhaHash.trim()
         val usuario = usuariosDb[emailNormalizado]
             ?: throw IllegalArgumentException("E-mail não cadastrado (E02).")
 
-        if (usuario.senhaHash != senhaHash) {
+        if (!usuario.senhaHash.equals(senhaDigitada, ignoreCase = true)) {
             throw IllegalArgumentException("Senha incorreta (E02).")
         }
         return usuario

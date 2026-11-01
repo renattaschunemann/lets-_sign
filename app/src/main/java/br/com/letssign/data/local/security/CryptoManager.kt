@@ -40,8 +40,12 @@ class CryptoManager(
 
         val ks = keyStore ?: return generateFallbackKey()
         if (ks.containsAlias(keyAlias)) {
-            val entry = ks.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry
-            if (entry != null) return entry.secretKey
+            try {
+                val entry = ks.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry
+                if (entry != null) return entry.secretKey
+            } catch (_: Exception) {
+                try { ks.deleteEntry(keyAlias) } catch (_: Exception) {}
+            }
         }
 
         return try {
@@ -56,6 +60,7 @@ class CryptoManager(
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setKeySize(256)
+                .setRandomizedEncryptionRequired(true)
                 .build()
 
             keyGenerator.init(keyGenSpec)
@@ -76,14 +81,14 @@ class CryptoManager(
         if (plainText.isEmpty()) return ""
         val cipher = Cipher.getInstance(TRANSFORMATION)
         val key = getOrCreateKey()
-        val iv = ByteArray(IV_LENGTH_BYTES)
-        SecureRandom().nextBytes(iv)
-        val spec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
 
-        cipher.init(Cipher.ENCRYPT_MODE, key, spec)
+        // Inicializa SEM especificar IV gerado pelo chamador.
+        // O Android KeyStore gera um IV aleatório seguro internamente, evitando "Caller-provided IV not permitted".
+        cipher.init(Cipher.ENCRYPT_MODE, key)
+        val iv = cipher.iv ?: ByteArray(IV_LENGTH_BYTES).also { SecureRandom().nextBytes(it) }
         val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
 
-        // Prefixa o IV aleatório de 12 bytes ao conteúdo criptografado
+        // Prefixa o IV (12 bytes) gerado pelo sistema ao conteúdo criptografado
         val combined = ByteArray(iv.size + encryptedBytes.size)
         System.arraycopy(iv, 0, combined, 0, iv.size)
         System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
@@ -93,23 +98,27 @@ class CryptoManager(
 
     override fun decrypt(cipherText: String): String {
         if (cipherText.isEmpty()) return ""
-        val combined = decodeBase64(cipherText)
-        if (combined.size < IV_LENGTH_BYTES) return ""
+        return try {
+            val combined = decodeBase64(cipherText)
+            if (combined.size < IV_LENGTH_BYTES) return ""
 
-        val iv = ByteArray(IV_LENGTH_BYTES)
-        System.arraycopy(combined, 0, iv, 0, IV_LENGTH_BYTES)
+            val iv = ByteArray(IV_LENGTH_BYTES)
+            System.arraycopy(combined, 0, iv, 0, IV_LENGTH_BYTES)
 
-        val cipherBytes = ByteArray(combined.size - IV_LENGTH_BYTES)
-        System.arraycopy(combined, IV_LENGTH_BYTES, cipherBytes, 0, cipherBytes.size)
+            val cipherBytes = ByteArray(combined.size - IV_LENGTH_BYTES)
+            System.arraycopy(combined, IV_LENGTH_BYTES, cipherBytes, 0, cipherBytes.size)
 
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        val key = getOrCreateKey()
-        val spec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            val key = getOrCreateKey()
+            val spec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
 
-        cipher.init(Cipher.DECRYPT_MODE, key, spec)
-        val decryptedBytes = cipher.doFinal(cipherBytes)
+            cipher.init(Cipher.DECRYPT_MODE, key, spec)
+            val decryptedBytes = cipher.doFinal(cipherBytes)
 
-        return String(decryptedBytes, Charsets.UTF_8)
+            String(decryptedBytes, Charsets.UTF_8)
+        } catch (_: Exception) {
+            ""
+        }
     }
 
     private fun encodeBase64(bytes: ByteArray): String {

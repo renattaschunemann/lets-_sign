@@ -136,6 +136,10 @@ fun Adm13VisualizadorAdminScreen(
                     }
                 },
                 actions = {
+                    br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
+                        tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
                     IconButton(onClick = { viewModel.baixarPdf() }) {
                         Icon(
                             imageVector = Icons.Default.Download,

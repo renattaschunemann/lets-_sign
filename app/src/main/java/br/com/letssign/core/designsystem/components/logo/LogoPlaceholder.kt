@@ -3,11 +3,13 @@ package br.com.letssign.core.designsystem.components.logo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.draw.drawBehind
@@ -22,56 +24,35 @@ import br.com.letssign.core.designsystem.theme.FormaPequena
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
 enum class LogoSize(val width: Dp, val height: Dp) {
-    GRANDE(160.dp, 160.dp),   // COM-01 Splash
-    MEDIO(120.dp, 48.dp),     // COM-02 Login, COM-03 Cadastro
-    PEQUENO(32.dp, 32.dp)     // Top App Bar de ADM-01 e SIG-01
+    GRANDE(188.dp, 64.dp),    // COM-01 Splash
+    MEDIO(140.dp, 48.dp),     // COM-02 Login, COM-03 Cadastro
+    PEQUENO(94.dp, 32.dp)     // Top App Bars em todas as telas
 }
 
 /**
- * Componente oficial de espaço reservado para a logo:
- * - Retângulo com borda tracejada (corBorda)
- * - Fundo corSuperficieVariante
- * - Texto central "LOGO" em corTextoSecundario
- * - contentDescription: "LOGO — [INSERIR POSTERIORMENTE]"
+ * Componente oficial de exibição da Logomarca LetsSign:
+ * Renderiza o asset oficial da LetsSign (R.drawable.logo_letssign)
+ * com proporção preservada, cantos arredondados suaves e acessibilidade.
  */
 @Composable
 fun LogoPlaceholder(
     tamanho: LogoSize = LogoSize.MEDIO,
     modifier: Modifier = Modifier
 ) {
-    val corBorda = LetsSignTheme.colors.corBorda
-    val corFundo = LetsSignTheme.colors.corSuperficieVariante
-    val corTexto = LetsSignTheme.colors.corTextoSecundario
     val descricao = stringResource(R.string.logo_content_description)
 
     Box(
         modifier = modifier
             .size(tamanho.width, tamanho.height)
-            .background(color = corFundo, shape = FormaPequena)
-            .drawBehind {
-                val strokeWidth = 1.5.dp.toPx()
-                val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                drawRoundRect(
-                    color = corBorda,
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx()),
-                    style = Stroke(
-                        width = strokeWidth,
-                        pathEffect = dashPathEffect
-                    )
-                )
-            }
+            .clip(FormaPequena)
             .semantics { contentDescription = descricao },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = stringResource(R.string.logo_placeholder_text),
-            style = if (tamanho == LogoSize.PEQUENO) {
-                LetsSignTheme.colors.let { LetsSignTheme.colors } // fallback
-                androidx.compose.material3.MaterialTheme.typography.labelSmall
-            } else {
-                androidx.compose.material3.MaterialTheme.typography.labelLarge
-            },
-            color = corTexto
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(id = R.drawable.logo_letssign),
+            contentDescription = descricao,
+            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }

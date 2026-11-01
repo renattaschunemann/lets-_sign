@@ -60,6 +60,12 @@ fun Sig07RevisaoCamposScreen(
                         )
                     }
                 },
+                actions = {
+                    br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
+                        tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO,
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = LetsSignTheme.colors.corSuperficie
                 )

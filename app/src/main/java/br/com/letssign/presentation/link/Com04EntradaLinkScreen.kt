@@ -57,6 +57,13 @@ fun Com04EntradaLinkScreen(
             .navigationBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
+        br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
+            tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.MEDIO,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 24.dp)
+        )
+
         when (val state = uiState) {
             is EntradaLinkUiState.Carregando,
             is EntradaLinkUiState.ValidoRedirecionando -> {

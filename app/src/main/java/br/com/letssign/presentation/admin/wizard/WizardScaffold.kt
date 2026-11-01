@@ -55,6 +55,10 @@ fun WizardScaffold(
                         }
                     },
                     actions = {
+                        br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
+                            tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
                         IconButton(onClick = aoFechar) {
                             Icon(
                                 imageVector = Icons.Default.Close,

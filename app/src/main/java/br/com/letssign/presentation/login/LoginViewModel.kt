@@ -52,7 +52,7 @@ class LoginViewModel @Inject constructor(
     fun entrar() {
         val state = _uiState.value
         val email = state.email.trim()
-        val senha = state.senha
+        val senha = state.senha.trim()
 
         // Validação de formato de e-mail
         if (!email.contains("@") || !email.contains(".")) {
@@ -82,6 +82,7 @@ class LoginViewModel @Inject constructor(
                     )
                 },
                 onFailure = { error ->
+                    println("LetsSignLogin: Erro ao autenticar no LoginViewModel: ${error.message}")
                     val novasFalhas = _uiState.value.tentativasFalhas + 1
                     val bloqueado = novasFalhas >= 5
                     if (error is IOException) {

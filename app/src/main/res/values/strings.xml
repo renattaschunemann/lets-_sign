@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LetsSign</string>
-    <string name="logo_placeholder_text">LOGO</string>
-    <string name="logo_content_description">LOGO — [INSERIR POSTERIORMENTE]</string>
+    <string name="logo_placeholder_text">LetsSign</string>
+    <string name="logo_content_description">Logotipo LetsSign — É simples assinar!</string>
 
     <!-- Acessibilidade Geral -->
     <string name="cd_voltar">Voltar</string>

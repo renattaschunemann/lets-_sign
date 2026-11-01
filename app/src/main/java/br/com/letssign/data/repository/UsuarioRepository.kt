@@ -30,26 +30,30 @@ class UsuarioRepository @Inject constructor(
                 senhaHash = remoteUser.senhaHash,
                 dataCriacaoUtc = System.currentTimeMillis()
             )
-            // Salva ou atualiza no Room local
-            val existente = usuarioDao.buscarPorId(usuarioLocal.id)
-            if (existente == null) {
-                usuarioDao.inserir(usuarioLocal)
+            // Salva ou atualiza no Room local evitando conflito com índice único de e-mail
+            val porId = usuarioDao.buscarPorId(usuarioLocal.id)
+            val porEmail = usuarioDao.buscarPorEmail(usuarioLocal.email)
+            val idFinal = porId?.id ?: porEmail?.id ?: usuarioLocal.id
+            val usuarioSalvar = usuarioLocal.copy(id = idFinal)
+
+            if (porId != null || porEmail != null) {
+                usuarioDao.atualizar(usuarioSalvar)
             } else {
-                usuarioDao.atualizar(usuarioLocal)
+                usuarioDao.inserir(usuarioSalvar)
             }
 
             // Grava na sessão criptografada
             sessionManager.salvarSessao(
                 UsuarioSessao(
-                    usuarioId = usuarioLocal.id,
-                    nome = usuarioLocal.nome,
-                    email = usuarioLocal.email,
-                    perfil = usuarioLocal.perfil,
-                    tokenAcesso = "token-${usuarioLocal.id}"
+                    usuarioId = usuarioSalvar.id,
+                    nome = usuarioSalvar.nome,
+                    email = usuarioSalvar.email,
+                    perfil = usuarioSalvar.perfil,
+                    tokenAcesso = "token-${usuarioSalvar.id}"
                 )
             )
 
-            Result.success(usuarioLocal)
+            Result.success(usuarioSalvar)
         } catch (e: Exception) {
             Result.failure(e)
         }

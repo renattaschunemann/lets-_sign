@@ -41,11 +41,19 @@ fun Sig02MeusDocumentosScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.sig02_titulo),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = LetsSignTheme.colors.corTextoPrincipal
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
+                            tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO
+                        )
+                        Text(
+                            text = stringResource(R.string.sig02_titulo),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = LetsSignTheme.colors.corTextoPrincipal
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = LetsSignTheme.colors.corSuperficie
