@@ -21,11 +21,27 @@ class SignatarioRepository @Inject constructor(
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
-        val existente = adminSignatarioDao.buscarSignatarioPorEmail(adminId, "maria.souza@empresa.com")
-        if (existente != null) return
+        try {
+            val existente = adminSignatarioDao.buscarSignatarioPorEmail(adminId, "maria.souza@empresa.com")
+            if (existente != null) return
 
-        val agora = System.currentTimeMillis()
-        val demoSignatarios = listOf(
+            // Garante que o usuário Admin exista na tabela 'usuarios' para satisfazer a foreign key
+            if (usuarioDao.buscarPorId(adminId) == null) {
+                usuarioDao.inserir(
+                    UsuarioEntity(
+                        id = adminId,
+                        nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
+                        email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
+                        telefone = "(11) 98765-4321",
+                        perfil = PerfilUsuario.ADMIN,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = System.currentTimeMillis()
+                    )
+                )
+            }
+
+            val agora = System.currentTimeMillis()
+            val demoSignatarios = listOf(
             AdminSignatarioEntity(
                 adminId = adminId,
                 signatarioId = "sig-maria-souza",
@@ -73,6 +89,9 @@ class SignatarioRepository @Inject constructor(
             )
         )
         adminSignatarioDao.inserirVarios(demoSignatarios)
+        } catch (e: Exception) {
+            println("SignatarioRepository: aviso ao inicializar dados demo: ${e.message}")
+        }
     }
 
     fun listarSignatarios(adminId: String): Flow<List<AdminSignatarioEntity>> {

@@ -57,7 +57,11 @@ class Sig01InicioPendentesViewModel @Inject constructor(
             val usuarioId = sessao?.usuarioId ?: "sig-joao-lima"
 
             // Inicializa dados de demonstração caso necessário
-            documentoRepository.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+            try {
+                documentoRepository.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+            } catch (e: Exception) {
+                println("Sig01InicioPendentesViewModel: aviso ao inicializar demo: ${e.message}")
+            }
 
             documentoRepository.listarDocumentosDoSignatario(usuarioId)
                 .catch { ex ->

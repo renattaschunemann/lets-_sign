@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "600aa53934b5fe6d3bfc54711377749c",
+    "identityHash": "9f7d6efa07471ae3e7e72279332fe6a5",
     "entities": [
       {
         "tableName": "usuarios",
@@ -71,7 +71,7 @@
       },
       {
         "tableName": "admin_signatarios",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`adminId` TEXT NOT NULL, `signatarioId` TEXT NOT NULL, `nome` TEXT NOT NULL, `email` TEXT NOT NULL, `telefone` TEXT NOT NULL, `dataNascimento` TEXT NOT NULL, `dataVinculoUtc` INTEGER NOT NULL, PRIMARY KEY(`adminId`, `signatarioId`), FOREIGN KEY(`adminId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`signatarioId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`adminId` TEXT NOT NULL, `signatarioId` TEXT NOT NULL, `nome` TEXT NOT NULL, `email` TEXT NOT NULL, `telefone` TEXT NOT NULL, `dataNascimento` TEXT NOT NULL, `dataVinculoUtc` INTEGER NOT NULL, PRIMARY KEY(`adminId`, `signatarioId`), FOREIGN KEY(`adminId`) REFERENCES `usuarios`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "adminId",
@@ -160,17 +160,6 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "adminId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "usuarios",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "signatarioId"
             ],
             "referencedColumns": [
               "id"
@@ -1132,7 +1121,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '600aa53934b5fe6d3bfc54711377749c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9f7d6efa07471ae3e7e72279332fe6a5')"
     ]
   }
 }

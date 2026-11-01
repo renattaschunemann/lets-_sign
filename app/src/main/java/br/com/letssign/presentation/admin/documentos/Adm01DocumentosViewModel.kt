@@ -66,10 +66,14 @@ class Adm01DocumentosViewModel @Inject constructor(
         viewModelScope.launch {
             val adminId = sessionManager.obterUsuarioId() ?: "admin-carla-mendes"
 
-            // Inicializar seeds se necessário
-            documentoRepository.inicializarDadosDemoSeNecessario(adminId)
-            signatarioRepository.inicializarDadosDemoSeNecessario(adminId)
-            notificacaoRepository.inicializarDadosDemoSeNecessario(adminId, "ADMIN")
+            // Inicializar seeds se necessário com proteção
+            try {
+                documentoRepository.inicializarDadosDemoSeNecessario(adminId)
+                signatarioRepository.inicializarDadosDemoSeNecessario(adminId)
+                notificacaoRepository.inicializarDadosDemoSeNecessario(adminId, "ADMIN")
+            } catch (e: Exception) {
+                println("Adm01DocumentosViewModel: erro ao inicializar seeds demo: ${e.message}")
+            }
 
             combine(
                 documentoRepository.listarDocumentosDoAdmin(adminId),

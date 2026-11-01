@@ -36,10 +36,26 @@ class DocumentoRepository @Inject constructor(
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
-        val existentes = documentoDao.buscarPorId("doc-demo-1")
-        if (existentes != null) return
+        try {
+            val existentes = documentoDao.buscarPorId("doc-demo-1")
+            if (existentes != null) return
 
-        val agora = System.currentTimeMillis()
+            // Garante que o usuário Admin exista na tabela 'usuarios' para satisfazer a foreign key
+            if (usuarioDao != null && usuarioDao.buscarPorId(adminId) == null) {
+                usuarioDao.inserir(
+                    UsuarioEntity(
+                        id = adminId,
+                        nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
+                        email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
+                        telefone = "(11) 98765-4321",
+                        perfil = PerfilUsuario.ADMIN,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = System.currentTimeMillis()
+                    )
+                )
+            }
+
+            val agora = System.currentTimeMillis()
 
         // 1. Contrato de Prestação de Serviços (Parcialmente assinado, 2 de 3)
         criarDocDemo(
@@ -131,6 +147,9 @@ class DocumentoRepository @Inject constructor(
             obrigatoriosAssinaram = 0,
             totalObrigatorios = 2
         )
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso ao inicializar dados demo: ${e.message}")
+        }
     }
 
     private suspend fun criarDocDemo(

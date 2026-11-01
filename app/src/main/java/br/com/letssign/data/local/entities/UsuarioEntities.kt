@@ -30,12 +30,6 @@ data class UsuarioEntity(
             parentColumns = ["id"],
             childColumns = ["adminId"],
             onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = UsuarioEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["signatarioId"],
-            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [
