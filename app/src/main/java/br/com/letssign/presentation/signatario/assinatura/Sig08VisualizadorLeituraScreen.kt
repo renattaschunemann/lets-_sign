@@ -1,18 +1,24 @@
 package br.com.letssign.presentation.signatario.assinatura
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import br.com.letssign.R
-import br.com.letssign.core.designsystem.theme.FormaMedia
+import br.com.letssign.core.designsystem.components.reusable.CampoAssinaturaSobreposto
+import br.com.letssign.core.designsystem.components.reusable.EstadoCampoAssinatura
+import br.com.letssign.core.designsystem.components.reusable.ModoVisualizadorPdf
+import br.com.letssign.core.designsystem.components.reusable.VisualizadorPdfCamadas
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
+import br.com.letssign.core.pdf.PdfDemoGenerator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,6 +26,9 @@ fun Sig08VisualizadorLeituraScreen(
     aoVoltar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    var paginaAtual by remember { mutableIntStateOf(1) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -27,7 +36,7 @@ fun Sig08VisualizadorLeituraScreen(
                 title = {
                     Text(
                         text = "Visualizar documento",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = LetsSignTheme.colors.corTextoPrincipal
                     )
                 },
@@ -43,8 +52,24 @@ fun Sig08VisualizadorLeituraScreen(
                 actions = {
                     br.com.letssign.core.designsystem.components.logo.LogoPlaceholder(
                         tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO,
-                        modifier = Modifier.padding(end = 12.dp)
+                        modifier = Modifier.padding(end = 4.dp)
                     )
+                    IconButton(
+                        onClick = {
+                            try {
+                                val pdf = PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                PdfDemoGenerator.compartilharPdf(context, pdf)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Erro ao abrir PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Baixar PDF assinado",
+                            tint = LetsSignTheme.colors.corPrimaria
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = LetsSignTheme.colors.corSuperficie
@@ -52,39 +77,36 @@ fun Sig08VisualizadorLeituraScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        VisualizadorPdfCamadas(
+            totalPaginas = 2,
+            paginaAtual = paginaAtual,
+            aoMudarPagina = { paginaAtual = it },
+            modo = ModoVisualizadorPdf.LEITURA,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(LetsSignTheme.colors.corFundo)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.fillMaxSize(),
-                shape = FormaMedia,
-                colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corSuperficie),
-                elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel1)
-            ) {
+                .padding(paddingValues),
+            camadaCampos = {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = "Contrato de Prestação de Serviços — Somente Leitura",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = LetsSignTheme.colors.corTextoPrincipal
+                    CampoAssinaturaSobreposto(
+                        nomeSignatario = "Carla Mendes (Contratante)",
+                        estado = EstadoCampoAssinatura.ASSINADO
                     )
-                    HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
-                    Text(
-                        text = "Este documento é uma cópia autêntica e auditada. Todas as assinaturas coletadas possuem validade jurídica conforme MP 2.200-2/2001.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LetsSignTheme.colors.corTextoSecundario
+                    CampoAssinaturaSobreposto(
+                        nomeSignatario = "João Lima (Contratado)",
+                        estado = EstadoCampoAssinatura.ASSINADO
+                    )
+                    CampoAssinaturaSobreposto(
+                        nomeSignatario = "Maria Souza (Testemunha)",
+                        estado = EstadoCampoAssinatura.ASSINADO
                     )
                 }
             }
-        }
+        )
     }
 }
+

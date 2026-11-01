@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -131,37 +133,179 @@ fun VisualizadorPdfCamadas(
             Card(
                 modifier = Modifier
                     .fillMaxWidth(escalaZoom.coerceAtMost(1.0f))
-                    .height(440.dp),
+                    .wrapContentHeight(),
                 shape = FormaMedia,
                 colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corPaginaPdf),
                 elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel1)
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    // Texto simulado em barras corDivisor
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.6f)
-                                .height(16.dp)
-                                .background(LetsSignTheme.colors.corDivisor, FormaPequena)
-                        )
-                        repeat(8) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    if (paginaAtual == 1) {
+                        // Conteúdo da Página 1: Minuta Contratual
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Barra superior azul institucional
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(10.dp)
-                                    .background(LetsSignTheme.colors.corDivisor, FormaPequena)
+                                    .height(4.dp)
+                                    .background(LetsSignTheme.colors.corPrimaria, FormaPequena)
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "LETSSIGN TECNOLOGIA",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corPrimaria
+                                )
+                                Text(
+                                    text = "ID: DOC-2026-LETSSIGN-8842",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
+                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
+                            Text(
+                                text = "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TECNOLOGIA",
+                                style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Text(
+                                text = "Versão 2.0 • Status: Concluído e Registrado Digitalmente",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corSucesso,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "DAS PARTES CONTRATANTES:\nCONTRATANTE: TechSolutions Inovação S.A. (Carla Mendes)\nCONTRATADO: João Lima Desenvolvimento de Software ME",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Text(
+                                text = "CLÁUSULA 1ª — DO OBJETO:\nPrestação de serviços de engenharia de software para a plataforma LetsSign Mobile, com padrões de arquitetura limpa e segurança de KeyStore.",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Text(
+                                text = "CLÁUSULA 2ª — DO VALOR E PAGAMENTO:\nValor total pactuado em R$ 48.000,00 distribuídos em 4 parcelas mensais de R$ 12.000,00 com homologação técnica.",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Text(
+                                text = "CLÁUSULA 3ª — DA CONFIDENCIALIDADE E LGPD:\nSigilo integral e estrito cumprimento da Lei Federal nº 13.709/2018 com criptografia em repouso e em trânsito.",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "LetsSign Mobile Platform",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = "Pág. 1 de $totalPaginas",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
+                        }
+                    } else {
+                        // Conteúdo da Página 2: Folha de Assinaturas e Auditoria
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Barra superior verde de sucesso
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .background(LetsSignTheme.colors.corSucesso, FormaPequena)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "FOLHA DE ROSTO • ASSINATURAS",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corSucesso
+                                )
+                                Text(
+                                    text = "100% ASSINADO",
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corSucesso
+                                )
+                            }
+                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
+                            Text(
+                                text = "TERMO DE ASSINATURA ELETRÔNICA",
+                                style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Text(
+                                text = "Emitido em conformidade com a MP nº 2.200-2/2001 e a Lei nº 14.063/2020.",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoSecundario
+                            )
+
+                            // Camada de campos sobrepostos
+                            camadaCampos()
+
+                            // Rodapé criptográfico
+                            Card(
+                                shape = FormaPequena,
+                                colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corFundo),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = "EVIDÊNCIAS DE INTEGRIDADE ICP-BRASIL",
+                                        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = LetsSignTheme.colors.corTextoPrincipal
+                                    )
+                                    Text(
+                                        text = "SHA-256 Final: e4b2c9d1852a37f09c64821a7df83c9b74314e1f7d5267e89ab012f45c9d6482",
+                                        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        color = LetsSignTheme.colors.corTextoSecundario
+                                    )
+                                    Text(
+                                        text = "Carimbo do Tempo: 2026-10-26T16:06:00Z | Protocolo: BR-2026-LS-991823",
+                                        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        color = LetsSignTheme.colors.corTextoSecundario
+                                    )
+                                }
+                            }
                         }
                     }
-
-                    // Camada de campos sobrepostos
-                    camadaCampos()
                 }
             }
         }

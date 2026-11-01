@@ -36,12 +36,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import br.com.letssign.core.pdf.PdfDemoGenerator
+
 data class Adm13VisualizadorUiState(
     val versao: VersaoDocumentoEntity? = null,
     val participantes: List<ParticipanteDocumentoEntity> = emptyList(),
     val campos: List<CampoAssinaturaEntity> = emptyList(),
     val paginaAtual: Int = 1,
-    val totalPaginas: Int = 3,
+    val totalPaginas: Int = 2,
     val carregando: Boolean = true,
     val mensagemFeedback: String? = null
 )
@@ -86,8 +90,14 @@ class Adm13VisualizadorViewModel @Inject constructor(
         _uiState.update { it.copy(paginaAtual = novaPagina) }
     }
 
-    fun baixarPdf() {
-        _uiState.update { it.copy(mensagemFeedback = "Download do PDF iniciado...") }
+    fun baixarPdf(context: Context) {
+        try {
+            val arquivo = PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+            PdfDemoGenerator.compartilharPdf(context, arquivo)
+            _uiState.update { it.copy(mensagemFeedback = "Contrato assinado aberto para download e compartilhamento!") }
+        } catch (e: Exception) {
+            _uiState.update { it.copy(mensagemFeedback = "Erro ao exportar PDF: ${e.message}") }
+        }
     }
 
     fun limparFeedback() {
@@ -108,6 +118,7 @@ fun Adm13VisualizadorAdminScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.mensagemFeedback) {
         uiState.mensagemFeedback?.let { msg ->
@@ -140,7 +151,7 @@ fun Adm13VisualizadorAdminScreen(
                         tamanho = br.com.letssign.core.designsystem.components.logo.LogoSize.PEQUENO,
                         modifier = Modifier.padding(end = 4.dp)
                     )
-                    IconButton(onClick = { viewModel.baixarPdf() }) {
+                    IconButton(onClick = { viewModel.baixarPdf(context) }) {
                         Icon(
                             imageVector = Icons.Default.Download,
                             contentDescription = stringResource(R.string.adm13_btn_baixar),

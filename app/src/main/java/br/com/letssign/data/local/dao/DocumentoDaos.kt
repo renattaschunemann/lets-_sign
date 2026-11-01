@@ -194,9 +194,15 @@ interface EventoHistoricoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun inserir(evento: EventoHistoricoEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun inserirVarios(eventos: List<EventoHistoricoEntity>)
+
     @Query("SELECT * FROM eventos_historico WHERE versaoDocumentoId = :versaoDocumentoId ORDER BY dataHoraUtc ASC")
     fun listarPorVersaoAsc(versaoDocumentoId: String): Flow<List<EventoHistoricoEntity>>
 
     @Query("SELECT * FROM eventos_historico WHERE versaoDocumentoId = :versaoDocumentoId ORDER BY dataHoraUtc DESC")
     fun listarPorVersaoDesc(versaoDocumentoId: String): Flow<List<EventoHistoricoEntity>>
+
+    @Query("SELECT COUNT(*) FROM eventos_historico WHERE versaoDocumentoId = :versaoDocumentoId")
+    suspend fun contarPorVersao(versaoDocumentoId: String): Int
 }

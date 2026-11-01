@@ -318,11 +318,17 @@ class CamposFakeEventoDao : EventoHistoricoDao {
     override suspend fun inserir(evento: EventoHistoricoEntity) {
         eventos.add(evento)
     }
+    override suspend fun inserirVarios(eventos: List<EventoHistoricoEntity>) {
+        this.eventos.addAll(eventos)
+    }
     override fun listarPorVersaoAsc(versaoDocumentoId: String): Flow<List<EventoHistoricoEntity>> {
         return flowOf(eventos.filter { it.versaoDocumentoId == versaoDocumentoId }.sortedBy { it.dataHoraUtc })
     }
     override fun listarPorVersaoDesc(versaoDocumentoId: String): Flow<List<EventoHistoricoEntity>> {
         return flowOf(eventos.filter { it.versaoDocumentoId == versaoDocumentoId }.sortedByDescending { it.dataHoraUtc })
+    }
+    override suspend fun contarPorVersao(versaoDocumentoId: String): Int {
+        return eventos.count { it.versaoDocumentoId == versaoDocumentoId }
     }
 }
 

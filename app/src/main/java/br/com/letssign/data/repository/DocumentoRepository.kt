@@ -5,6 +5,8 @@ import br.com.letssign.data.local.entities.*
 import br.com.letssign.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,27 +34,60 @@ class DocumentoRepository @Inject constructor(
     private val recusaDao: RecusaDao? = null,
     private val cancelamentoDao: CancelamentoDao? = null,
     private val usuarioDao: UsuarioDao? = null,
-    private val assinaturaDao: AssinaturaDao? = null
+    private val assinaturaDao: AssinaturaDao? = null,
+    @ApplicationContext private val context: Context? = null
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
         try {
-            val existentes = documentoDao.buscarPorId("doc-demo-1")
-            if (existentes != null) return
+            val doc5Existente = documentoDao.buscarPorId("doc-demo-5")
+            val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
+            if (doc5Existente != null && doc5Existente.situacaoAtual == SituacaoDocumento.CONCLUIDO && qtdEventos >= 10) {
+                // Já inicializado com todos os eventos de demonstração
+                return
+            }
 
-            // Garante que o usuário Admin exista na tabela 'usuarios' para satisfazer a foreign key
-            if (usuarioDao != null && usuarioDao.buscarPorId(adminId) == null) {
-                usuarioDao.inserir(
-                    UsuarioEntity(
-                        id = adminId,
-                        nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
-                        email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
-                        telefone = "(11) 98765-4321",
-                        perfil = PerfilUsuario.ADMIN,
-                        senhaHash = "Senha123",
-                        dataCriacaoUtc = System.currentTimeMillis()
+            // Garante que os usuários de demonstração existam na tabela 'usuarios' para satisfazer a foreign key
+            if (usuarioDao != null) {
+                if (usuarioDao.buscarPorId(adminId) == null) {
+                    usuarioDao.inserir(
+                        UsuarioEntity(
+                            id = adminId,
+                            nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
+                            email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
+                            telefone = "(11) 98765-4321",
+                            perfil = PerfilUsuario.ADMIN,
+                            senhaHash = "Senha123",
+                            dataCriacaoUtc = System.currentTimeMillis()
+                        )
                     )
-                )
+                }
+                if (usuarioDao.buscarPorId("sig-joao-lima") == null) {
+                    usuarioDao.inserir(
+                        UsuarioEntity(
+                            id = "sig-joao-lima",
+                            nome = "João Lima",
+                            email = "joao.lima@email.com",
+                            telefone = "11988887777",
+                            perfil = PerfilUsuario.SIGNATARIO,
+                            senhaHash = "Senha123",
+                            dataCriacaoUtc = System.currentTimeMillis()
+                        )
+                    )
+                }
+                if (usuarioDao.buscarPorId("user-maria-souza") == null) {
+                    usuarioDao.inserir(
+                        UsuarioEntity(
+                            id = "user-maria-souza",
+                            nome = "Maria Souza",
+                            email = "maria.souza@empresa.com.br",
+                            telefone = "11977776666",
+                            perfil = PerfilUsuario.SIGNATARIO,
+                            senhaHash = "Senha123",
+                            dataCriacaoUtc = System.currentTimeMillis()
+                        )
+                    )
+                }
             }
 
             val agora = System.currentTimeMillis()
@@ -172,13 +207,16 @@ class DocumentoRepository @Inject constructor(
             dataCriacaoUtc = dataUtc,
             dataUltimaAtualizacaoUtc = dataUtc
         )
+        val shaOrig = if (docId == "doc-demo-5") "a3f8b0e71946c2419a77e5d933bb32014c278e9fa07f3521e1a2f60d4b8e211a" else "sha256-mock-$docId"
+        val shaFin = if (docId == "doc-demo-5") "e4b2c9d1852a37f09c64821a7df83c9b74314e1f7d5267e89ab012f45c9d6482" else if (situacao == SituacaoDocumento.CONCLUIDO) "sha256-final-$docId" else null
+
         val versaoEntity = VersaoDocumentoEntity(
             id = versaoId,
             documentoId = docId,
             numeroVersao = versao,
             pdfPathInterno = "documentos/$docId/v$versao.pdf",
-            sha256Original = "sha256-mock-$docId",
-            sha256Final = if (situacao == SituacaoDocumento.CONCLUIDO) "sha256-final-$docId" else null,
+            sha256Original = shaOrig,
+            sha256Final = shaFin,
             tipoOrdem = tipoOrdem,
             mensagemConvite = "Por favor, assine este documento.",
             chaveIdempotencia = UUID.randomUUID().toString(),
@@ -193,25 +231,69 @@ class DocumentoRepository @Inject constructor(
         val campos = mutableListOf<CampoAssinaturaEntity>()
 
         for (i in 1..totalObrigatorios) {
+            val isDoc5 = docId == "doc-demo-5"
             val isJoao = when (docId) {
                 "doc-demo-1" -> i == 3 // João é o terceiro, pendente
                 "doc-demo-4" -> i == 2 // João é o segundo, aguardando vez
-                "doc-demo-5" -> i == 1 // João assinou
+                "doc-demo-5" -> i == 2 // João é o contratado assinado
                 "doc-demo-6" -> i == 1 // João recusou
                 else -> false
             }
-            val partId = if (isJoao) "part-$docId-joao" else "part-$docId-$i"
-            val userId = if (isJoao) "sig-joao-lima" else "user-$i"
-            val nome = if (isJoao) "João Lima" else "Signatário $i"
-            val email = if (isJoao) "joao.lima@email.com" else "signatario$i@empresa.com"
-            val tel = if (isJoao) "11988887777" else "1190000000$i"
-            val dataNasc = if (isJoao) "10/05/1992" else "1990-01-01"
 
-            val sitPart = when {
-                docId == "doc-demo-6" && isJoao -> SituacaoParticipante.RECUSADO
-                docId == "doc-demo-4" && isJoao -> SituacaoParticipante.AGUARDANDO_VEZ
-                i <= obrigatoriosAssinaram -> SituacaoParticipante.ASSINADO
-                else -> SituacaoParticipante.PENDENTE
+            val partId: String
+            val userId: String?
+            val nome: String
+            val email: String
+            val tel: String
+            val dataNasc: String
+            val papel: PapelParticipante
+            val sitPart: SituacaoParticipante
+
+            if (isDoc5) {
+                sitPart = SituacaoParticipante.ASSINADO
+                when (i) {
+                    1 -> {
+                        partId = "part-$docId-carla"
+                        userId = adminId
+                        nome = "Carla Mendes"
+                        email = "carla@empresa.com.br"
+                        tel = "11987654321"
+                        dataNasc = "15/03/1985"
+                        papel = PapelParticipante.CONTRATANTE
+                    }
+                    2 -> {
+                        partId = "part-$docId-joao"
+                        userId = "sig-joao-lima"
+                        nome = "João Lima"
+                        email = "joao.lima@email.com"
+                        tel = "11988887777"
+                        dataNasc = "10/05/1992"
+                        papel = PapelParticipante.CONTRATADO
+                    }
+                    else -> {
+                        partId = "part-$docId-maria"
+                        userId = "user-maria-souza"
+                        nome = "Maria Souza"
+                        email = "maria.souza@empresa.com.br"
+                        tel = "11977776666"
+                        dataNasc = "22/11/1990"
+                        papel = PapelParticipante.TESTEMUNHA
+                    }
+                }
+            } else {
+                partId = if (isJoao) "part-$docId-joao" else "part-$docId-$i"
+                userId = if (isJoao) "sig-joao-lima" else null
+                nome = if (isJoao) "João Lima" else "Signatário $i"
+                email = if (isJoao) "joao.lima@email.com" else "signatario$i@empresa.com"
+                tel = if (isJoao) "11988887777" else "1190000000$i"
+                dataNasc = if (isJoao) "10/05/1992" else "1990-01-01"
+                papel = PapelParticipante.CONTRATADO
+                sitPart = when {
+                    docId == "doc-demo-6" && isJoao -> SituacaoParticipante.RECUSADO
+                    docId == "doc-demo-4" && isJoao -> SituacaoParticipante.AGUARDANDO_VEZ
+                    i <= obrigatoriosAssinaram -> SituacaoParticipante.ASSINADO
+                    else -> SituacaoParticipante.PENDENTE
+                }
             }
 
             participantes.add(
@@ -223,7 +305,7 @@ class DocumentoRepository @Inject constructor(
                     emailSnapshot = email,
                     telefoneSnapshot = tel,
                     dataNascimentoSnapshot = dataNasc,
-                    papel = PapelParticipante.CONTRATADO,
+                    papel = papel,
                     obrigatorio = true,
                     ordem = i,
                     situacao = sitPart
@@ -235,9 +317,9 @@ class DocumentoRepository @Inject constructor(
                     id = "campo-$partId",
                     versaoDocumentoId = versaoId,
                     participanteId = partId,
-                    numeroPagina = 1,
+                    numeroPagina = if (isDoc5) 2 else 1,
                     normX = 100f,
-                    normY = 300f + (i * 100f),
+                    normY = 120f + (i * 110f),
                     normLargura = 180f,
                     normAltura = 60f
                 )
@@ -245,6 +327,110 @@ class DocumentoRepository @Inject constructor(
         }
         participanteDao.inserirVarios(participantes)
         campoAssinaturaDao?.inserirVarios(campos)
+
+        // Se for o documento concluído de demonstração (doc-demo-5), povoa os eventos de histórico completos
+        if (docId == "doc-demo-5") {
+            val eventosHistorico = listOf(
+                EventoHistoricoEntity(
+                    id = "evt-demo-1",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc,
+                    tipoEvento = TipoEventoHistorico.CRIACAO,
+                    autorNome = "Carla Mendes",
+                    detalhe = "Documento 'Contrato de Prestação de Serviços' v2.0 criado com sucesso."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-2",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 300000,
+                    tipoEvento = TipoEventoHistorico.UPLOAD_PDF,
+                    autorNome = "Carla Mendes",
+                    detalhe = "Upload do arquivo contrato_servicos.pdf concluído (SHA-256: $shaOrig)."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-3",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 600000,
+                    tipoEvento = TipoEventoHistorico.CONFIGURACAO_ORDEM,
+                    autorNome = "Carla Mendes",
+                    detalhe = "Modo de assinatura configurado: Paralelo (3 signatários obrigatórios)."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-4",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 900000,
+                    tipoEvento = TipoEventoHistorico.ENVIO,
+                    autorNome = "Sistema LetsSign",
+                    detalhe = "Convites de assinatura despachados por e-mail e push para 3 participantes."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-5",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 3600000,
+                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
+                    autorNome = "Carla Mendes",
+                    detalhe = "Identidade confirmada com sucesso via biometria facial."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-6",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 3900000,
+                    tipoEvento = TipoEventoHistorico.ASSINATURA,
+                    autorNome = "Carla Mendes",
+                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 201.86.102.15 • São Paulo/SP)."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-7",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 7200000,
+                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
+                    autorNome = "João Lima",
+                    detalhe = "Identidade confirmada com sucesso via Token OTP (SMS) e dados cadastrais."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-8",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 7500000,
+                    tipoEvento = TipoEventoHistorico.ASSINATURA,
+                    autorNome = "João Lima",
+                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 189.120.45.12 • São Paulo/SP)."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-9",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 10800000,
+                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
+                    autorNome = "Maria Souza",
+                    detalhe = "Identidade confirmada com sucesso via link seguro com verificação em duas etapas."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-10",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 11100000,
+                    tipoEvento = TipoEventoHistorico.ASSINATURA,
+                    autorNome = "Maria Souza",
+                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 177.18.99.40 • Rio de Janeiro/RJ)."
+                ),
+                EventoHistoricoEntity(
+                    id = "evt-demo-11",
+                    versaoDocumentoId = versaoId,
+                    dataHoraUtc = dataUtc + 11160000,
+                    tipoEvento = TipoEventoHistorico.CONCLUSAO,
+                    autorNome = "Sistema LetsSign",
+                    detalhe = "Documento 100% concluído! Certificado gerado com SHA-256 final e carimbo de tempo ICP-Brasil."
+                )
+            )
+            eventoHistoricoDao?.inserirVarios(eventosHistorico)
+
+            // Gera o arquivo físico do PDF assinado no armazenamento do app
+            try {
+                context?.let { ctx ->
+                    br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(ctx)
+                }
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao gerar PDF demo físico: ${e.message}")
+            }
+        }
     }
 
     fun listarDocumentosDoAdmin(adminId: String): Flow<List<DocumentoItemResumo>> {

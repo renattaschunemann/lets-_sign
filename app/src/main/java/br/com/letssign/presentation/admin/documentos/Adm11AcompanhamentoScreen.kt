@@ -288,12 +288,28 @@ fun Adm11AcompanhamentoScreen(
                                 SituacaoDocumento.CONCLUIDO -> {
                                     BotaoPrincipal(
                                         texto = stringResource(R.string.adm11_btn_baixar_assinado),
-                                        aoClicar = { viewModel.definirFeedback("Baixando documento assinado com certificado...") },
+                                        aoClicar = {
+                                            try {
+                                                val arquivo = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                                br.com.letssign.core.pdf.PdfDemoGenerator.compartilharPdf(context, arquivo)
+                                                viewModel.definirFeedback("Contrato assinado aberto para download e compartilhamento!")
+                                            } catch (e: Exception) {
+                                                viewModel.definirFeedback("Erro ao exportar PDF: ${e.message}")
+                                            }
+                                        },
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                     BotaoSecundario(
                                         texto = stringResource(R.string.adm11_btn_baixar_original),
-                                        aoClicar = { viewModel.definirFeedback("Baixando PDF original...") },
+                                        aoClicar = {
+                                            try {
+                                                val arquivo = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                                br.com.letssign.core.pdf.PdfDemoGenerator.compartilharPdf(context, arquivo)
+                                                viewModel.definirFeedback("PDF preparado para download!")
+                                            } catch (e: Exception) {
+                                                viewModel.definirFeedback("Erro ao exportar PDF: ${e.message}")
+                                            }
+                                        },
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }

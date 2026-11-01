@@ -40,14 +40,14 @@ class Adm12AuditoriaViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val versao = if (paramVersaoId.isNotBlank()) {
-                versaoDao.buscarPorId(paramVersaoId)
+                versaoDao.buscarPorId(paramVersaoId) ?: versaoDao.buscarVersaoAtual(paramVersaoId)
             } else if (paramDocId.isNotBlank()) {
-                versaoDao.buscarVersaoAtual(paramDocId)
+                versaoDao.buscarPorId(paramDocId) ?: versaoDao.buscarVersaoAtual(paramDocId)
             } else null
 
             _uiState.update { it.copy(versao = versao) }
 
-            val resolvedVersaoId = versao?.id ?: paramVersaoId
+            val resolvedVersaoId = versao?.id ?: paramVersaoId.ifBlank { paramDocId }
 
             _filtro.flatMapLatest { filtro ->
                 documentoRepository.listarEventosAuditoria(resolvedVersaoId, filtro)
