@@ -55,6 +55,11 @@ class UsuarioRepository @Inject constructor(
                 )
             )
 
+            // Se for signatário, vincula documentos atribuídos a este e-mail
+            if (usuarioSalvar.perfil == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
+                participanteDao?.vincularUsuarioPorEmail(email = usuarioSalvar.email, usuarioId = usuarioSalvar.id)
+            }
+
             Result.success(usuarioSalvar)
         } catch (e: Exception) {
             Result.failure(e)
@@ -135,7 +140,7 @@ class UsuarioRepository @Inject constructor(
 
             // Se for signatário, vincula documentos atribuídos a este e-mail
             if (perfil == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
-                participanteDao?.vincularUsuarioPorEmail(usuarioLocal.id, usuarioLocal.email)
+                participanteDao?.vincularUsuarioPorEmail(email = usuarioLocal.email, usuarioId = usuarioLocal.id)
             }
 
             Result.success(usuarioLocal)

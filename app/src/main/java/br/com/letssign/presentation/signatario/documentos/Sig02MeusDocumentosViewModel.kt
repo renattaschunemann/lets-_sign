@@ -69,6 +69,11 @@ class Sig02MeusDocumentosViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(carregando = true, erro = null) }
             val sessao = sessionManager.sessaoFlow.firstOrNull()
+            try {
+                documentoRepository.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+            } catch (e: Exception) {
+                println("Sig02MeusDocumentosViewModel: aviso ao inicializar demo: ${e.message}")
+            }
             val usuarioId = sessao?.usuarioId ?: "sig-joao-lima"
 
             documentoRepository.listarDocumentosDoSignatario(usuarioId)

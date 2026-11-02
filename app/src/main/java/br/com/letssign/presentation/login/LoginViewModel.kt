@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
+import br.com.letssign.data.repository.DocumentoRepository
+
 data class LoginUiState(
     val email: String = "",
     val senha: String = "",
@@ -26,8 +28,12 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val usuarioRepository: UsuarioRepository
+    private val usuarioRepository: UsuarioRepository,
+    private val documentoRepository: DocumentoRepository?
 ) : ViewModel() {
+
+    // Construtor para testes unitários
+    constructor(usuarioRepository: UsuarioRepository) : this(usuarioRepository, null)
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -44,6 +50,26 @@ class LoginViewModel @Inject constructor(
     fun onSenhaChanged(senha: String) {
         _uiState.value = _uiState.value.copy(
             senha = senha,
+            erroCredenciais = null,
+            erroConexao = null
+        )
+    }
+
+    fun preencherAdminDemo() {
+        _uiState.value = _uiState.value.copy(
+            email = "carla@empresa.com.br",
+            senha = "Senha123",
+            erroFormatoEmail = null,
+            erroCredenciais = null,
+            erroConexao = null
+        )
+    }
+
+    fun preencherSignatarioDemo() {
+        _uiState.value = _uiState.value.copy(
+            email = "joao.lima@email.com",
+            senha = "Senha123",
+            erroFormatoEmail = null,
             erroCredenciais = null,
             erroConexao = null
         )
@@ -75,6 +101,13 @@ class LoginViewModel @Inject constructor(
             val resultado = usuarioRepository.autenticar(email, senha)
             resultado.fold(
                 onSuccess = { usuario ->
+                    documentoRepository?.let { repo ->
+                        try {
+                            repo.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+                        } catch (e: Exception) {
+                            println("LoginViewModel: aviso demo: ${e.message}")
+                        }
+                    }
                     _uiState.value = _uiState.value.copy(
                         estaCarregando = false,
                         loginSucessoPerfil = usuario.perfil,

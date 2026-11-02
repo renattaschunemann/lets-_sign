@@ -6,7 +6,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -153,6 +158,51 @@ fun Com02LoginScreen(
             onClick = onNavigateToCadastroAdmin,
             habilitado = !uiState.estaCarregando
         )
+
+        Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp24))
+
+        // Painel para avaliação da Sprint 1 com preenchimento instantâneo das contas mockadas
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            color = LetsSignTheme.colors.corSuperficie,
+            border = BorderStroke(1.dp, LetsSignTheme.colors.corBorda)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Acesso Rápido para Avaliação (Sprint 1)",
+                    style = LetsSignTheme.typography.labelLarge,
+                    color = LetsSignTheme.colors.corTextoPrincipal
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Clique para preencher as credenciais de teste:",
+                    style = LetsSignTheme.typography.bodySmall,
+                    color = LetsSignTheme.colors.corTextoSecundario
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.preencherAdminDemo() },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Admin (Carla)", style = LetsSignTheme.typography.labelMedium)
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.preencherSignatarioDemo() },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Signatário (João)", style = LetsSignTheme.typography.labelMedium)
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp32))
     }
