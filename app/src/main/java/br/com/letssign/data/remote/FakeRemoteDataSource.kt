@@ -12,7 +12,10 @@ data class RemoteUsuarioDto(
     val email: String,
     val telefone: String,
     val perfil: PerfilUsuario,
-    val senhaHash: String
+    val senhaHash: String,
+    val cpf: String = "",
+    val dataNascimento: String = "",
+    val endereco: String = ""
 )
 
 data class RemoteDocumentoEnvioRequest(
@@ -67,9 +70,34 @@ data class RemoteConfirmacaoIdentidadeResult(
 
 interface RemoteDataSource {
     suspend fun autenticar(email: String, senhaHash: String): RemoteUsuarioDto
-    suspend fun cadastrarAdmin(nome: String, email: String, telefone: String, senhaHash: String): RemoteUsuarioDto
-    suspend fun cadastrarSignatario(nome: String, email: String, telefone: String, senhaHash: String): RemoteUsuarioDto
-    suspend fun cadastrarUsuario(nome: String, email: String, telefone: String, senhaHash: String, perfil: PerfilUsuario): RemoteUsuarioDto
+    suspend fun cadastrarAdmin(
+        nome: String,
+        email: String,
+        telefone: String,
+        senhaHash: String,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
+    ): RemoteUsuarioDto
+    suspend fun cadastrarSignatario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senhaHash: String,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
+    ): RemoteUsuarioDto
+    suspend fun cadastrarUsuario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senhaHash: String,
+        perfil: PerfilUsuario,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
+    ): RemoteUsuarioDto
     suspend fun enviarDocumento(request: RemoteDocumentoEnvioRequest): RemoteEnvioResponse
     suspend fun resolverLinkConvite(token: String): Pair<String, String> // Retorna Pair(documentoId, participanteId)
     suspend fun validarIdentidadeSignatario(
@@ -118,7 +146,10 @@ class FakeRemoteDataSource(
             email = "carla@empresa.com.br",
             telefone = "11987654321",
             perfil = PerfilUsuario.ADMIN,
-            senhaHash = "Senha123"
+            senhaHash = "Senha123",
+            cpf = "123.456.789-00",
+            dataNascimento = "15/04/1988",
+            endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP"
         )
         usuariosDb[carla.email] = carla
         usuariosDb["carla.mendes@empresa.com"] = carla.copy(email = "carla.mendes@empresa.com")
@@ -133,7 +164,10 @@ class FakeRemoteDataSource(
             email = "joao.lima@email.com",
             telefone = "11912345678",
             perfil = PerfilUsuario.SIGNATARIO,
-            senhaHash = "Senha123"
+            senhaHash = "Senha123",
+            cpf = "987.654.321-99",
+            dataNascimento = "20/08/1992",
+            endereco = "Rua Augusta, 500, Consolação, São Paulo - SP"
         )
         usuariosDb[joao.email] = joao
         usuariosDb["joao.lima@empresa.com"] = joao.copy(email = "joao.lima@empresa.com")
@@ -176,18 +210,24 @@ class FakeRemoteDataSource(
         nome: String,
         email: String,
         telefone: String,
-        senhaHash: String
+        senhaHash: String,
+        cpf: String,
+        dataNascimento: String,
+        endereco: String
     ): RemoteUsuarioDto {
-        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.ADMIN)
+        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.ADMIN, cpf, dataNascimento, endereco)
     }
 
     override suspend fun cadastrarSignatario(
         nome: String,
         email: String,
         telefone: String,
-        senhaHash: String
+        senhaHash: String,
+        cpf: String,
+        dataNascimento: String,
+        endereco: String
     ): RemoteUsuarioDto {
-        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.SIGNATARIO)
+        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.SIGNATARIO, cpf, dataNascimento, endereco)
     }
 
     override suspend fun cadastrarUsuario(
@@ -195,7 +235,10 @@ class FakeRemoteDataSource(
         email: String,
         telefone: String,
         senhaHash: String,
-        perfil: PerfilUsuario
+        perfil: PerfilUsuario,
+        cpf: String,
+        dataNascimento: String,
+        endereco: String
     ): RemoteUsuarioDto {
         simularRede()
         val emailNorm = email.trim().lowercase()
@@ -210,7 +253,10 @@ class FakeRemoteDataSource(
             email = emailNorm,
             telefone = telefone.trim(),
             perfil = perfil,
-            senhaHash = senhaHash
+            senhaHash = senhaHash,
+            cpf = cpf.trim(),
+            dataNascimento = dataNascimento.trim(),
+            endereco = endereco.trim()
         )
         usuariosDb[emailNorm] = novoUsuario
         return novoUsuario

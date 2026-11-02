@@ -211,6 +211,7 @@ fun Com03CadastroAdminScreen(
                 valor = uiState.nome,
                 aoMudarValor = viewModel::onNomeChanged,
                 rotulo = stringResource(R.string.com03_label_nome),
+                mensagemErro = uiState.erroNome,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()
@@ -218,41 +219,70 @@ fun Com03CadastroAdminScreen(
 
             Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
 
-            // E-mail
+            // CPF (somente números, 11 dígitos com máscara 000.000.000-00)
             CampoTextoContornado(
-                valor = uiState.email,
-                aoMudarValor = viewModel::onEmailChanged,
-                rotulo = stringResource(R.string.com03_label_email),
-                mensagemErro = if (uiState.erroEmailEmUso) stringResource(R.string.com03_erro_email_em_uso) else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                valor = uiState.cpf,
+                aoMudarValor = viewModel::onCpfChanged,
+                rotulo = stringResource(R.string.com03_label_cpf),
+                dicaAjuda = stringResource(R.string.com03_dica_cpf),
+                mensagemErro = uiState.erroCpf,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            if (uiState.erroEmailEmUso) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = LetsSignTheme.spacing.esp4),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Text(
-                        text = stringResource(R.string.com03_link_faca_login),
-                        style = LetsSignTheme.typography.labelLarge.copy(color = LetsSignTheme.colors.corSecundaria),
-                        modifier = Modifier.clickable { onNavigateToLogin() }
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
+
+            // Data de nascimento (somente números, DD/MM/AAAA)
+            CampoTextoContornado(
+                valor = uiState.dataNascimento,
+                aoMudarValor = viewModel::onDataNascimentoChanged,
+                rotulo = stringResource(R.string.com03_label_data_nascimento),
+                dicaAjuda = stringResource(R.string.com03_dica_data_nascimento),
+                mensagemErro = uiState.erroDataNascimento,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
 
-            // Telefone
+            // Telefone (com DDD obrigatório)
             CampoTextoContornado(
                 valor = uiState.telefone,
                 aoMudarValor = viewModel::onTelefoneChanged,
                 rotulo = stringResource(R.string.com03_label_telefone),
-                dicaAjuda = "(11) 98765-4321",
+                dicaAjuda = stringResource(R.string.com03_dica_telefone),
+                mensagemErro = uiState.erroTelefone,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
+
+            // Endereço completo
+            CampoTextoContornado(
+                valor = uiState.endereco,
+                aoMudarValor = viewModel::onEnderecoChanged,
+                rotulo = stringResource(R.string.com03_label_endereco),
+                dicaAjuda = stringResource(R.string.com03_dica_endereco),
+                mensagemErro = uiState.erroEndereco,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
+
+            // E-mail (com @ obrigatório e formato válido)
+            CampoTextoContornado(
+                valor = uiState.email,
+                aoMudarValor = viewModel::onEmailChanged,
+                rotulo = stringResource(R.string.com03_label_email),
+                dicaAjuda = stringResource(R.string.com03_dica_email),
+                mensagemErro = uiState.erroEmail ?: if (uiState.erroEmailEmUso) stringResource(R.string.com03_erro_email_em_uso) else null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -357,7 +387,7 @@ fun Com03CadastroAdminScreen(
                     viewModel.criarConta()
                 },
                 carregando = uiState.estaCarregando,
-                habilitado = uiState.termosAceitos && uiState.senhaValida,
+                habilitado = !uiState.estaCarregando,
                 modifier = Modifier.fillMaxWidth()
             )
 

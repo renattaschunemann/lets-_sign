@@ -22,8 +22,8 @@ import br.com.letssign.data.local.entities.*
         NotificacaoEntity::class,
         EventoHistoricoEntity::class
     ],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class LetsSignDatabase : RoomDatabase() {

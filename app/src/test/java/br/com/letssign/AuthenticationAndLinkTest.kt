@@ -118,6 +118,9 @@ class AuthenticationAndLinkTest {
     fun `testar cadastro do Admin com validacao de senha forte P02 e termos de uso`() = runTest {
         val viewModel = CadastroAdminViewModel(usuarioRepository)
         viewModel.onNomeChanged("Carla Admin")
+        viewModel.onCpfChanged("12345678901")
+        viewModel.onDataNascimentoChanged("15041990")
+        viewModel.onEnderecoChanged("Av. Paulista, 1000")
         viewModel.onEmailChanged("nova.carla@empresa.com")
         viewModel.onTelefoneChanged("11988887777")
 

@@ -18,7 +18,10 @@ data class UsuarioEntity(
     val telefone: String,
     val perfil: PerfilUsuario,
     val senhaHash: String,
-    val dataCriacaoUtc: Long
+    val dataCriacaoUtc: Long,
+    val cpf: String = "",
+    val dataNascimento: String = "",
+    val endereco: String = ""
 )
 
 @Entity(

@@ -131,8 +131,16 @@
     <string name="com03_perfil_admin_titulo">Administrador</string>
     <string name="com03_perfil_admin_desc">Perfil completo: upload de PDF, cadastro de signatários e gestão de coletas.</string>
     <string name="com03_label_nome">Nome completo</string>
+    <string name="com03_label_cpf">CPF</string>
+    <string name="com03_dica_cpf">Apenas números (11 dígitos): 000.000.000-00</string>
+    <string name="com03_label_data_nascimento">Data de nascimento</string>
+    <string name="com03_dica_data_nascimento">Somente números: DD/MM/AAAA</string>
+    <string name="com03_label_telefone">Telefone (com DDD)</string>
+    <string name="com03_dica_telefone">(11) 98765-4321</string>
+    <string name="com03_label_endereco">Endereço completo</string>
+    <string name="com03_dica_endereco">Rua, número, complemento, bairro, cidade - UF</string>
     <string name="com03_label_email">E-mail</string>
-    <string name="com03_label_telefone">Telefone</string>
+    <string name="com03_dica_email">nome@empresa.com (obrigatório conter @)</string>
     <string name="com03_label_senha">Senha</string>
     <string name="com03_label_confirmar_senha">Confirmação de senha</string>
     <string name="com03_ajuda_senha">Sua senha precisa ter pelo menos 8 caracteres, com letras e números.</string>

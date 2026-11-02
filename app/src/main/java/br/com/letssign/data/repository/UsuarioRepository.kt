@@ -1,5 +1,6 @@
 package br.com.letssign.data.repository
 
+import br.com.letssign.data.local.dao.ParticipanteDocumentoDao
 import br.com.letssign.data.local.dao.UsuarioDao
 import br.com.letssign.data.local.datastore.SessionManager
 import br.com.letssign.data.local.datastore.UsuarioSessao
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 class UsuarioRepository @Inject constructor(
     private val usuarioDao: UsuarioDao,
     private val remoteDataSource: RemoteDataSource,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val participanteDao: ParticipanteDocumentoDao? = null
 ) {
 
     val sessaoAtiva: Flow<UsuarioSessao?> = sessionManager.sessaoFlow
@@ -63,18 +65,24 @@ class UsuarioRepository @Inject constructor(
         nome: String,
         email: String,
         telefone: String,
-        senha: String
+        senha: String,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
     ): Result<UsuarioEntity> {
-        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.ADMIN)
+        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.ADMIN, cpf, dataNascimento, endereco)
     }
 
     suspend fun cadastrarSignatario(
         nome: String,
         email: String,
         telefone: String,
-        senha: String
+        senha: String,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
     ): Result<UsuarioEntity> {
-        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO)
+        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO, cpf, dataNascimento, endereco)
     }
 
     suspend fun cadastrarUsuario(
@@ -82,10 +90,22 @@ class UsuarioRepository @Inject constructor(
         email: String,
         telefone: String,
         senha: String,
-        perfil: br.com.letssign.domain.model.PerfilUsuario
+        perfil: br.com.letssign.domain.model.PerfilUsuario,
+        cpf: String = "",
+        dataNascimento: String = "",
+        endereco: String = ""
     ): Result<UsuarioEntity> {
         return try {
-            val remoteUser = remoteDataSource.cadastrarUsuario(nome, email, telefone, senha, perfil)
+            val remoteUser = remoteDataSource.cadastrarUsuario(
+                nome = nome,
+                email = email,
+                telefone = telefone,
+                senhaHash = senha,
+                perfil = perfil,
+                cpf = cpf,
+                dataNascimento = dataNascimento,
+                endereco = endereco
+            )
             val usuarioLocal = UsuarioEntity(
                 id = remoteUser.id,
                 nome = remoteUser.nome,
@@ -93,7 +113,10 @@ class UsuarioRepository @Inject constructor(
                 telefone = remoteUser.telefone,
                 perfil = remoteUser.perfil,
                 senhaHash = remoteUser.senhaHash,
-                dataCriacaoUtc = System.currentTimeMillis()
+                dataCriacaoUtc = System.currentTimeMillis(),
+                cpf = remoteUser.cpf,
+                dataNascimento = remoteUser.dataNascimento,
+                endereco = remoteUser.endereco
             )
             usuarioDao.inserir(usuarioLocal)
 
@@ -106,6 +129,11 @@ class UsuarioRepository @Inject constructor(
                     tokenAcesso = "token-${usuarioLocal.id}"
                 )
             )
+
+            // Se for signatário, vincula documentos atribuídos a este e-mail
+            if (perfil == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
+                participanteDao?.vincularUsuarioPorEmail(usuarioLocal.id, usuarioLocal.email)
+            }
 
             Result.success(usuarioLocal)
         } catch (e: Exception) {
