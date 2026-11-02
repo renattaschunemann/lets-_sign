@@ -121,6 +121,7 @@ class AuthenticationAndLinkTest {
         viewModel.onCpfChanged("12345678901")
         viewModel.onDataNascimentoChanged("15041990")
         viewModel.onEnderecoChanged("Av. Paulista, 1000")
+        viewModel.onProfissaoChanged("Advogada")
         viewModel.onEmailChanged("nova.carla@empresa.com")
         viewModel.onTelefoneChanged("11988887777")
 

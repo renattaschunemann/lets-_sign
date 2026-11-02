@@ -19,17 +19,19 @@ data class CadastroAdminUiState(
     val dataNascimento: String = "",
     val telefone: String = "",
     val endereco: String = "",
+    val profissao: String = "",
     val email: String = "",
     val senha: String = "",
     val confirmacaoSenha: String = "",
     val termosAceitos: Boolean = false,
-    val perfilSelecionado: PerfilUsuario = PerfilUsuario.SIGNATARIO,
+    val perfilSelecionado: PerfilUsuario = PerfilUsuario.ADMIN,
     val estaCarregando: Boolean = false,
     val erroNome: String? = null,
     val erroCpf: String? = null,
     val erroDataNascimento: String? = null,
     val erroTelefone: String? = null,
     val erroEndereco: String? = null,
+    val erroProfissao: String? = null,
     val erroEmail: String? = null,
     val erroEmailEmUso: Boolean = false,
     val erroSenhasDiferentes: Boolean = false,
@@ -48,12 +50,13 @@ data class CadastroAdminUiState(
     val dataNascimentoValida: Boolean get() = CadastroValidator.validarDataNascimento(dataNascimento)
     val telefoneValido: Boolean get() = CadastroValidator.validarTelefoneComDdd(telefone)
     val enderecoValido: Boolean get() = CadastroValidator.validarEndereco(endereco)
+    val profissaoValida: Boolean get() = profissao.trim().isNotBlank()
     val emailValido: Boolean get() = CadastroValidator.validarEmail(email)
 
     val podeSubmeter: Boolean
         get() = termosAceitos && senhaValida && senha == confirmacaoSenha &&
                 nome.isNotBlank() && cpf.isNotBlank() && dataNascimento.isNotBlank() &&
-                telefone.isNotBlank() && endereco.isNotBlank() && email.isNotBlank()
+                telefone.isNotBlank() && endereco.isNotBlank() && profissao.isNotBlank() && email.isNotBlank()
 }
 
 @HiltViewModel
@@ -103,6 +106,13 @@ class CadastroAdminViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             endereco = endereco,
             erroEndereco = null
+        )
+    }
+
+    fun onProfissaoChanged(profissao: String) {
+        _uiState.value = _uiState.value.copy(
+            profissao = profissao,
+            erroProfissao = null
         )
     }
 
@@ -164,6 +174,11 @@ class CadastroAdminViewModel @Inject constructor(
             temErro = true
         }
 
+        if (state.profissao.trim().isBlank()) {
+            novoState = novoState.copy(erroProfissao = "Informe a profissão ou ramo de atuação.")
+            temErro = true
+        }
+
         if (!CadastroValidator.validarEmail(state.email)) {
             novoState = novoState.copy(erroEmail = "E-mail inválido. Deve conter '@' e um domínio válido.")
             temErro = true
@@ -203,7 +218,8 @@ class CadastroAdminViewModel @Inject constructor(
                 perfil = state.perfilSelecionado,
                 cpf = CadastroValidator.formatarCpf(state.cpf),
                 dataNascimento = CadastroValidator.formatarDataNascimento(state.dataNascimento),
-                endereco = state.endereco.trim()
+                endereco = state.endereco.trim(),
+                profissao = state.profissao.trim()
             )
             resultado.fold(
                 onSuccess = { usuario ->

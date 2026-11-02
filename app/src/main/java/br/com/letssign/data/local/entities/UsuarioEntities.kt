@@ -21,7 +21,8 @@ data class UsuarioEntity(
     val dataCriacaoUtc: Long,
     val cpf: String = "",
     val dataNascimento: String = "",
-    val endereco: String = ""
+    val endereco: String = "",
+    val profissao: String = ""
 )
 
 @Entity(

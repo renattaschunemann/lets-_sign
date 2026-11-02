@@ -93,7 +93,8 @@ class UsuarioRepository @Inject constructor(
         perfil: br.com.letssign.domain.model.PerfilUsuario,
         cpf: String = "",
         dataNascimento: String = "",
-        endereco: String = ""
+        endereco: String = "",
+        profissao: String = ""
     ): Result<UsuarioEntity> {
         return try {
             val remoteUser = remoteDataSource.cadastrarUsuario(
@@ -104,7 +105,8 @@ class UsuarioRepository @Inject constructor(
                 perfil = perfil,
                 cpf = cpf,
                 dataNascimento = dataNascimento,
-                endereco = endereco
+                endereco = endereco,
+                profissao = profissao
             )
             val usuarioLocal = UsuarioEntity(
                 id = remoteUser.id,
@@ -116,7 +118,8 @@ class UsuarioRepository @Inject constructor(
                 dataCriacaoUtc = System.currentTimeMillis(),
                 cpf = remoteUser.cpf,
                 dataNascimento = remoteUser.dataNascimento,
-                endereco = remoteUser.endereco
+                endereco = remoteUser.endereco,
+                profissao = remoteUser.profissao
             )
             usuarioDao.inserir(usuarioLocal)
 

@@ -51,6 +51,7 @@ fun CampoTextoContornado(
     aoMudarValor: (String) -> Unit,
     rotulo: String,
     modifier: Modifier = Modifier,
+    placeholder: String? = null,
     dicaAjuda: String? = null,
     mensagemErro: String? = null,
     ehErro: Boolean = mensagemErro != null,
@@ -87,6 +88,15 @@ fun CampoTextoContornado(
                     aoMudarValor(novoValor)
                 }
             },
+            placeholder = if (placeholder != null) {
+                {
+                    Text(
+                        text = placeholder,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                        color = LetsSignTheme.colors.corTextoDesabilitado
+                    )
+                }
+            } else null,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {

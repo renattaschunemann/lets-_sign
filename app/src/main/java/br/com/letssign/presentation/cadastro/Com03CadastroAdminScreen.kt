@@ -53,11 +53,7 @@ fun Com03CadastroAdminScreen(
         if (uiState.cadastroSucesso) {
             snackbarHostState.showSnackbar(sucessoMsg)
             delay(1000)
-            if (uiState.cadastroSucessoPerfil == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
-                onNavigateToSignatarioHome()
-            } else {
-                onNavigateToAdminHome()
-            }
+            onNavigateToAdminHome()
         }
     }
 
@@ -66,11 +62,7 @@ fun Com03CadastroAdminScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
-                            stringResource(R.string.com03_titulo_signatario)
-                        } else {
-                            stringResource(R.string.com03_titulo_admin)
-                        },
+                        text = stringResource(R.string.com03_titulo_admin),
                         style = LetsSignTheme.typography.titleLarge,
                         color = LetsSignTheme.colors.corTextoPrincipal
                     )
@@ -104,111 +96,6 @@ fun Com03CadastroAdminScreen(
 
             // Logo centralizado 120 x 48 dp
             LogoPlaceholder(tamanho = LogoSize.MEDIO)
-
-            Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
-
-            // Seletor de Perfil Obrigatório (Signatário vs Admin)
-            Text(
-                text = stringResource(R.string.com03_perfil_rotulo),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = LetsSignTheme.colors.corTextoPrincipal,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-            )
-
-            // Opção 1: Signatário
-            OutlinedCard(
-                onClick = { viewModel.onPerfilChanged(br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) },
-                colors = CardDefaults.outlinedCardColors(
-                    containerColor = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
-                        LetsSignTheme.colors.corPrimaria.copy(alpha = 0.08f)
-                    } else {
-                        LetsSignTheme.colors.corSuperficie
-                    }
-                ),
-                border = androidx.compose.foundation.BorderStroke(
-                    width = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) 2.dp else 1.dp,
-                    color = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) {
-                        LetsSignTheme.colors.corPrimaria
-                    } else {
-                        LetsSignTheme.colors.corBorda
-                    }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO,
-                        onClick = { viewModel.onPerfilChanged(br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = stringResource(R.string.com03_perfil_signatario_titulo),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = LetsSignTheme.colors.corTextoPrincipal
-                        )
-                        Text(
-                            text = stringResource(R.string.com03_perfil_signatario_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = LetsSignTheme.colors.corTextoSecundario
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Opção 2: Administrador
-            OutlinedCard(
-                onClick = { viewModel.onPerfilChanged(br.com.letssign.domain.model.PerfilUsuario.ADMIN) },
-                colors = CardDefaults.outlinedCardColors(
-                    containerColor = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.ADMIN) {
-                        LetsSignTheme.colors.corPrimaria.copy(alpha = 0.08f)
-                    } else {
-                        LetsSignTheme.colors.corSuperficie
-                    }
-                ),
-                border = androidx.compose.foundation.BorderStroke(
-                    width = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.ADMIN) 2.dp else 1.dp,
-                    color = if (uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.ADMIN) {
-                        LetsSignTheme.colors.corPrimaria
-                    } else {
-                        LetsSignTheme.colors.corBorda
-                    }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = uiState.perfilSelecionado == br.com.letssign.domain.model.PerfilUsuario.ADMIN,
-                        onClick = { viewModel.onPerfilChanged(br.com.letssign.domain.model.PerfilUsuario.ADMIN) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = stringResource(R.string.com03_perfil_admin_titulo),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = LetsSignTheme.colors.corTextoPrincipal
-                        )
-                        Text(
-                            text = stringResource(R.string.com03_perfil_admin_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = LetsSignTheme.colors.corTextoSecundario
-                        )
-                    }
-                }
-            }
 
             Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp24))
 
@@ -270,7 +157,22 @@ fun Com03CadastroAdminScreen(
 
             Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
 
-            // Endereço completo
+            // Profissão do administrador
+            CampoTextoContornado(
+                valor = uiState.profissao,
+                aoMudarValor = viewModel::onProfissaoChanged,
+                rotulo = stringResource(R.string.com03_label_profissao),
+                placeholder = stringResource(R.string.com03_placeholder_profissao),
+                dicaAjuda = stringResource(R.string.com03_dica_profissao),
+                mensagemErro = uiState.erroProfissao,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
+
+            // Endereço comercial
             CampoTextoContornado(
                 valor = uiState.endereco,
                 aoMudarValor = viewModel::onEnderecoChanged,
