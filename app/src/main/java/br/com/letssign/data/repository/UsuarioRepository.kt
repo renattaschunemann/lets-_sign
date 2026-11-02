@@ -65,8 +65,27 @@ class UsuarioRepository @Inject constructor(
         telefone: String,
         senha: String
     ): Result<UsuarioEntity> {
+        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.ADMIN)
+    }
+
+    suspend fun cadastrarSignatario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senha: String
+    ): Result<UsuarioEntity> {
+        return cadastrarUsuario(nome, email, telefone, senha, br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO)
+    }
+
+    suspend fun cadastrarUsuario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senha: String,
+        perfil: br.com.letssign.domain.model.PerfilUsuario
+    ): Result<UsuarioEntity> {
         return try {
-            val remoteUser = remoteDataSource.cadastrarAdmin(nome, email, telefone, senha)
+            val remoteUser = remoteDataSource.cadastrarUsuario(nome, email, telefone, senha, perfil)
             val usuarioLocal = UsuarioEntity(
                 id = remoteUser.id,
                 nome = remoteUser.nome,

@@ -147,9 +147,9 @@ fun Com02LoginScreen(
 
         Spacer(modifier = Modifier.height(LetsSignTheme.spacing.esp16))
 
-        // Botão secundário de texto "Criar conta de administrador"
+        // Botão secundário de texto para cadastro (Signatário ou Administrador)
         BotaoTexto(
-            texto = stringResource(R.string.btn_criar_conta_admin),
+            texto = "Não tem uma conta? Cadastre-se",
             onClick = onNavigateToCadastroAdmin,
             habilitado = !uiState.estaCarregando
         )

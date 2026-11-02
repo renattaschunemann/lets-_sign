@@ -268,6 +268,11 @@ class CamposFakePartDao : ParticipanteDocumentoDao {
     override suspend fun deletarPorVersao(versaoDocumentoId: String) {
         db.entries.removeIf { it.value.versaoDocumentoId == versaoDocumentoId }
     }
+    override suspend fun vincularUsuarioPorEmail(email: String, usuarioId: String) {
+        db.values.filter { it.emailSnapshot.equals(email, ignoreCase = true) }.forEach {
+            db[it.id] = it.copy(usuarioId = usuarioId)
+        }
+    }
 }
 
 class CamposFakeCampoDao : CampoAssinaturaDao {

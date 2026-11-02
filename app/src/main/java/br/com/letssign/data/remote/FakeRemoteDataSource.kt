@@ -68,6 +68,8 @@ data class RemoteConfirmacaoIdentidadeResult(
 interface RemoteDataSource {
     suspend fun autenticar(email: String, senhaHash: String): RemoteUsuarioDto
     suspend fun cadastrarAdmin(nome: String, email: String, telefone: String, senhaHash: String): RemoteUsuarioDto
+    suspend fun cadastrarSignatario(nome: String, email: String, telefone: String, senhaHash: String): RemoteUsuarioDto
+    suspend fun cadastrarUsuario(nome: String, email: String, telefone: String, senhaHash: String, perfil: PerfilUsuario): RemoteUsuarioDto
     suspend fun enviarDocumento(request: RemoteDocumentoEnvioRequest): RemoteEnvioResponse
     suspend fun resolverLinkConvite(token: String): Pair<String, String> // Retorna Pair(documentoId, participanteId)
     suspend fun validarIdentidadeSignatario(
@@ -137,6 +139,9 @@ class FakeRemoteDataSource(
         usuariosDb["joao.lima@empresa.com"] = joao.copy(email = "joao.lima@empresa.com")
         usuariosDb["joao@empresa.com.br"] = joao.copy(email = "joao@empresa.com.br")
         usuariosDb["joao.lima@empresa.com.br"] = joao.copy(email = "joao.lima@empresa.com.br")
+        usuariosDb["joão.lima@email.com"] = joao.copy(email = "joão.lima@email.com")
+        usuariosDb["joão@empresa.com.br"] = joao.copy(email = "joão@empresa.com.br")
+        usuariosDb["joão.lima@empresa.com.br"] = joao.copy(email = "joão.lima@empresa.com.br")
     }
 
     private suspend fun simularRede() {
@@ -148,11 +153,17 @@ class FakeRemoteDataSource(
         }
     }
 
+    private fun normalizarEmail(email: String): String {
+        val normalizado = java.text.Normalizer.normalize(email.trim().lowercase(), java.text.Normalizer.Form.NFD)
+        return normalizado.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+    }
+
     override suspend fun autenticar(email: String, senhaHash: String): RemoteUsuarioDto {
         simularRede()
-        val emailNormalizado = email.trim().lowercase()
+        val emailNormalizado = normalizarEmail(email)
         val senhaDigitada = senhaHash.trim()
-        val usuario = usuariosDb[emailNormalizado]
+        val usuario = usuariosDb[email.trim().lowercase()]
+            ?: usuariosDb[emailNormalizado]
             ?: throw IllegalArgumentException("E-mail não cadastrado (E02).")
 
         if (!usuario.senhaHash.equals(senhaDigitada, ignoreCase = true)) {
@@ -167,6 +178,25 @@ class FakeRemoteDataSource(
         telefone: String,
         senhaHash: String
     ): RemoteUsuarioDto {
+        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.ADMIN)
+    }
+
+    override suspend fun cadastrarSignatario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senhaHash: String
+    ): RemoteUsuarioDto {
+        return cadastrarUsuario(nome, email, telefone, senhaHash, PerfilUsuario.SIGNATARIO)
+    }
+
+    override suspend fun cadastrarUsuario(
+        nome: String,
+        email: String,
+        telefone: String,
+        senhaHash: String,
+        perfil: PerfilUsuario
+    ): RemoteUsuarioDto {
         simularRede()
         val emailNorm = email.trim().lowercase()
         // Regra P01: Unicidade global de e-mails
@@ -179,7 +209,7 @@ class FakeRemoteDataSource(
             nome = nome.trim(),
             email = emailNorm,
             telefone = telefone.trim(),
-            perfil = PerfilUsuario.ADMIN,
+            perfil = perfil,
             senhaHash = senhaHash
         )
         usuariosDb[emailNorm] = novoUsuario

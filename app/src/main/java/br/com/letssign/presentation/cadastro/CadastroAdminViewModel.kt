@@ -18,12 +18,14 @@ data class CadastroAdminUiState(
     val senha: String = "",
     val confirmacaoSenha: String = "",
     val termosAceitos: Boolean = false,
+    val perfilSelecionado: br.com.letssign.domain.model.PerfilUsuario = br.com.letssign.domain.model.PerfilUsuario.SIGNATARIO,
     val estaCarregando: Boolean = false,
     val erroEmailEmUso: Boolean = false,
     val erroSenhasDiferentes: Boolean = false,
     val erroSenhaRequisitos: Boolean = false,
     val erroConexao: String? = null,
-    val cadastroSucesso: Boolean = false
+    val cadastroSucesso: Boolean = false,
+    val cadastroSucessoPerfil: br.com.letssign.domain.model.PerfilUsuario? = null
 ) {
     val temPeloMenos8Caracteres: Boolean get() = senha.length >= 8
     val temLetras: Boolean get() = senha.any { it.isLetter() }
@@ -38,6 +40,10 @@ class CadastroAdminViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(CadastroAdminUiState())
     val uiState: StateFlow<CadastroAdminUiState> = _uiState.asStateFlow()
+
+    fun onPerfilChanged(perfil: br.com.letssign.domain.model.PerfilUsuario) {
+        _uiState.value = _uiState.value.copy(perfilSelecionado = perfil)
+    }
 
     fun onNomeChanged(nome: String) {
         _uiState.value = _uiState.value.copy(nome = nome)
@@ -96,17 +102,19 @@ class CadastroAdminViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(estaCarregando = true, erroConexao = null, erroEmailEmUso = false)
-            val resultado = usuarioRepository.cadastrarAdmin(
+            val resultado = usuarioRepository.cadastrarUsuario(
                 nome = state.nome,
                 email = state.email,
                 telefone = state.telefone,
-                senha = state.senha
+                senha = state.senha,
+                perfil = state.perfilSelecionado
             )
             resultado.fold(
-                onSuccess = {
+                onSuccess = { usuario ->
                     _uiState.value = _uiState.value.copy(
                         estaCarregando = false,
-                        cadastroSucesso = true
+                        cadastroSucesso = true,
+                        cadastroSucessoPerfil = usuario.perfil
                     )
                 },
                 onFailure = { error ->

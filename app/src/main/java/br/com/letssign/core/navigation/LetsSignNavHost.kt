@@ -113,6 +113,11 @@ fun LetsSignNavHost(
                     navController.navigate(Adm01DocumentosRoute) {
                         popUpTo(Com02LoginRoute()) { inclusive = true }
                     }
+                },
+                onNavigateToSignatarioHome = {
+                    navController.navigate(Sig01InicioPendentesRoute) {
+                        popUpTo(Com02LoginRoute()) { inclusive = true }
+                    }
                 }
             )
         }

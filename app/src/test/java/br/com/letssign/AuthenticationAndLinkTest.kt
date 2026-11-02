@@ -253,6 +253,11 @@ private class FakePartDao : ParticipanteDocumentoDao {
     override fun listarPorUsuario(usuarioId: String): Flow<List<ParticipanteDocumentoEntity>> = MutableStateFlow(map.values.toList())
     override suspend fun deletarPorId(id: String) { map.remove(id) }
     override suspend fun deletarPorVersao(versaoDocumentoId: String) { map.clear() }
+    override suspend fun vincularUsuarioPorEmail(email: String, usuarioId: String) {
+        map.values.filter { it.emailSnapshot.equals(email, ignoreCase = true) }.forEach {
+            map[it.id] = it.copy(usuarioId = usuarioId)
+        }
+    }
 }
 
 private class DummyDataStore : androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {

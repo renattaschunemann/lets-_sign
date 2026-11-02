@@ -321,6 +321,12 @@ class WizardEtapas1a6Test {
             db.entries.removeIf { it.value.versaoDocumentoId == versaoDocumentoId }
             flow.value = db.values.toList()
         }
+        override suspend fun vincularUsuarioPorEmail(email: String, usuarioId: String) {
+            db.values.filter { it.emailSnapshot.equals(email, ignoreCase = true) }.forEach {
+                db[it.id] = it.copy(usuarioId = usuarioId)
+            }
+            flow.value = db.values.toList()
+        }
     }
 
     private class FakeAdminSignatarioDao : AdminSignatarioDao {

@@ -84,6 +84,9 @@ interface ParticipanteDocumentoDao {
 
     @Query("DELETE FROM participantes_documento WHERE versaoDocumentoId = :versaoDocumentoId")
     suspend fun deletarPorVersao(versaoDocumentoId: String)
+
+    @Query("UPDATE participantes_documento SET usuarioId = :usuarioId WHERE LOWER(emailSnapshot) = LOWER(:email)")
+    suspend fun vincularUsuarioPorEmail(email: String, usuarioId: String)
 }
 
 @Dao
