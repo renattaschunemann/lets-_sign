@@ -22,6 +22,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.letssign.R
+import br.com.letssign.core.common.transformation.CpfVisualTransformation
+import br.com.letssign.core.common.transformation.DataNascimentoVisualTransformation
+import br.com.letssign.core.common.transformation.TelefoneVisualTransformation
 import br.com.letssign.core.designsystem.components.base.BotaoPrincipal
 import br.com.letssign.core.designsystem.components.base.CampoTextoContornado
 import br.com.letssign.core.designsystem.components.logo.LogoPlaceholder
@@ -42,6 +45,9 @@ fun Com03CadastroAdminScreen(
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     val sucessoMsg = stringResource(R.string.com03_sucesso_conta_criada)
+    val cpfTransformation = remember { CpfVisualTransformation() }
+    val dataNascimentoTransformation = remember { DataNascimentoVisualTransformation() }
+    val telefoneTransformation = remember { TelefoneVisualTransformation() }
 
     LaunchedEffect(uiState.cadastroSucesso) {
         if (uiState.cadastroSucesso) {
@@ -226,6 +232,7 @@ fun Com03CadastroAdminScreen(
                 rotulo = stringResource(R.string.com03_label_cpf),
                 dicaAjuda = stringResource(R.string.com03_dica_cpf),
                 mensagemErro = uiState.erroCpf,
+                visualTransformation = cpfTransformation,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()
@@ -240,6 +247,7 @@ fun Com03CadastroAdminScreen(
                 rotulo = stringResource(R.string.com03_label_data_nascimento),
                 dicaAjuda = stringResource(R.string.com03_dica_data_nascimento),
                 mensagemErro = uiState.erroDataNascimento,
+                visualTransformation = dataNascimentoTransformation,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()
@@ -254,6 +262,7 @@ fun Com03CadastroAdminScreen(
                 rotulo = stringResource(R.string.com03_label_telefone),
                 dicaAjuda = stringResource(R.string.com03_dica_telefone),
                 mensagemErro = uiState.erroTelefone,
+                visualTransformation = telefoneTransformation,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 modifier = Modifier.fillMaxWidth()

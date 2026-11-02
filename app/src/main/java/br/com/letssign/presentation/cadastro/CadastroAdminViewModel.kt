@@ -76,25 +76,25 @@ class CadastroAdminViewModel @Inject constructor(
     }
 
     fun onCpfChanged(cpfInput: String) {
-        val formatado = CadastroValidator.formatarCpf(cpfInput)
+        val digitos = CadastroValidator.apenasNumeros(cpfInput).take(11)
         _uiState.value = _uiState.value.copy(
-            cpf = formatado,
+            cpf = digitos,
             erroCpf = null
         )
     }
 
     fun onDataNascimentoChanged(dataInput: String) {
-        val formatada = CadastroValidator.formatarDataNascimento(dataInput)
+        val digitos = CadastroValidator.apenasNumeros(dataInput).take(8)
         _uiState.value = _uiState.value.copy(
-            dataNascimento = formatada,
+            dataNascimento = digitos,
             erroDataNascimento = null
         )
     }
 
     fun onTelefoneChanged(telefoneInput: String) {
-        val formatado = CadastroValidator.formatarTelefone(telefoneInput)
+        val digitos = CadastroValidator.apenasNumeros(telefoneInput).take(11)
         _uiState.value = _uiState.value.copy(
-            telefone = formatado,
+            telefone = digitos,
             erroTelefone = null
         )
     }
@@ -198,11 +198,11 @@ class CadastroAdminViewModel @Inject constructor(
             val resultado = usuarioRepository.cadastrarUsuario(
                 nome = state.nome.trim(),
                 email = state.email.trim(),
-                telefone = state.telefone.trim(),
+                telefone = CadastroValidator.formatarTelefone(state.telefone),
                 senha = state.senha,
                 perfil = state.perfilSelecionado,
-                cpf = state.cpf.trim(),
-                dataNascimento = state.dataNascimento.trim(),
+                cpf = CadastroValidator.formatarCpf(state.cpf),
+                dataNascimento = CadastroValidator.formatarDataNascimento(state.dataNascimento),
                 endereco = state.endereco.trim()
             )
             resultado.fold(

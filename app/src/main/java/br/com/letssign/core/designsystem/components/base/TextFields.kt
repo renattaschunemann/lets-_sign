@@ -58,12 +58,18 @@ fun CampoTextoContornado(
     somenteLeitura: Boolean = false,
     limiteCaracteres: Int? = null,
     ehSenha: Boolean = false,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     iconeInicio: @Composable (() -> Unit)? = null,
     iconeFim: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var senhaVisivel by remember { mutableStateOf(false) }
+
+    val transformacaoEfetiva = when {
+        ehSenha -> if (senhaVisivel) VisualTransformation.None else PasswordVisualTransformation()
+        else -> visualTransformation
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Rótulo sempre visível acima do campo
@@ -93,7 +99,7 @@ fun CampoTextoContornado(
             textStyle = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
             shape = FormaPequena,
             isError = ehErro,
-            visualTransformation = if (ehSenha && !senhaVisivel) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = transformacaoEfetiva,
             leadingIcon = iconeInicio,
             trailingIcon = {
                 if (ehSenha) {
