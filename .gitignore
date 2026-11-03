@@ -13,3 +13,6 @@ app/build/
 
 # Planning & Scratch
 implementation_plan.md
+
+# Build outputs
+*.apk
