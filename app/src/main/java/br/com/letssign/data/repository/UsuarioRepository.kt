@@ -23,20 +23,23 @@ class UsuarioRepository @Inject constructor(
     suspend fun autenticar(email: String, senha: String): Result<UsuarioEntity> {
         return try {
             val remoteUser = remoteDataSource.autenticar(email, senha)
-            val usuarioLocal = UsuarioEntity(
-                id = remoteUser.id,
+            val porId = usuarioDao.buscarPorId(remoteUser.id)
+            val porEmail = usuarioDao.buscarPorEmail(remoteUser.email)
+            val idFinal = porId?.id ?: porEmail?.id ?: remoteUser.id
+
+            val usuarioSalvar = UsuarioEntity(
+                id = idFinal,
                 nome = remoteUser.nome,
                 email = remoteUser.email,
                 telefone = remoteUser.telefone,
                 perfil = remoteUser.perfil,
                 senhaHash = remoteUser.senhaHash,
-                dataCriacaoUtc = System.currentTimeMillis()
+                dataCriacaoUtc = porId?.dataCriacaoUtc ?: porEmail?.dataCriacaoUtc ?: System.currentTimeMillis(),
+                cpf = porId?.cpf?.ifBlank { remoteUser.cpf } ?: porEmail?.cpf?.ifBlank { remoteUser.cpf } ?: remoteUser.cpf,
+                dataNascimento = porId?.dataNascimento?.ifBlank { remoteUser.dataNascimento } ?: porEmail?.dataNascimento?.ifBlank { remoteUser.dataNascimento } ?: remoteUser.dataNascimento,
+                endereco = porId?.endereco?.ifBlank { remoteUser.endereco } ?: porEmail?.endereco?.ifBlank { remoteUser.endereco } ?: remoteUser.endereco,
+                profissao = porId?.profissao?.ifBlank { remoteUser.profissao } ?: porEmail?.profissao?.ifBlank { remoteUser.profissao } ?: remoteUser.profissao
             )
-            // Salva ou atualiza no Room local evitando conflito com índice único de e-mail
-            val porId = usuarioDao.buscarPorId(usuarioLocal.id)
-            val porEmail = usuarioDao.buscarPorEmail(usuarioLocal.email)
-            val idFinal = porId?.id ?: porEmail?.id ?: usuarioLocal.id
-            val usuarioSalvar = usuarioLocal.copy(id = idFinal)
 
             if (porId != null || porEmail != null) {
                 usuarioDao.atualizar(usuarioSalvar)
@@ -151,5 +154,70 @@ class UsuarioRepository @Inject constructor(
 
     suspend fun encerrarSessao() {
         sessionManager.limparSessao()
+    }
+
+    suspend fun atualizarPerfil(
+        usuarioId: String,
+        novoNome: String,
+        novoEmail: String,
+        novoTelefone: String,
+        novoCpf: String = "",
+        novaDataNascimento: String = "",
+        novoEndereco: String = "",
+        novaProfissao: String = ""
+    ): Result<UsuarioEntity> {
+        return try {
+            val usuarioExistentePorEmail = usuarioDao.buscarPorEmail(novoEmail)
+            if (usuarioExistentePorEmail != null && usuarioExistentePorEmail.id != usuarioId) {
+                return Result.failure(IllegalArgumentException("Este e-mail já está em uso por outro usuário."))
+            }
+
+            val usuarioAtual = usuarioDao.buscarPorId(usuarioId) ?: usuarioExistentePorEmail
+            val usuarioSalvar = if (usuarioAtual != null) {
+                usuarioAtual.copy(
+                    nome = novoNome,
+                    email = novoEmail,
+                    telefone = novoTelefone,
+                    cpf = novoCpf,
+                    dataNascimento = novaDataNascimento,
+                    endereco = novoEndereco,
+                    profissao = novaProfissao
+                )
+            } else {
+                UsuarioEntity(
+                    id = usuarioId.ifBlank { "usuario-$novoEmail" },
+                    nome = novoNome,
+                    email = novoEmail,
+                    telefone = novoTelefone,
+                    perfil = br.com.letssign.domain.model.PerfilUsuario.ADMIN,
+                    senhaHash = "admin123",
+                    dataCriacaoUtc = System.currentTimeMillis(),
+                    cpf = novoCpf,
+                    dataNascimento = novaDataNascimento,
+                    endereco = novoEndereco,
+                    profissao = novaProfissao
+                )
+            }
+
+            if (usuarioAtual != null) {
+                usuarioDao.atualizar(usuarioSalvar)
+            } else {
+                usuarioDao.inserir(usuarioSalvar)
+            }
+
+            sessionManager.salvarSessao(
+                UsuarioSessao(
+                    usuarioId = usuarioSalvar.id,
+                    nome = usuarioSalvar.nome,
+                    email = usuarioSalvar.email,
+                    perfil = usuarioSalvar.perfil,
+                    tokenAcesso = "token-${usuarioSalvar.id}"
+                )
+            )
+
+            Result.success(usuarioSalvar)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

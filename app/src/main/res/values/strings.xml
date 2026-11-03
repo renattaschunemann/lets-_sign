@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LetsSign</string>
     <string name="logo_placeholder_text">LetsSign</string>
@@ -225,6 +225,29 @@
     <string name="com06_versao_valor">1.0.0</string>
     <string name="com06_dialog_sair_titulo">Deseja sair?</string>
     <string name="com06_dialog_sair_msg">Você precisará entrar de novo para acessar seus documentos.</string>
+    <string name="com06_btn_editar_conta">Editar conta</string>
+    <string name="com06_modal_editar_titulo">Editar dados da conta</string>
+    <string name="com06_btn_salvar_alteracoes">Salvar alterações</string>
+    <string name="com06_edicao_sucesso">Dados da conta atualizados com sucesso!</string>
+    <string name="com06_erro_nome_invalido">Informe seu nome completo (ao menos 3 caracteres).</string>
+    <string name="com06_erro_email_invalido">Informe um e-mail válido com formato nome@dominio.com.</string>
+    <string name="com06_erro_telefone_invalido">Informe um telefone válido com DDD (10 ou 11 dígitos).</string>
+    <string name="com06_erro_email_em_uso">Este e-mail já está em uso por outro usuário.</string>
+    <string name="com06_label_cpf">CPF</string>
+    <string name="com06_label_data_nascimento">Data de nascimento</string>
+    <string name="com06_label_endereco">Endereço</string>
+    <string name="com06_label_profissao">Profissão</string>
+    <string name="com06_erro_cpf_invalido">Informe um CPF válido (11 dígitos).</string>
+    <string name="com06_erro_data_nascimento_invalida">Informe uma data de nascimento válida (DD/MM/AAAA).</string>
+    <string name="com06_erro_endereco_invalido">Informe um endereço válido (ao menos 5 caracteres).</string>
+    <string name="com06_erro_profissao_invalida">Informe sua profissão.</string>
+    <string name="com06_secao_dados_cadastrais">Dados cadastrais</string>
+    <string name="com06_secao_dados_conta">Dados da conta</string>
+    <string name="com06_label_id">Identificador do usuário</string>
+    <string name="com06_label_data_cadastro">Data de cadastro</string>
+    <string name="com06_label_status">Status da conta</string>
+    <string name="com06_status_ativo">Ativo</string>
+    <string name="com06_nao_informado">Não informado</string>
 
     <!-- WIZARD GERAL -->
     <string name="wizard_btn_avancar">Avançar</string>
