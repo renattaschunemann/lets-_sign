@@ -41,11 +41,23 @@ class DocumentoRepository @Inject constructor(
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
         try {
-            val doc5Existente = documentoDao.buscarPorId("doc-demo-5")
-            val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
+            val demoDocIds = listOf("doc-demo-1", "doc-demo-2", "doc-demo-3", "doc-demo-4", "doc-demo-5", "doc-demo-6", "doc-demo-7")
+            var todosDocsExistem = true
+            for (id in demoDocIds) {
+                val doc = documentoDao.buscarPorId(id)
+                if (doc == null) {
+                    todosDocsExistem = false
+                } else if (doc.usuarioAdminId != adminId) {
+                    // Vincula os documentos demo ao admin ativo para visualização imediata
+                    documentoDao.atualizar(doc.copy(usuarioAdminId = adminId))
+                }
+            }
+
             val qtdAssinaturasDoc5 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-5-carla", "campo-part-doc-demo-5-joao"))?.size ?: 0
-            if (doc5Existente != null && doc5Existente.situacaoAtual == SituacaoDocumento.CONCLUIDO && qtdEventos >= 10 && qtdAssinaturasDoc5 >= 2) {
-                // Já inicializado com todos os eventos e assinaturas de demonstração
+            val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
+
+            if (todosDocsExistem && qtdAssinaturasDoc5 >= 2 && qtdEventos >= 10) {
+                // Documentos e assinaturas já consolidados para este admin
                 return
             }
 
@@ -1303,6 +1315,63 @@ class DocumentoRepository @Inject constructor(
 
     fun carregarCamposDoParticipante(participanteId: String): Flow<List<CampoAssinaturaEntity>> {
         return campoAssinaturaDao?.listarPorParticipante(participanteId) ?: kotlinx.coroutines.flow.flowOf(emptyList())
+    }
+
+    suspend fun vincularSignatarioAosDocumentosDemo(usuarioId: String, email: String? = null, nome: String? = null) {
+        try {
+            if (!email.isNullOrBlank()) {
+                participanteDao.vincularUsuarioPorEmail(email, usuarioId)
+            }
+            val versoesDemo = listOf("versao-demo-1", "versao-demo-4", "versao-demo-5", "versao-demo-6")
+            for (vId in versoesDemo) {
+                val partes = participanteDao.listarPorVersaoSync(vId)
+                val jaTemUsuario = partes.any { it.usuarioId == usuarioId }
+                if (!jaTemUsuario) {
+                    // Pega o participante do Joao Lima como base e atribui/clona para o usuario ativo
+                    val parteBase = partes.find { it.usuarioId == "sig-joao-lima" } ?: partes.firstOrNull()
+                    if (parteBase != null) {
+                        val novoPartId = "part-$vId-$usuarioId"
+                        participanteDao.inserir(
+                            parteBase.copy(
+                                id = novoPartId,
+                                usuarioId = usuarioId,
+                                nomeSnapshot = nome ?: parteBase.nomeSnapshot,
+                                emailSnapshot = email ?: parteBase.emailSnapshot
+                            )
+                        )
+                        val camposOriginais = campoAssinaturaDao?.listarPorVersaoSync(vId) ?: emptyList()
+                        val campoBase = camposOriginais.find { it.participanteId == parteBase.id }
+                        if (campoBase != null) {
+                            val novoCampoId = "campo-$novoPartId"
+                            campoAssinaturaDao?.inserir(
+                                campoBase.copy(
+                                    id = novoCampoId,
+                                    participanteId = novoPartId
+                                )
+                            )
+                            // Se for versao concluida (doc-demo-5), também vincula assinatura demo
+                            if (vId == "versao-demo-5") {
+                                assinaturaDao?.inserir(
+                                    AssinaturaEntity(
+                                        id = "ass-$novoPartId",
+                                        campoAssinaturaId = novoCampoId,
+                                        participanteId = novoPartId,
+                                        tipoAssinatura = TipoAssinatura.DESENHADA,
+                                        caminhoPngAssinatura = "assinaturas/$novoPartId.png",
+                                        dataHoraUtc = System.currentTimeMillis() - 86400000L,
+                                        ipDispositivo = "189.120.45.12",
+                                        hashValidador = "hash-demo-$novoPartId",
+                                        detalhesCertificado = null
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso ao vincular signatario aos documentos demo: ${e.message}")
+        }
     }
 }
 

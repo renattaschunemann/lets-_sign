@@ -103,7 +103,12 @@ class LoginViewModel @Inject constructor(
                 onSuccess = { usuario ->
                     documentoRepository?.let { repo ->
                         try {
-                            repo.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+                            if (usuario.perfil == br.com.letssign.domain.model.PerfilUsuario.ADMIN) {
+                                repo.inicializarDadosDemoSeNecessario(usuario.id)
+                            } else {
+                                repo.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+                                repo.vincularSignatarioAosDocumentosDemo(usuario.id, usuario.email, usuario.nome)
+                            }
                         } catch (e: Exception) {
                             println("LoginViewModel: aviso demo: ${e.message}")
                         }

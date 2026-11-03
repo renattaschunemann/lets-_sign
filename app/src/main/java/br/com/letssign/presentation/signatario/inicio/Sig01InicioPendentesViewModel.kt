@@ -59,6 +59,7 @@ class Sig01InicioPendentesViewModel @Inject constructor(
             // Inicializa dados de demonstração caso necessário
             try {
                 documentoRepository.inicializarDadosDemoSeNecessario("admin-carla-mendes")
+                documentoRepository.vincularSignatarioAosDocumentosDemo(usuarioId, sessao?.email, sessao?.nome)
             } catch (e: Exception) {
                 println("Sig01InicioPendentesViewModel: aviso ao inicializar demo: ${e.message}")
             }
