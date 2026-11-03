@@ -214,6 +214,8 @@ fun Adm10RevisaoEnvioScreen(
                         aoMudarPagina = { novaPagina -> viewModel.mudarPaginaPdf(novaPagina) },
                         modo = ModoVisualizadorPdf.LEITURA,
                         modifier = Modifier.fillMaxWidth(),
+                        pdfPath = uiState.pdfPath,
+                        tituloDocumento = uiState.titulo,
                         camadaCampos = {
                             BoxWithConstraints(
                                 modifier = Modifier.fillMaxSize()

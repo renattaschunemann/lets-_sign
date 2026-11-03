@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import br.com.letssign.core.navigation.shells.AdminBottomBar
 import br.com.letssign.core.navigation.shells.DestinoAdmin
 import br.com.letssign.core.navigation.shells.DestinoSignatario
@@ -415,6 +416,9 @@ fun LetsSignNavHost(
             Sig03DetalheDocumentoScreen(
                 aoVoltar = { navController.popBackStack() },
                 aoNavegarParaAssinar = { docId -> navController.navigate(Sig04ConfirmacaoIdRoute(docId)) },
+                aoNavegarParaAssinarComCertificado = { docId ->
+                    navController.navigate(Sig06CriarAssinaturaRoute(docId, abaInicial = "CERTIFICADO"))
+                },
                 aoNavegarParaVisualizar = { docId -> navController.navigate(Sig08VisualizadorLeituraRoute(docId)) },
                 aoRecusaConcluida = { navController.popBackStack() }
             )
@@ -438,7 +442,9 @@ fun LetsSignNavHost(
         composable<Sig06CriarAssinaturaRoute> {
             Sig06CapturaAssinaturaScreen(
                 aoVoltar = { navController.popBackStack() },
-                aoAssinaturaConfirmada = { docId -> navController.navigate(Sig07AssinaturaSucessoRoute(docId)) }
+                aoAssinaturaConfirmada = { docId, tipoAssinatura, detalhes ->
+                    navController.navigate(Sig07AssinaturaSucessoRoute(docId, tipoAssinatura, detalhes))
+                }
             )
         }
 
@@ -466,9 +472,11 @@ fun LetsSignNavHost(
             )
         }
 
-        composable<Sig08VisualizadorLeituraRoute> {
+        composable<Sig08VisualizadorLeituraRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<Sig08VisualizadorLeituraRoute>()
             Sig08VisualizadorLeituraScreen(
-                aoVoltar = { navController.popBackStack() }
+                aoVoltar = { navController.popBackStack() },
+                documentoId = route.documentoId
             )
         }
 

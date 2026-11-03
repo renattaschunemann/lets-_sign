@@ -22,7 +22,16 @@ data class UsuarioEntity(
     val cpf: String = "",
     val dataNascimento: String = "",
     val endereco: String = "",
-    val profissao: String = ""
+    val profissao: String = "",
+    val tipoPessoa: String = "PF",
+    val cpfCnpj: String = "",
+    val cep: String = "",
+    val logradouro: String = "",
+    val numero: String = "",
+    val complemento: String = "",
+    val bairro: String = "",
+    val cidade: String = "",
+    val estado: String = ""
 )
 
 @Entity(
@@ -49,5 +58,14 @@ data class AdminSignatarioEntity(
     val email: String,
     val telefone: String,
     val dataNascimento: String,
-    val dataVinculoUtc: Long
+    val dataVinculoUtc: Long,
+    val tipoPessoa: String = "PF",
+    val cpfCnpj: String = "",
+    val cep: String = "",
+    val logradouro: String = "",
+    val numero: String = "",
+    val complemento: String = "",
+    val bairro: String = "",
+    val cidade: String = "",
+    val estado: String = ""
 )

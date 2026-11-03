@@ -38,17 +38,29 @@ object PdfStorageManager {
     /**
      * Lê o arquivo PDF do sistema de arquivos e o converte para ByteArray (BLOB) (Modo 2).
      */
-    fun lerComoBlob(context: Context, caminhoRelativo: String): ByteArray? {
-        val arquivo = File(context.filesDir, caminhoRelativo)
+    fun lerComoBlob(context: Context, caminhoOuRelativo: String): ByteArray? {
+        val arquivo = obterArquivoPdf(context, caminhoOuRelativo)
         if (!arquivo.exists() || !arquivo.isFile) return null
-        return FileInputStream(arquivo).use { it.readBytes() }
+        return try {
+            FileInputStream(arquivo).use { it.readBytes() }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     /**
      * Obtém a referência File de um PDF a partir do caminho relativo gravado no banco de dados.
      */
-    fun obterArquivoPdf(context: Context, caminhoRelativo: String): File {
-        return File(context.filesDir, caminhoRelativo)
+    fun obterArquivoPdf(context: Context, caminhoOuRelativo: String): File {
+        val fileDirect = File(caminhoOuRelativo)
+        if (fileDirect.isAbsolute && fileDirect.exists()) {
+            return fileDirect
+        }
+        val fileInFilesDir = File(context.filesDir, caminhoOuRelativo)
+        if (fileInFilesDir.exists()) {
+            return fileInFilesDir
+        }
+        return fileDirect
     }
 
     /**

@@ -460,6 +460,12 @@
     <string name="sig06_btn_confirmar">Confirmar assinatura</string>
     <string name="sig06_dica_desenho">Desenhe sua assinatura no quadro com o dedo.</string>
     <string name="sig06_placeholder_digitada">Digite seu nome</string>
+    <string name="sig06_aba_certificado">Certificado Digital</string>
+    <string name="sig06_certificado_titulo">Certificado Digital ICP-Brasil</string>
+    <string name="sig06_certificado_tipo_ecpf">e-CPF (Pessoa Física)</string>
+    <string name="sig06_certificado_tipo_ecnpj">e-CNPJ (Pessoa Jurídica)</string>
+    <string name="sig06_certificado_pin_label">PIN / Senha do Certificado</string>
+    <string name="sig06_btn_assinar_certificado">Assinar com Certificado Digital</string>
 
     <!-- SIG-07: Revisão de Campos Assinados -->
     <string name="sig07_titulo">Revisar assinatura</string>

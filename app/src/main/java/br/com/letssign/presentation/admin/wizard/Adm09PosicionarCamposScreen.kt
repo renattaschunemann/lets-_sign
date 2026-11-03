@@ -3,6 +3,11 @@ package br.com.letssign.presentation.admin.wizard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -139,7 +144,7 @@ fun Adm09PosicionarCamposScreen(
                                 color = LetsSignTheme.colors.corTextoPrincipal
                             )
                             Text(
-                                text = "Arraste o campo na página para posicionar",
+                                text = "Arraste ou toque na página para posicionar livremente o campo",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = LetsSignTheme.colors.corTextoSecundario
                             )
@@ -241,6 +246,69 @@ fun Adm09PosicionarCamposScreen(
                             }
                         }
 
+                        // Controles de ajuste fino de posicionamento livre
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Ajuste fino de posição:",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = LetsSignTheme.colors.corTextoSecundario
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                IconButton(
+                                    onClick = {
+                                        viewModel.atualizarPosicaoCampo(
+                                            campoSelecionado.id,
+                                            campoSelecionado.normX - 0.02f,
+                                            campoSelecionado.normY
+                                        )
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mover esquerda", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(
+                                    onClick = {
+                                        viewModel.atualizarPosicaoCampo(
+                                            campoSelecionado.id,
+                                            campoSelecionado.normX + 0.02f,
+                                            campoSelecionado.normY
+                                        )
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mover direita", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(
+                                    onClick = {
+                                        viewModel.atualizarPosicaoCampo(
+                                            campoSelecionado.id,
+                                            campoSelecionado.normX,
+                                            campoSelecionado.normY - 0.02f
+                                        )
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Mover cima", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(
+                                    onClick = {
+                                        viewModel.atualizarPosicaoCampo(
+                                            campoSelecionado.id,
+                                            campoSelecionado.normX,
+                                            campoSelecionado.normY + 0.02f
+                                        )
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Mover baixo", modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -295,6 +363,8 @@ fun Adm09PosicionarCamposScreen(
                 aoMudarPagina = { novaPagina -> viewModel.mudarPaginaPdf(novaPagina) },
                 modo = ModoVisualizadorPdf.EDICAO,
                 modifier = Modifier.fillMaxWidth(),
+                pdfPath = uiState.pdfPath,
+                tituloDocumento = uiState.titulo,
                 camadaCampos = {
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxSize()
@@ -303,7 +373,26 @@ fun Adm09PosicionarCamposScreen(
                         val alturaTotalPx = constraints.maxHeight.toFloat()
                         val densidade = LocalDensity.current
 
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(uiState.campoSelecionadoId) {
+                                    detectTapGestures { offset ->
+                                        val idSel = uiState.campoSelecionadoId
+                                        if (idSel != null) {
+                                            val c = uiState.camposNaPaginaAtual.find { it.id == idSel }
+                                            if (c != null) {
+                                                val novoNormX = (offset.x / larguraTotalPx) - (c.normLargura / 2f)
+                                                val novoNormY = (offset.y / alturaTotalPx) - (c.normAltura / 2f)
+                                                viewModel.atualizarPosicaoCampo(idSel, novoNormX, novoNormY)
+                                            }
+                                        }
+                                    }
+                                }
+                        )
+
                         uiState.camposNaPaginaAtual.forEach { campo ->
+                            val currentCampo by rememberUpdatedState(campo)
                             val signatario = uiState.signatariosCadastrados.find { it.signatarioId == campo.signatarioId }
                             val papelDoCampo = campo.papel ?: uiState.papelPorSignatario[campo.signatarioId]
                             val isSelecionado = campo.id == uiState.campoSelecionadoId
@@ -324,12 +413,17 @@ fun Adm09PosicionarCamposScreen(
                                 modifier = Modifier
                                     .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
                                     .pointerInput(campo.id) {
-                                        detectDragGestures { change, dragAmount ->
-                                            change.consume()
-                                            val novoNormX = campo.normX + (dragAmount.x / larguraTotalPx)
-                                            val novoNormY = campo.normY + (dragAmount.y / alturaTotalPx)
-                                            viewModel.atualizarPosicaoCampo(campo.id, novoNormX, novoNormY)
-                                        }
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                viewModel.selecionarCampo(campo.id)
+                                            },
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                val novoNormX = currentCampo.normX + (dragAmount.x / larguraTotalPx)
+                                                val novoNormY = currentCampo.normY + (dragAmount.y / alturaTotalPx)
+                                                viewModel.atualizarPosicaoCampo(campo.id, novoNormX, novoNormY)
+                                            }
+                                        )
                                     }
                                     .clickable { viewModel.selecionarCampo(campo.id) }
                             ) {

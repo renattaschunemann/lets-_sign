@@ -24,6 +24,7 @@ import br.com.letssign.core.pdf.PdfDemoGenerator
 @Composable
 fun Sig08VisualizadorLeituraScreen(
     aoVoltar: () -> Unit,
+    documentoId: String = "",
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -57,8 +58,13 @@ fun Sig08VisualizadorLeituraScreen(
                     IconButton(
                         onClick = {
                             try {
-                                val pdf = PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
-                                PdfDemoGenerator.compartilharPdf(context, pdf)
+                                val docFile = if (documentoId.isNotBlank()) {
+                                    val f = br.com.letssign.data.local.file.PdfStorageManager.obterArquivoPdf(context, "documentos/$documentoId/v1.pdf")
+                                    if (f.exists() && f.length() > 0) f else PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                } else {
+                                    PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                }
+                                PdfDemoGenerator.compartilharPdf(context, docFile)
                             } catch (e: Exception) {
                                 Toast.makeText(context, "Erro ao abrir PDF: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
@@ -85,6 +91,8 @@ fun Sig08VisualizadorLeituraScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
+            pdfPath = if (documentoId.isNotBlank()) "documentos/$documentoId/v1.pdf" else null,
+            tituloDocumento = "Documento Concluído",
             camadaCampos = {
                 Column(
                     modifier = Modifier

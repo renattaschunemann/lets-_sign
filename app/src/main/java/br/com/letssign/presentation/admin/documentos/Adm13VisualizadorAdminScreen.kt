@@ -195,6 +195,8 @@ fun Adm13VisualizadorAdminScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
+                pdfPath = uiState.versao?.pdfPathInterno,
+                tituloDocumento = uiState.versao?.documentoId ?: "Documento",
                 camadaCampos = {
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxSize()

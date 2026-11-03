@@ -509,8 +509,20 @@ class DocumentoRepository @Inject constructor(
 
         val versaoExistente = versaoDao.buscarVersaoAtual(documentoId)
         val versaoId = versaoExistente?.id ?: "versao-$documentoId-1"
+        val pathPermanente = if (context != null && !pdfPathInterno.isNullOrBlank()) {
+            try {
+                val fOrig = br.com.letssign.data.local.file.PdfStorageManager.obterArquivoPdf(context, pdfPathInterno)
+                if (fOrig.exists() && fOrig.length() > 0) {
+                    val bytes = java.io.FileInputStream(fOrig).use { it.readBytes() }
+                    br.com.letssign.data.local.file.PdfStorageManager.salvarNoSistemaDeArquivos(context, documentoId, 1, bytes)
+                } else pdfPathInterno
+            } catch (_: Exception) {
+                pdfPathInterno
+            }
+        } else pdfPathInterno
+
         val versao = versaoExistente?.copy(
-            pdfPathInterno = pdfPathInterno ?: versaoExistente.pdfPathInterno,
+            pdfPathInterno = pathPermanente ?: versaoExistente.pdfPathInterno,
             tipoOrdem = tipoOrdem,
             etapaWizardAtual = etapaWizard,
             conteudoBlob = blob ?: versaoExistente.conteudoBlob
@@ -1012,7 +1024,8 @@ class DocumentoRepository @Inject constructor(
                 totalCampos = campos.size.coerceAtLeast(1),
                 participantes = participantes,
                 podeAssinar = podeAssinar,
-                motivoBloqueio = motivoBloqueio
+                motivoBloqueio = motivoBloqueio,
+                pdfPathInterno = versao.pdfPathInterno
             )
         }
     }
@@ -1153,7 +1166,8 @@ class DocumentoRepository @Inject constructor(
         participanteId: String,
         tipoAssinatura: TipoAssinatura,
         caminhoPngOuSvg: String,
-        ipDispositivo: String
+        ipDispositivo: String,
+        detalhesCertificado: String? = null
     ): Result<Unit> {
         val agora = System.currentTimeMillis()
         val participante = participanteDao.buscarPorId(participanteId)
@@ -1176,7 +1190,8 @@ class DocumentoRepository @Inject constructor(
                     caminhoPngAssinatura = caminhoPngOuSvg,
                     dataHoraUtc = agora,
                     ipDispositivo = ipDispositivo,
-                    hashValidador = hashValidador
+                    hashValidador = hashValidador,
+                    detalhesCertificado = detalhesCertificado
                 )
             )
         }
@@ -1202,7 +1217,11 @@ class DocumentoRepository @Inject constructor(
                 dataHoraUtc = agora,
                 tipoEvento = TipoEventoHistorico.ASSINATURA,
                 autorNome = participante.nomeSnapshot,
-                detalhe = "Assinatura eletrônica registrada com sucesso ($tipoAssinatura)."
+                detalhe = if (detalhesCertificado != null) {
+                    "Assinatura digital qualificada com certificado ICP-Brasil ($detalhesCertificado)."
+                } else {
+                    "Assinatura eletrônica registrada com sucesso ($tipoAssinatura)."
+                }
             )
         )
 
@@ -1279,7 +1298,8 @@ data class DetalheDocumentoSignatario(
     val totalCampos: Int,
     val participantes: List<ParticipanteDocumentoEntity>,
     val podeAssinar: Boolean,
-    val motivoBloqueio: String? = null
+    val motivoBloqueio: String? = null,
+    val pdfPathInterno: String? = null
 )
 
 data class DocumentoDetalhado(

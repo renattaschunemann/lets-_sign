@@ -17,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.letssign.R
 import br.com.letssign.core.designsystem.components.base.BotaoDestrutivo
+import androidx.compose.material.icons.filled.Security
+import br.com.letssign.core.designsystem.components.base.BotaoTonal
 import br.com.letssign.core.designsystem.components.base.BotaoPrincipal
 import br.com.letssign.core.designsystem.components.base.BotaoSecundario
 import br.com.letssign.core.designsystem.components.base.IndicadorCarregamentoCircular
@@ -36,6 +38,7 @@ fun Sig03DetalheDocumentoScreen(
     aoNavegarParaVisualizar: (String) -> Unit,
     aoRecusaConcluida: () -> Unit,
     modifier: Modifier = Modifier,
+    aoNavegarParaAssinarComCertificado: (String) -> Unit = aoNavegarParaAssinar,
     viewModel: Sig03DetalheDocumentoViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -235,6 +238,11 @@ fun Sig03DetalheDocumentoScreen(
                                 BotaoPrincipal(
                                     texto = stringResource(R.string.sig03_btn_assinar),
                                     onClick = { aoNavegarParaAssinar(detalhe.documentoId) }
+                                )
+                                BotaoTonal(
+                                    texto = "Assinar com Certificado Digital (e-CPF / e-CNPJ)",
+                                    aoClicar = { aoNavegarParaAssinarComCertificado(detalhe.documentoId) },
+                                    icone = Icons.Default.Security
                                 )
                                 BotaoDestrutivo(
                                     texto = stringResource(R.string.sig03_btn_recusar),

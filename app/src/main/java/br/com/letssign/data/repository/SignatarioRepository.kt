@@ -133,7 +133,16 @@ class SignatarioRepository @Inject constructor(
         email: String,
         telefone: String,
         dataNascimento: String,
-        senha: String?
+        senha: String?,
+        tipoPessoa: String = "PF",
+        cpfCnpj: String = "",
+        cep: String = "",
+        logradouro: String = "",
+        numero: String = "",
+        complemento: String = "",
+        bairro: String = "",
+        cidade: String = "",
+        estado: String = ""
     ): Result<Unit> {
         val nomeNormalizado = TextNormalizer.normalizar(nome)
         if (nomeNormalizado.isBlank() || !nome.trim().contains(" ")) {
@@ -178,7 +187,16 @@ class SignatarioRepository @Inject constructor(
                 nome = nome.trim(),
                 email = emailNorm,
                 telefone = telefone.trim(),
-                dataNascimento = dataNascimento.trim()
+                dataNascimento = dataNascimento.trim(),
+                tipoPessoa = tipoPessoa,
+                cpfCnpj = cpfCnpj.trim(),
+                cep = cep.trim(),
+                logradouro = logradouro.trim(),
+                numero = numero.trim(),
+                complemento = complemento.trim(),
+                bairro = bairro.trim(),
+                cidade = cidade.trim(),
+                estado = estado.trim()
             )
             adminSignatarioDao.atualizar(atualizado)
         } else {
@@ -196,7 +214,16 @@ class SignatarioRepository @Inject constructor(
                     telefone = telefone.trim(),
                     perfil = PerfilUsuario.SIGNATARIO,
                     senhaHash = senha ?: "Senha123",
-                    dataCriacaoUtc = agora
+                    dataCriacaoUtc = agora,
+                    tipoPessoa = tipoPessoa,
+                    cpfCnpj = cpfCnpj.trim(),
+                    cep = cep.trim(),
+                    logradouro = logradouro.trim(),
+                    numero = numero.trim(),
+                    complemento = complemento.trim(),
+                    bairro = bairro.trim(),
+                    cidade = cidade.trim(),
+                    estado = estado.trim()
                 )
                 usuarioDao.inserir(novoUsuario)
 
@@ -221,7 +248,16 @@ class SignatarioRepository @Inject constructor(
                 email = emailNorm,
                 telefone = telefone.trim(),
                 dataNascimento = dataNascimento.trim(),
-                dataVinculoUtc = agora
+                dataVinculoUtc = agora,
+                tipoPessoa = tipoPessoa,
+                cpfCnpj = cpfCnpj.trim(),
+                cep = cep.trim(),
+                logradouro = logradouro.trim(),
+                numero = numero.trim(),
+                complemento = complemento.trim(),
+                bairro = bairro.trim(),
+                cidade = cidade.trim(),
+                estado = estado.trim()
             )
             adminSignatarioDao.inserir(relacao)
         }

@@ -5,17 +5,28 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Draw
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,13 +38,14 @@ import br.com.letssign.core.designsystem.components.base.CampoTextoContornado
 import br.com.letssign.core.designsystem.components.reusable.AreaDesenhoAssinatura
 import br.com.letssign.core.designsystem.components.reusable.EstiloFonteCursiva
 import br.com.letssign.core.designsystem.theme.FormaMedia
+import br.com.letssign.core.designsystem.theme.FormaPequena
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sig06CapturaAssinaturaScreen(
     aoVoltar: () -> Unit,
-    aoAssinaturaConfirmada: (String) -> Unit,
+    aoAssinaturaConfirmada: (documentoId: String, tipoAssinatura: String, detalhesCertificado: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: Sig06CapturaAssinaturaViewModel = hiltViewModel()
 ) {
@@ -41,7 +53,11 @@ fun Sig06CapturaAssinaturaScreen(
 
     LaunchedEffect(uiState.assinaturaPronta) {
         if (uiState.assinaturaPronta) {
-            aoAssinaturaConfirmada(viewModel.documentoId)
+            aoAssinaturaConfirmada(
+                viewModel.documentoId,
+                uiState.tipoAssinatura.name,
+                uiState.detalhesCertificado
+            )
         }
     }
 
@@ -111,21 +127,35 @@ fun Sig06CapturaAssinaturaScreen(
                 .padding(paddingValues)
                 .background(LetsSignTheme.colors.corFundo)
         ) {
-            // Abas Desenhar / Digitar
+            // Abas Desenhar / Digitar / Certificado Digital
+            val tabIndex = when (uiState.abaSelecionada) {
+                AbaCapturaAssinatura.DESENHAR -> 0
+                AbaCapturaAssinatura.DIGITAR -> 1
+                AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> 2
+            }
+
             TabRow(
-                selectedTabIndex = if (uiState.abaSelecionada == AbaCapturaAssinatura.DESENHAR) 0 else 1,
+                selectedTabIndex = tabIndex,
                 containerColor = LetsSignTheme.colors.corSuperficie,
                 contentColor = LetsSignTheme.colors.corPrimaria
             ) {
                 Tab(
                     selected = uiState.abaSelecionada == AbaCapturaAssinatura.DESENHAR,
                     onClick = { viewModel.selecionarAba(AbaCapturaAssinatura.DESENHAR) },
-                    text = { Text(stringResource(R.string.sig06_aba_desenhar)) }
+                    text = { Text(stringResource(R.string.sig06_aba_desenhar)) },
+                    icon = { Icon(Icons.Default.Draw, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
                 Tab(
                     selected = uiState.abaSelecionada == AbaCapturaAssinatura.DIGITAR,
                     onClick = { viewModel.selecionarAba(AbaCapturaAssinatura.DIGITAR) },
-                    text = { Text(stringResource(R.string.sig06_aba_digitar)) }
+                    text = { Text(stringResource(R.string.sig06_aba_digitar)) },
+                    icon = { Icon(Icons.Default.TextFields, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
+                Tab(
+                    selected = uiState.abaSelecionada == AbaCapturaAssinatura.CERTIFICADO_DIGITAL,
+                    onClick = { viewModel.selecionarAba(AbaCapturaAssinatura.CERTIFICADO_DIGITAL) },
+                    text = { Text("Certificado") },
+                    icon = { Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
             }
 
@@ -136,63 +166,257 @@ fun Sig06CapturaAssinaturaScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (uiState.abaSelecionada == AbaCapturaAssinatura.DESENHAR) {
-                    Text(
-                        text = stringResource(R.string.sig06_dica_desenho),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LetsSignTheme.colors.corTextoSecundario
-                    )
+                when (uiState.abaSelecionada) {
+                    AbaCapturaAssinatura.DESENHAR -> {
+                        Text(
+                            text = stringResource(R.string.sig06_dica_desenho),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LetsSignTheme.colors.corTextoSecundario
+                        )
 
-                    AreaDesenhoAssinatura(
-                        aoMudarTemDesenho = { tem -> viewModel.atualizarTemDesenho(tem) }
-                    )
-                } else {
-                    CampoTextoContornado(
-                        valor = uiState.textoDigitado,
-                        aoMudarValor = { viewModel.atualizarTextoDigitado(it) },
-                        rotulo = stringResource(R.string.sig06_placeholder_digitada)
-                    )
+                        AreaDesenhoAssinatura(
+                            aoMudarTemDesenho = { tem -> viewModel.atualizarTemDesenho(tem) }
+                        )
+                    }
 
-                    Text(
-                        text = "Selecione o estilo da assinatura:",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = LetsSignTheme.colors.corTextoPrincipal
-                    )
+                    AbaCapturaAssinatura.DIGITAR -> {
+                        CampoTextoContornado(
+                            valor = uiState.textoDigitado,
+                            aoMudarValor = { viewModel.atualizarTextoDigitado(it) },
+                            rotulo = stringResource(R.string.sig06_placeholder_digitada)
+                        )
 
-                    EstiloFonteCursiva.entries.forEach { estilo ->
-                        val selecionado = uiState.estiloFonteSelecionado == estilo
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.selecionarEstiloFonte(estilo) }
-                                .border(
-                                    width = if (selecionado) 2.dp else 1.dp,
-                                    color = if (selecionado) LetsSignTheme.colors.corPrimaria else LetsSignTheme.colors.corBorda,
-                                    shape = FormaMedia
-                                ),
-                            shape = FormaMedia,
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (selecionado) LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.3f)
-                                else LetsSignTheme.colors.corSuperficie
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = estilo.nomeExibicao,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = LetsSignTheme.colors.corTextoSecundario
+                        Text(
+                            text = "Selecione o estilo da assinatura:",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = LetsSignTheme.colors.corTextoPrincipal
+                        )
+
+                        EstiloFonteCursiva.entries.forEach { estilo ->
+                            val selecionado = uiState.estiloFonteSelecionado == estilo
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.selecionarEstiloFonte(estilo) }
+                                    .border(
+                                        width = if (selecionado) 2.dp else 1.dp,
+                                        color = if (selecionado) LetsSignTheme.colors.corPrimaria else LetsSignTheme.colors.corBorda,
+                                        shape = FormaMedia
+                                    ),
+                                shape = FormaMedia,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (selecionado) LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.3f)
+                                    else LetsSignTheme.colors.corSuperficie
                                 )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = estilo.nomeExibicao,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = LetsSignTheme.colors.corTextoSecundario
+                                    )
+                                    Text(
+                                        text = uiState.textoDigitado.ifBlank { "Sua Assinatura" },
+                                        fontSize = 24.sp,
+                                        fontStyle = FontStyle.Italic,
+                                        color = LetsSignTheme.colors.corTintaAssinatura
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> {
+                        // Banner explicativo ICP-Brasil
+                        Surface(
+                            shape = FormaMedia,
+                            color = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.25f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.VerifiedUser,
+                                    contentDescription = null,
+                                    tint = LetsSignTheme.colors.corPrimaria,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = "Assinatura Qualificada ICP-Brasil",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = LetsSignTheme.colors.corTextoPrincipal
+                                    )
+                                    Text(
+                                        text = "Validade jurídica plena conforme MP 2.200-2/2001 e Lei 14.063/2020.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = LetsSignTheme.colors.corTextoSecundario
+                                    )
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "Tipo de Certificado Digital:",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = LetsSignTheme.colors.corTextoPrincipal
+                        )
+
+                        // Seletor Radio: e-CPF vs e-CNPJ
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .selectable(
+                                        selected = uiState.tipoCertificado == "e-CPF",
+                                        onClick = { viewModel.atualizarTipoCertificado("e-CPF") }
+                                    )
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = uiState.tipoCertificado == "e-CPF",
+                                    onClick = { viewModel.atualizarTipoCertificado("e-CPF") },
+                                    colors = RadioButtonDefaults.colors(selectedColor = LetsSignTheme.colors.corPrimaria)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = uiState.textoDigitado.ifBlank { "Sua Assinatura" },
-                                    fontSize = 24.sp,
-                                    fontStyle = FontStyle.Italic,
-                                    color = LetsSignTheme.colors.corTintaAssinatura
+                                    text = "e-CPF (PF)",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .selectable(
+                                        selected = uiState.tipoCertificado == "e-CNPJ",
+                                        onClick = { viewModel.atualizarTipoCertificado("e-CNPJ") }
+                                    )
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = uiState.tipoCertificado == "e-CNPJ",
+                                    onClick = { viewModel.atualizarTipoCertificado("e-CNPJ") },
+                                    colors = RadioButtonDefaults.colors(selectedColor = LetsSignTheme.colors.corPrimaria)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "e-CNPJ (PJ)",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
                                 )
                             }
                         }
+
+                        // Cartão de detalhes do certificado detectado
+                        Card(
+                            shape = FormaMedia,
+                            colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corSuperficie),
+                            elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel1),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = uiState.tipoCertificado,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = LetsSignTheme.colors.corPrimaria
+                                    )
+                                    Surface(
+                                        shape = FormaPequena,
+                                        color = LetsSignTheme.colors.corSucesso.copy(alpha = 0.15f)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.CheckCircle,
+                                                contentDescription = null,
+                                                tint = LetsSignTheme.colors.corSucesso,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Text(
+                                                text = "Válido",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = LetsSignTheme.colors.corSucesso
+                                            )
+                                        }
+                                    }
+                                }
+
+                                HorizontalDivider(color = LetsSignTheme.colors.corBorda)
+
+                                Text(
+                                    text = "Titular: ${uiState.titularCertificado}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                                Text(
+                                    text = "Documento: ${uiState.documentoCertificado}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = "Emissor: ${uiState.autoridadeCertificadora}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = "Validade: até ${uiState.validadeCertificado}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = "Mídia: ${uiState.subtipoCertificado}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
+                        }
+
+                        // Campo PIN de autorização
+                        CampoTextoContornado(
+                            valor = uiState.pinCertificado,
+                            aoMudarValor = { viewModel.atualizarPinCertificado(it) },
+                            rotulo = "PIN / Senha do Certificado",
+                            dicaAjuda = "Digite a senha de 4 a 8 dígitos do certificado digital",
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            iconeInicio = {
+                                Icon(Icons.Default.Lock, contentDescription = null, tint = LetsSignTheme.colors.corPrimaria)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }

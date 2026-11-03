@@ -41,8 +41,22 @@ fun Adm06SignatariosScreen(
 
     if (uiState.mostrarModalNovoSignatario) {
         Mod02NovoSignatarioModal(
-            aoSalvar = { nome, email, telefone, dataNascimento ->
-                viewModel.salvarNovoSignatarioRapido(nome, email, telefone, dataNascimento)
+            aoSalvar = { nome, email, telefone, dataNascimento, tipoPessoa, cpfCnpj, cep, logradouro, numero, complemento, bairro, cidade, estado ->
+                viewModel.salvarNovoSignatarioRapido(
+                    nome = nome,
+                    email = email,
+                    telefone = telefone,
+                    dataNascimento = dataNascimento,
+                    tipoPessoa = tipoPessoa,
+                    cpfCnpj = cpfCnpj,
+                    cep = cep,
+                    logradouro = logradouro,
+                    numero = numero,
+                    complemento = complemento,
+                    bairro = bairro,
+                    cidade = cidade,
+                    estado = estado
+                )
             },
             aoDispensar = { viewModel.fecharModalNovoSignatario() }
         )

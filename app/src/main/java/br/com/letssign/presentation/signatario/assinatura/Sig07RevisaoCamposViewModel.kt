@@ -22,6 +22,8 @@ data class Sig07UiState(
     val exibindoTermosAceite: Boolean = false,
     val emitindoAssinatura: Boolean = false,
     val conclusaoComSucesso: Boolean = false,
+    val tipoAssinatura: TipoAssinatura = TipoAssinatura.DESENHADA,
+    val detalhesCertificado: String? = null,
     val erro: String? = null
 )
 
@@ -33,8 +35,23 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
 ) : ViewModel() {
 
     val documentoId: String = savedStateHandle.get<String>("documentoId") ?: ""
+    private val tipoAssinaturaStr: String = savedStateHandle.get<String>("tipoAssinatura") ?: "DESENHADA"
+    private val detalhesCertificadoArg: String = savedStateHandle.get<String>("detalhesCertificado") ?: ""
 
-    private val _uiState = MutableStateFlow(Sig07UiState())
+    val tipoAssinatura: TipoAssinatura = try {
+        TipoAssinatura.valueOf(tipoAssinaturaStr)
+    } catch (_: Exception) {
+        TipoAssinatura.DESENHADA
+    }
+
+    val detalhesCertificado: String? = detalhesCertificadoArg.takeIf { it.isNotBlank() }
+
+    private val _uiState = MutableStateFlow(
+        Sig07UiState(
+            tipoAssinatura = tipoAssinatura,
+            detalhesCertificado = detalhesCertificado
+        )
+    )
     val uiState: StateFlow<Sig07UiState> = _uiState.asStateFlow()
 
     init {
@@ -69,9 +86,10 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
             val resultado = documentoRepository.salvarAssinaturaSignatario(
                 versaoId = detalhe.versaoId,
                 participanteId = detalhe.participanteId,
-                tipoAssinatura = TipoAssinatura.DESENHADA,
+                tipoAssinatura = tipoAssinatura,
                 caminhoPngOuSvg = "assinaturas/${detalhe.participanteId}.png",
-                ipDispositivo = "192.168.1.100"
+                ipDispositivo = "192.168.1.100",
+                detalhesCertificado = detalhesCertificado
             )
 
             resultado.fold(

@@ -304,7 +304,21 @@ class WizardNovoDocViewModel @Inject constructor(
         _uiState.update { it.copy(mostrarModalNovoSignatario = false) }
     }
 
-    fun salvarNovoSignatarioRapido(nome: String, email: String, telefone: String, dataNascimento: String) {
+    fun salvarNovoSignatarioRapido(
+        nome: String,
+        email: String,
+        telefone: String,
+        dataNascimento: String,
+        tipoPessoa: String = "PF",
+        cpfCnpj: String = "",
+        cep: String = "",
+        logradouro: String = "",
+        numero: String = "",
+        complemento: String = "",
+        bairro: String = "",
+        cidade: String = "",
+        estado: String = ""
+    ) {
         viewModelScope.launch {
             val res = signatarioRepository.salvarSignatario(
                 adminId = adminIdAtual,
@@ -313,7 +327,16 @@ class WizardNovoDocViewModel @Inject constructor(
                 email = email,
                 telefone = telefone,
                 dataNascimento = dataNascimento,
-                senha = null
+                senha = null,
+                tipoPessoa = tipoPessoa,
+                cpfCnpj = cpfCnpj,
+                cep = cep,
+                logradouro = logradouro,
+                numero = numero,
+                complemento = complemento,
+                bairro = bairro,
+                cidade = cidade,
+                estado = estado
             )
             if (res.isSuccess) {
                 carregarSignatariosCadastrados()
@@ -427,8 +450,8 @@ class WizardNovoDocViewModel @Inject constructor(
             val atualizados = estado.campos.map { campo ->
                 if (campo.id == campoId) {
                     campo.copy(
-                        normX = novoNormX.coerceIn(0.02f, (1f - campo.normLargura - 0.02f).coerceAtLeast(0f)),
-                        normY = novoNormY.coerceIn(0.02f, (1f - campo.normAltura - 0.02f).coerceAtLeast(0f))
+                        normX = novoNormX.coerceIn(0f, (1f - campo.normLargura).coerceAtLeast(0f)),
+                        normY = novoNormY.coerceIn(0f, (1f - campo.normAltura).coerceAtLeast(0f))
                     )
                 } else campo
             }

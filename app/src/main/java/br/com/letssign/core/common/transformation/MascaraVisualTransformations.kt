@@ -172,3 +172,84 @@ class TelefoneVisualTransformation : VisualTransformation {
         return TransformedText(AnnotatedString(transformed), offsetMapping)
     }
 }
+
+
+/**
+ * VisualTransformation para formatação de CNPJ no formato 00.000.000/0000-00.
+ */
+class CnpjVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        val transformed = CadastroValidator.formatarCnpj(raw)
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                val clamped = offset.coerceIn(0, raw.length)
+                val transformedOffset = when {
+                    clamped <= 2 -> clamped
+                    clamped <= 5 -> clamped + 1
+                    clamped <= 8 -> clamped + 2
+                    clamped <= 12 -> clamped + 3
+                    else -> clamped + 4
+                }
+                return transformedOffset.coerceIn(0, transformed.length)
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                val clamped = offset.coerceIn(0, transformed.length)
+                val rawOffset = when {
+                    clamped <= 2 -> clamped
+                    clamped <= 6 -> clamped - 1
+                    clamped <= 10 -> clamped - 2
+                    clamped <= 15 -> clamped - 3
+                    else -> clamped - 4
+                }
+                return rawOffset.coerceIn(0, raw.length)
+            }
+        }
+
+        return TransformedText(AnnotatedString(transformed), offsetMapping)
+    }
+}
+
+/**
+ * VisualTransformation adaptativa para CPF (11 dígitos) ou CNPJ (14 dígitos).
+ */
+class CpfCnpjVisualTransformation(val ehCnpj: Boolean = false) : VisualTransformation {
+    private val cpfTransformation = CpfVisualTransformation()
+    private val cnpjTransformation = CnpjVisualTransformation()
+
+    override fun filter(text: AnnotatedString): TransformedText {
+        return if (ehCnpj || text.text.length > 11) {
+            cnpjTransformation.filter(text)
+        } else {
+            cpfTransformation.filter(text)
+        }
+    }
+}
+
+/**
+ * VisualTransformation para formatação de CEP no formato 00000-000.
+ */
+class CepVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        val transformed = CadastroValidator.formatarCep(raw)
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                val clamped = offset.coerceIn(0, raw.length)
+                val transformedOffset = if (clamped <= 5) clamped else clamped + 1
+                return transformedOffset.coerceIn(0, transformed.length)
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                val clamped = offset.coerceIn(0, transformed.length)
+                val rawOffset = if (clamped <= 5) clamped else clamped - 1
+                return rawOffset.coerceIn(0, raw.length)
+            }
+        }
+
+        return TransformedText(AnnotatedString(transformed), offsetMapping)
+    }
+}

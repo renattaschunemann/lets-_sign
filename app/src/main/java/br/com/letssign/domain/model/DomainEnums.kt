@@ -72,7 +72,9 @@ enum class PapelParticipante(val rotulo: String) {
 
 enum class TipoAssinatura {
     DESENHADA,
-    DIGITADA
+    DIGITADA,
+    CERTIFICADO_DIGITAL_ECPF,
+    CERTIFICADO_DIGITAL_ECNPJ
 }
 
 enum class TipoEventoHistorico {

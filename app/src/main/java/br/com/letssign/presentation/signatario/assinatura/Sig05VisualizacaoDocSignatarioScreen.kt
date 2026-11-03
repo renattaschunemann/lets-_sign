@@ -1,5 +1,6 @@
 package br.com.letssign.presentation.signatario.assinatura
 
+import br.com.letssign.core.designsystem.components.reusable.PaginaDocumentoDinamicaOuPdf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -145,24 +146,12 @@ fun Sig05VisualizacaoDocSignatarioScreen(
                             .padding(20.dp),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = detalhe?.titulo ?: "Documento",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = LetsSignTheme.colors.corTextoPrincipal
-                            )
-                            Text(
-                                text = "Versão ${detalhe?.versao ?: 1} · Página 1 de 1",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = LetsSignTheme.colors.corTextoSecundario
-                            )
-                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
-                            Text(
-                                text = "Por meio deste instrumento particular, as partes confirmam e aceitam todas as cláusulas e condições estabelecidas...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = LetsSignTheme.colors.corTextoPrincipal
-                            )
-                        }
+                        PaginaDocumentoDinamicaOuPdf(
+                            pdfPath = detalhe?.pdfPathInterno,
+                            paginaAtual = 1,
+                            totalPaginas = 1,
+                            tituloDocumento = detalhe?.titulo
+                        )
 
                         // Caixa de campo de assinatura guiado
                         Box(

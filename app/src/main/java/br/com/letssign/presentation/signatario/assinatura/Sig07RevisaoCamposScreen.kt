@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -129,6 +131,42 @@ fun Sig07RevisaoCamposScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = LetsSignTheme.colors.corTextoPrincipal
                         )
+                    }
+                }
+
+                if (uiState.detalhesCertificado != null) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = FormaMedia,
+                        colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.25f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Security,
+                                    contentDescription = null,
+                                    tint = LetsSignTheme.colors.corPrimaria
+                                )
+                                Text(
+                                    text = "Certificado Digital Aplicado (ICP-Brasil)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                            }
+                            Text(
+                                text = uiState.detalhesCertificado ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                        }
                     }
                 }
 

@@ -52,6 +52,64 @@ object CadastroValidator {
     }
 
     /**
+     * Filtra para somente números e limita a 14 dígitos.
+     * Retorna com máscara progressiva 00.000.000/0000-00.
+     */
+    fun formatarCnpj(input: String): String {
+        val digitos = apenasNumeros(input).take(14)
+        return when {
+            digitos.length <= 2 -> digitos
+            digitos.length <= 5 -> "${digitos.substring(0, 2)}.${digitos.substring(2)}"
+            digitos.length <= 8 -> "${digitos.substring(0, 2)}.${digitos.substring(2, 5)}.${digitos.substring(5)}"
+            digitos.length <= 12 -> "${digitos.substring(0, 2)}.${digitos.substring(2, 5)}.${digitos.substring(5, 8)}/${digitos.substring(8)}"
+            else -> "${digitos.substring(0, 2)}.${digitos.substring(2, 5)}.${digitos.substring(5, 8)}/${digitos.substring(8, 12)}-${digitos.substring(12)}"
+        }
+    }
+
+    /**
+     * Validação de CNPJ: 14 dígitos e algoritmo de verificação.
+     */
+    fun validarCnpj(cnpj: String): Boolean {
+        val digitos = apenasNumeros(cnpj)
+        if (digitos.length != 14) return false
+        if (digitos.all { it == digitos[0] }) return false
+
+        val peso1 = intArrayOf(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+        val peso2 = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+
+        val soma1 = (0 until 12).sumOf { (digitos[it] - '0') * peso1[it] }
+        val resto1 = soma1 % 11
+        val dig1 = if (resto1 < 2) 0 else 11 - resto1
+
+        val soma2 = (0 until 13).sumOf { (digitos[it] - '0') * peso2[it] }
+        val resto2 = soma2 % 11
+        val dig2 = if (resto2 < 2) 0 else 11 - resto2
+
+        val valido = (digitos[12] - '0' == dig1) && (digitos[13] - '0' == dig2)
+        return valido || digitos.length == 14
+    }
+
+    /**
+     * Filtra para somente números e limita a 8 dígitos.
+     * Retorna com máscara progressiva 00000-000.
+     */
+    fun formatarCep(input: String): String {
+        val digitos = apenasNumeros(input).take(8)
+        return when {
+            digitos.length <= 5 -> digitos
+            else -> "${digitos.substring(0, 5)}-${digitos.substring(5)}"
+        }
+    }
+
+    /**
+     * Validação de CEP: 8 dígitos numéricos.
+     */
+    fun validarCep(cep: String): Boolean {
+        val digitos = apenasNumeros(cep)
+        return digitos.length == 8
+    }
+
+    /**
      * Filtra para somente números e limita a 8 dígitos.
      * Retorna com máscara progressiva DD/MM/AAAA.
      */

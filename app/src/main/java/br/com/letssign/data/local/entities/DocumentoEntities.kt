@@ -200,7 +200,8 @@ data class AssinaturaEntity(
     val caminhoPngAssinatura: String,
     val dataHoraUtc: Long,
     val ipDispositivo: String,
-    val hashValidador: String
+    val hashValidador: String,
+    val detalhesCertificado: String? = null
 )
 
 @Entity(
