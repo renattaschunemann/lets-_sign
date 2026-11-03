@@ -62,7 +62,7 @@ fun SeloSituacaoDocumento(
             corContainer = LetsSignTheme.colors.corInfoContainer
             corConteudo = LetsSignTheme.colors.corInfo
             icone = Icons.Filled.Schedule
-            texto = stringResource(R.string.sit_doc_enviado)
+            texto = stringResource(R.string.sit_doc_enviando)
         }
         SituacaoDocumento.FALHA_ENVIO -> {
             corContainer = LetsSignTheme.colors.corErroContainer

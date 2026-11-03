@@ -73,7 +73,7 @@ fun Adm07ObrigatoriedadeScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(uiState.participantesOrdenados, key = { it.signatarioId }) { signatario ->
+                items(uiState.participantesOrdenados.distinctBy { it.signatarioId }, key = { it.signatarioId }) { signatario ->
                     val papelAtual = uiState.papelPorSignatario[signatario.signatarioId] ?: PapelParticipante.CONTRATADO
                     val obrigatorio = uiState.obrigatorioPorSignatario[signatario.signatarioId] != false
 
@@ -97,8 +97,9 @@ fun Adm07ObrigatoriedadeScreen(
                                     .split(" ")
                                     .filter { it.isNotBlank() }
                                     .take(2)
-                                    .map { it.first().uppercaseChar() }
+                                    .mapNotNull { it.firstOrNull()?.uppercaseChar() }
                                     .joinToString("")
+                                    .ifBlank { "S" }
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
@@ -128,7 +129,7 @@ fun Adm07ObrigatoriedadeScreen(
                                 }
                             }
 
-                            Divider(color = LetsSignTheme.colors.corDivisor)
+                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
 
                             // Dropdown de Papel
                             var expandido by remember { mutableStateOf(false) }
@@ -144,7 +145,7 @@ fun Adm07ObrigatoriedadeScreen(
                                     label = { Text(stringResource(R.string.adm07_label_papel)) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
                                     modifier = Modifier
-                                        .menuAnchor()
+                                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                                         .fillMaxWidth()
                                 )
                                 ExposedDropdownMenu(

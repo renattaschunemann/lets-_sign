@@ -73,6 +73,7 @@
     <!-- Situações do Documento -->
     <string name="sit_doc_rascunho">Rascunho</string>
     <string name="sit_doc_falha_envio">Falha no envio</string>
+    <string name="sit_doc_enviando">Enviando</string>
     <string name="sit_doc_enviado">Enviado</string>
     <string name="sit_doc_parcialmente_assinado">Parcialmente assinado</string>
     <string name="sit_doc_concluido">Concluído</string>

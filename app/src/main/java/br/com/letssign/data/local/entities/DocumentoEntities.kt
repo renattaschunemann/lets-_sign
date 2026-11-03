@@ -113,12 +113,6 @@ data class VersaoDocumentoEntity(
             parentColumns = ["id"],
             childColumns = ["versaoDocumentoId"],
             onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = UsuarioEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["usuarioId"],
-            onDelete = ForeignKey.SET_NULL
         )
     ],
     indices = [

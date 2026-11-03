@@ -91,6 +91,23 @@ class SignatarioRepository @Inject constructor(
                 )
             )
             adminSignatarioDao.inserirVarios(demoSignatarios)
+
+            // Garante que os signatários demo também existam na tabela 'usuarios'
+            demoSignatarios.forEach { sig ->
+                if (usuarioDao.buscarPorId(sig.signatarioId) == null && usuarioDao.buscarPorEmail(sig.email) == null) {
+                    usuarioDao.inserir(
+                        UsuarioEntity(
+                            id = sig.signatarioId,
+                            nome = sig.nome,
+                            email = sig.email,
+                            telefone = sig.telefone,
+                            perfil = PerfilUsuario.SIGNATARIO,
+                            senhaHash = "Sign@123",
+                            dataCriacaoUtc = agora
+                        )
+                    )
+                }
+            }
         } catch (e: Exception) {
             println("SignatarioRepository: aviso ao inicializar dados demo: ${e.message}")
         }

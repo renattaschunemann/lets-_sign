@@ -570,55 +570,63 @@ class WizardNovoDocViewModel @Inject constructor(
 
     private fun salvarRascunhoAutomatico() {
         viewModelScope.launch {
-            salvarRascunhoNoBanco()
+            try {
+                salvarRascunhoNoBanco()
+            } catch (e: Exception) {
+                println("WizardNovoDocViewModel: aviso ao salvar rascunho automático: ${e.message}")
+            }
         }
     }
 
     private suspend fun salvarRascunhoNoBanco() {
-        val estado = _uiState.value
-        if (estado.titulo.isBlank()) return
+        try {
+            val estado = _uiState.value
+            if (estado.titulo.isBlank()) return
 
-        val participantes = estado.ordemSignatarios.mapIndexed { index, sigId ->
-            val sig = estado.signatariosCadastrados.find { it.signatarioId == sigId }
-            ParticipanteDocumentoEntity(
-                id = "part-${estado.documentoId}-$sigId",
-                versaoDocumentoId = "",
-                usuarioId = sigId,
-                nomeSnapshot = sig?.nome ?: "Signatário",
-                emailSnapshot = sig?.email ?: "email@teste.com",
-                telefoneSnapshot = sig?.telefone ?: "",
-                dataNascimentoSnapshot = sig?.dataNascimento ?: "",
-                papel = estado.papelPorSignatario[sigId] ?: PapelParticipante.CONTRATADO,
-                obrigatorio = estado.obrigatorioPorSignatario[sigId] ?: true,
-                ordem = index + 1,
-                situacao = SituacaoParticipante.PENDENTE
+            val participantes = estado.ordemSignatarios.distinct().mapIndexed { index, sigId ->
+                val sig = estado.signatariosCadastrados.find { it.signatarioId == sigId }
+                ParticipanteDocumentoEntity(
+                    id = "part-${estado.documentoId}-$sigId",
+                    versaoDocumentoId = "",
+                    usuarioId = sigId,
+                    nomeSnapshot = sig?.nome ?: "Signatário",
+                    emailSnapshot = sig?.email ?: "email@teste.com",
+                    telefoneSnapshot = sig?.telefone ?: "",
+                    dataNascimentoSnapshot = sig?.dataNascimento ?: "",
+                    papel = estado.papelPorSignatario[sigId] ?: PapelParticipante.CONTRATADO,
+                    obrigatorio = estado.obrigatorioPorSignatario[sigId] ?: true,
+                    ordem = index + 1,
+                    situacao = SituacaoParticipante.PENDENTE
+                )
+            }
+
+            documentoRepository.salvarRascunho(
+                adminId = adminIdAtual,
+                documentoId = estado.documentoId,
+                titulo = estado.titulo,
+                pdfPathInterno = estado.pdfPath,
+                tipoOrdem = estado.tipoOrdem,
+                etapaWizard = estado.etapaAtual,
+                participantes = participantes
             )
-        }
 
-        documentoRepository.salvarRascunho(
-            adminId = adminIdAtual,
-            documentoId = estado.documentoId,
-            titulo = estado.titulo,
-            pdfPathInterno = estado.pdfPath,
-            tipoOrdem = estado.tipoOrdem,
-            etapaWizard = estado.etapaAtual,
-            participantes = participantes
-        )
-
-        val versaoId = "versao-${estado.documentoId}-1"
-        val camposEntity = estado.campos.map { cv ->
-            CampoAssinaturaEntity(
-                id = cv.id,
-                versaoDocumentoId = versaoId,
-                participanteId = "part-${estado.documentoId}-${cv.signatarioId}",
-                numeroPagina = cv.numeroPagina,
-                normX = cv.normX,
-                normY = cv.normY,
-                normLargura = cv.normLargura,
-                normAltura = cv.normAltura,
-                papelEspecifico = cv.papel
-            )
+            val versaoId = "versao-${estado.documentoId}-1"
+            val camposEntity = estado.campos.map { cv ->
+                CampoAssinaturaEntity(
+                    id = cv.id,
+                    versaoDocumentoId = versaoId,
+                    participanteId = "part-${estado.documentoId}-${cv.signatarioId}",
+                    numeroPagina = cv.numeroPagina,
+                    normX = cv.normX,
+                    normY = cv.normY,
+                    normLargura = cv.normLargura,
+                    normAltura = cv.normAltura,
+                    papelEspecifico = cv.papel
+                )
+            }
+            documentoRepository.salvarCampos(versaoId, camposEntity)
+        } catch (e: Exception) {
+            println("WizardNovoDocViewModel: erro em salvarRascunhoNoBanco: ${e.message}")
         }
-        documentoRepository.salvarCampos(versaoId, camposEntity)
     }
 }

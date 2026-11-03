@@ -102,7 +102,7 @@ class Adm01DocumentosViewModel @Inject constructor(
                     val atendeFiltro = when (filtro) {
                         FiltroDocumento.TODOS -> true
                         FiltroDocumento.RASCUNHOS -> doc.situacao == SituacaoDocumento.RASCUNHO
-                        FiltroDocumento.ENVIADOS -> doc.situacao == SituacaoDocumento.ENVIADO
+                        FiltroDocumento.ENVIADOS -> doc.situacao == SituacaoDocumento.ENVIADO || doc.situacao == SituacaoDocumento.ENVIANDO
                         FiltroDocumento.PARCIALMENTE_ASSINADOS -> doc.situacao == SituacaoDocumento.PARCIALMENTE_ASSINADO
                         FiltroDocumento.CONCLUIDOS -> doc.situacao == SituacaoDocumento.CONCLUIDO
                         FiltroDocumento.RECUSADOS -> doc.situacao == SituacaoDocumento.RECUSADO

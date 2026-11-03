@@ -163,7 +163,7 @@ fun Adm08OrdemScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    itemsIndexed(uiState.participantesOrdenados, key = { _, s -> s.signatarioId }) { index, signatario ->
+                    itemsIndexed(uiState.participantesOrdenados.distinctBy { it.signatarioId }, key = { _, s -> s.signatarioId }) { index, signatario ->
                         Surface(
                             shape = FormaMedia,
                             color = LetsSignTheme.colors.corSuperficie,
