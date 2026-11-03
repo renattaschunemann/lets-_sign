@@ -1,5 +1,6 @@
 package br.com.letssign.data.local.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -58,8 +59,51 @@ data class VersaoDocumentoEntity(
     val mensagemConvite: String,
     val chaveIdempotencia: String,
     val etapaWizardAtual: Int,
-    val situacao: SituacaoDocumento
-)
+    val situacao: SituacaoDocumento,
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
+    val conteudoBlob: ByteArray? = null
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as VersaoDocumentoEntity
+
+        if (id != other.id) return false
+        if (documentoId != other.documentoId) return false
+        if (numeroVersao != other.numeroVersao) return false
+        if (pdfPathInterno != other.pdfPathInterno) return false
+        if (sha256Original != other.sha256Original) return false
+        if (sha256Final != other.sha256Final) return false
+        if (tipoOrdem != other.tipoOrdem) return false
+        if (mensagemConvite != other.mensagemConvite) return false
+        if (chaveIdempotencia != other.chaveIdempotencia) return false
+        if (etapaWizardAtual != other.etapaWizardAtual) return false
+        if (situacao != other.situacao) return false
+        if (conteudoBlob != null) {
+            if (other.conteudoBlob == null) return false
+            if (!conteudoBlob.contentEquals(other.conteudoBlob)) return false
+        } else if (other.conteudoBlob != null) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + documentoId.hashCode()
+        result = 31 * result + numeroVersao
+        result = 31 * result + pdfPathInterno.hashCode()
+        result = 31 * result + sha256Original.hashCode()
+        result = 31 * result + (sha256Final?.hashCode() ?: 0)
+        result = 31 * result + tipoOrdem.hashCode()
+        result = 31 * result + mensagemConvite.hashCode()
+        result = 31 * result + chaveIdempotencia.hashCode()
+        result = 31 * result + etapaWizardAtual
+        result = 31 * result + situacao.hashCode()
+        result = 31 * result + (conteudoBlob?.contentHashCode() ?: 0)
+        return result
+    }
+}
 
 @Entity(
     tableName = "participantes_documento",
@@ -128,7 +172,8 @@ data class CampoAssinaturaEntity(
     val normX: Float,
     val normY: Float,
     val normLargura: Float,
-    val normAltura: Float
+    val normAltura: Float,
+    val papelEspecifico: PapelParticipante? = null
 )
 
 @Entity(

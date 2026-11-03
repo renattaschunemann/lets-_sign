@@ -2,9 +2,12 @@ package br.com.letssign
 
 import androidx.compose.ui.graphics.Color
 import br.com.letssign.core.designsystem.theme.LetsSignColors
+import br.com.letssign.core.designsystem.theme.LetsSignDarkColors
+import br.com.letssign.core.designsystem.theme.LetsSignLightColors
 import br.com.letssign.core.designsystem.theme.LetsSignSpacing
 import br.com.letssign.core.navigation.*
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -51,6 +54,19 @@ class DesignSystemTest {
         assertEquals(Color(0xFFE5F5FA), colors.corCampoAssinaturaOutroParticipante)
         assertEquals(Color(0xFFFFFFFF), colors.corPaginaPdf)
         assertEquals(Color(0xFF293681), colors.corTintaAssinatura)
+    }
+
+    @Test
+    fun `validar tokens do Tema Escuro (Dark Mode)`() {
+        val dark = LetsSignDarkColors
+        val light = LetsSignLightColors
+        assertNotEquals(dark.corFundo, light.corFundo)
+        assertEquals(Color(0xFF12141C), dark.corFundo)
+        assertEquals(Color(0xFF1A1D27), dark.corSuperficie)
+        assertEquals(Color(0xFFF1F3FA), dark.corTextoPrincipal)
+        assertEquals(Color(0xFF5B86E5), dark.corPrimaria)
+        // A folha do PDF permanece com fundo branco para legibilidade de documento impresso/assinado
+        assertEquals(Color(0xFFFFFFFF), dark.corPaginaPdf)
     }
 
     @Test

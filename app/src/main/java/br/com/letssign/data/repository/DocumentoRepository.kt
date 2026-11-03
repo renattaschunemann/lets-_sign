@@ -35,6 +35,7 @@ class DocumentoRepository @Inject constructor(
     private val cancelamentoDao: CancelamentoDao? = null,
     private val usuarioDao: UsuarioDao? = null,
     private val assinaturaDao: AssinaturaDao? = null,
+    private val remoteDataSource: br.com.letssign.data.remote.RemoteDataSource? = null,
     @ApplicationContext private val context: Context? = null
 ) {
 
@@ -484,9 +485,14 @@ class DocumentoRepository @Inject constructor(
         pdfPathInterno: String?,
         tipoOrdem: TipoOrdem,
         etapaWizard: Int,
-        participantes: List<ParticipanteDocumentoEntity>
+        participantes: List<ParticipanteDocumentoEntity>,
+        conteudoBlob: ByteArray? = null
     ): Result<String> {
         val agora = System.currentTimeMillis()
+        val blob = conteudoBlob ?: if (context != null && pdfPathInterno != null) {
+            br.com.letssign.data.local.file.PdfStorageManager.lerComoBlob(context, pdfPathInterno)
+        } else null
+
         val docExistente = documentoDao.buscarPorId(documentoId)
         val doc = docExistente?.copy(
             titulo = titulo.trim(),
@@ -506,7 +512,8 @@ class DocumentoRepository @Inject constructor(
         val versao = versaoExistente?.copy(
             pdfPathInterno = pdfPathInterno ?: versaoExistente.pdfPathInterno,
             tipoOrdem = tipoOrdem,
-            etapaWizardAtual = etapaWizard
+            etapaWizardAtual = etapaWizard,
+            conteudoBlob = blob ?: versaoExistente.conteudoBlob
         ) ?: VersaoDocumentoEntity(
             id = versaoId,
             documentoId = documentoId,
@@ -518,7 +525,8 @@ class DocumentoRepository @Inject constructor(
             mensagemConvite = "Por favor, assine este documento.",
             chaveIdempotencia = UUID.randomUUID().toString(),
             etapaWizardAtual = etapaWizard,
-            situacao = SituacaoDocumento.RASCUNHO
+            situacao = SituacaoDocumento.RASCUNHO,
+            conteudoBlob = blob
         )
         versaoDao.inserir(versao)
 
@@ -554,11 +562,67 @@ class DocumentoRepository @Inject constructor(
         val versao = versaoDao.buscarVersaoAtual(documentoId)
             ?: return Result.failure(IllegalStateException("Versão do documento não encontrada."))
 
+        // Validações de Regras de Negócio antes do envio
+        val partesSync = participanteDao.listarPorVersaoSync(versao.id)
+        if (partesSync.isEmpty()) {
+            return Result.failure(IllegalStateException("Um documento precisa ter pelo menos um signatário para ser enviado."))
+        }
+        val camposSync = campoAssinaturaDao?.listarPorVersaoSync(versao.id) ?: emptyList()
+        if (partesSync.any { p -> camposSync.none { it.participanteId == p.id } }) {
+            return Result.failure(IllegalStateException("Cada campo de assinatura deve estar associado a um participante e cada signatário deve possuir campo posicionado."))
+        }
+
         if (simularFalha) {
             // Salva com status FALHA_ENVIO
             documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.FALHA_ENVIO, dataUltimaAtualizacaoUtc = agora))
             versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.FALHA_ENVIO, mensagemConvite = mensagemConvite))
             return Result.failure(Exception("Não foi possível conectar ao servidor."))
+        }
+
+        // Sincronização remota via RemoteDataSource (REST API)
+        try {
+            remoteDataSource?.let { remote ->
+                val partesSync = participanteDao.listarPorVersaoSync(versao.id)
+                val camposSync = campoAssinaturaDao?.listarPorVersao(versao.id) ?: emptyList()
+                val request = br.com.letssign.data.remote.RemoteDocumentoEnvioRequest(
+                    versaoId = versao.id,
+                    documentoId = doc.id,
+                    titulo = doc.titulo,
+                    adminId = adminId,
+                    sha256Pdf = versao.sha256Original,
+                    tipoOrdem = versao.tipoOrdem,
+                    mensagemConvite = mensagemConvite,
+                    chaveIdempotencia = versao.chaveIdempotencia,
+                    participantes = partesSync.map {
+                        br.com.letssign.data.remote.RemoteParticipanteDto(
+                            id = it.id,
+                            nome = it.nomeSnapshot,
+                            email = it.emailSnapshot,
+                            telefone = it.telefoneSnapshot,
+                            dataNascimento = it.dataNascimentoSnapshot,
+                            papel = it.papel,
+                            obrigatorio = it.obrigatorio,
+                            ordem = it.ordem
+                        )
+                    },
+                    campos = camposSync.map {
+                        br.com.letssign.data.remote.RemoteCampoDto(
+                            id = it.id,
+                            participanteId = it.participanteId,
+                            pagina = it.numeroPagina,
+                            x = it.normX,
+                            y = it.normY,
+                            largura = it.normLargura,
+                            altura = it.normAltura
+                        )
+                    }
+                )
+                remote.enviarDocumento(request)
+            }
+        } catch (e: Exception) {
+            documentoDao.atualizar(doc.copy(situacaoAtual = SituacaoDocumento.FALHA_ENVIO, dataUltimaAtualizacaoUtc = agora))
+            versaoDao.atualizar(versao.copy(situacao = SituacaoDocumento.FALHA_ENVIO, mensagemConvite = mensagemConvite))
+            return Result.failure(e)
         }
 
         // Sucesso
@@ -737,6 +801,17 @@ class DocumentoRepository @Inject constructor(
             )
         )
 
+        // Sincronização remota via RemoteDataSource (REST API)
+        try {
+            remoteDataSource?.cancelarDocumento(
+                documentoId = documentoId,
+                adminId = adminId,
+                motivo = motivo.trim()
+            )
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso sincronizacao remota cancelamento: ${e.message}")
+        }
+
         // Notifica participantes pendentes
         val participantes = participanteDao.listarPorVersaoSync(versao.id)
         participantes.forEach { part ->
@@ -875,6 +950,8 @@ class DocumentoRepository @Inject constructor(
             participacoes.mapNotNull { part ->
                 val versao = versaoDao.buscarPorId(part.versaoDocumentoId) ?: return@mapNotNull null
                 val doc = documentoDao.buscarPorId(versao.documentoId) ?: return@mapNotNull null
+                // Regra de Negócio: Signatário só visualiza documentos que já foram enviados pelo administrador
+                if (doc.situacaoAtual == SituacaoDocumento.RASCUNHO) return@mapNotNull null
                 val campos = campoAssinaturaDao?.listarPorParticipanteSync(part.id) ?: emptyList()
                 val admin = usuarioDao?.buscarPorId(doc.usuarioAdminId)
 
@@ -1057,6 +1134,17 @@ class DocumentoRepository @Inject constructor(
             )
         )
 
+        // Sincronização remota via RemoteDataSource (REST API)
+        try {
+            remoteDataSource?.registrarRecusa(
+                participanteId = participanteId,
+                versaoId = versaoId,
+                motivo = motivo.trim()
+            )
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso sincronizacao remota recusa: ${e.message}")
+        }
+
         return Result.success(Unit)
     }
 
@@ -1094,6 +1182,18 @@ class DocumentoRepository @Inject constructor(
         }
 
         participanteDao.atualizar(participante.copy(situacao = SituacaoParticipante.ASSINADO))
+
+        // Sincronização remota via RemoteDataSource (REST API)
+        try {
+            remoteDataSource?.registrarAssinatura(
+                participanteId = participanteId,
+                versaoId = versaoId,
+                tipoAssinatura = tipoAssinatura,
+                assinaturaBase64 = caminhoPngOuSvg
+            )
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso sincronizacao remota assinatura: ${e.message}")
+        }
 
         eventoHistoricoDao?.inserir(
             EventoHistoricoEntity(

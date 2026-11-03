@@ -1,5 +1,6 @@
 package br.com.letssign.presentation.admin.documentos
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -8,7 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -21,6 +25,7 @@ import br.com.letssign.core.designsystem.components.reusable.EstadoCampoAssinatu
 import br.com.letssign.core.designsystem.components.reusable.ModoVisualizadorPdf
 import br.com.letssign.core.designsystem.components.reusable.VisualizadorPdfCamadas
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
+import br.com.letssign.core.pdf.PdfDemoGenerator
 import br.com.letssign.data.local.dao.CampoAssinaturaDao
 import br.com.letssign.data.local.dao.ParticipanteDocumentoDao
 import br.com.letssign.data.local.dao.VersaoDocumentoDao
@@ -35,10 +40,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import br.com.letssign.core.pdf.PdfDemoGenerator
+import kotlin.math.roundToInt
 
 data class Adm13VisualizadorUiState(
     val versao: VersaoDocumentoEntity? = null,
@@ -75,11 +77,14 @@ class Adm13VisualizadorViewModel @Inject constructor(
             val resolvedVersaoId = versao?.id ?: paramVersaoId
             val parts = if (resolvedVersaoId.isNotBlank()) participanteDao.listarPorVersaoSync(resolvedVersaoId) else emptyList()
             val campos = if (resolvedVersaoId.isNotBlank()) campoDao.listarPorVersaoSync(resolvedVersaoId) else emptyList()
+            val maxPagina = maxOf(2, campos.maxOfOrNull { it.numeroPagina } ?: 2)
+
             _uiState.update {
                 it.copy(
                     versao = versao,
                     participantes = parts,
                     campos = campos,
+                    totalPaginas = maxPagina,
                     carregando = false
                 )
             }
@@ -87,7 +92,9 @@ class Adm13VisualizadorViewModel @Inject constructor(
     }
 
     fun mudarPagina(novaPagina: Int) {
-        _uiState.update { it.copy(paginaAtual = novaPagina) }
+        val total = _uiState.value.totalPaginas.coerceAtLeast(1)
+        val clamped = novaPagina.coerceIn(1, total)
+        _uiState.update { it.copy(paginaAtual = clamped) }
     }
 
     fun baixarPdf(context: Context) {
@@ -107,7 +114,7 @@ class Adm13VisualizadorViewModel @Inject constructor(
 
 /**
  * ADM-13 — Visualizador de Documento para o Administrador.
- * Leitura completa com paginação, zoom e camadas sobrepostas de assinaturas.
+ * Leitura completa com paginação, zoom e camadas sobrepostas de assinaturas com coordenadas normalizadas.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,20 +196,36 @@ fun Adm13VisualizadorAdminScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 camadaCampos = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    BoxWithConstraints(
+                        modifier = Modifier.fillMaxSize()
                     ) {
+                        val totalLarguraPx = constraints.maxWidth.toFloat()
+                        val totalAlturaPx = constraints.maxHeight.toFloat()
+                        val densidade = LocalDensity.current
+
                         camposNaPagina.forEach { campo ->
                             val part = uiState.participantes.find { it.id == campo.participanteId }
                             val isAssinado = part?.situacao == SituacaoParticipante.ASSINADO
+                            val papelRotulo = campo.papelEspecifico?.rotulo ?: part?.papel?.rotulo ?: ""
+                            val nomeExibicao = if (part != null) {
+                                if (papelRotulo.isNotBlank()) "${part.nomeSnapshot} ($papelRotulo)" else part.nomeSnapshot
+                            } else "Signatário"
 
-                            CampoAssinaturaSobreposto(
-                                nomeSignatario = part?.nomeSnapshot ?: "Signatário",
-                                estado = if (isAssinado) EstadoCampoAssinatura.ASSINADO else EstadoCampoAssinatura.VAZIO
-                            )
+                            val larguraDp = with(densidade) { (totalLarguraPx * campo.normLargura).toDp() }.coerceIn(130.dp, 280.dp)
+                            val alturaDp = with(densidade) { (totalAlturaPx * campo.normAltura).toDp() }.coerceIn(50.dp, 84.dp)
+                            val posX = campo.normX * totalLarguraPx
+                            val posY = campo.normY * totalAlturaPx
+
+                            Box(
+                                modifier = Modifier.offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
+                            ) {
+                                CampoAssinaturaSobreposto(
+                                    nomeSignatario = nomeExibicao,
+                                    estado = if (isAssinado) EstadoCampoAssinatura.ASSINADO else EstadoCampoAssinatura.VAZIO,
+                                    largura = larguraDp,
+                                    altura = alturaDp
+                                )
+                            }
                         }
                     }
                 }

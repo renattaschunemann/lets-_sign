@@ -138,13 +138,7 @@ fun Adm07ObrigatoriedadeScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 OutlinedTextField(
-                                    value = when (papelAtual) {
-                                        PapelParticipante.CONTRATANTE -> "Contratante"
-                                        PapelParticipante.CONTRATADO -> "Contratado"
-                                        PapelParticipante.TESTEMUNHA -> "Testemunha"
-                                        PapelParticipante.INTERVENIENTE -> "Interveniente"
-                                        PapelParticipante.OUTRO -> "Outro"
-                                    },
+                                    value = papelAtual.rotulo,
                                     onValueChange = {},
                                     readOnly = true,
                                     label = { Text(stringResource(R.string.adm07_label_papel)) },
@@ -157,16 +151,9 @@ fun Adm07ObrigatoriedadeScreen(
                                     expanded = expandido,
                                     onDismissRequest = { expandido = false }
                                 ) {
-                                    PapelParticipante.values().forEach { papel ->
-                                        val rotulo = when (papel) {
-                                            PapelParticipante.CONTRATANTE -> "Contratante"
-                                            PapelParticipante.CONTRATADO -> "Contratado"
-                                            PapelParticipante.TESTEMUNHA -> "Testemunha"
-                                            PapelParticipante.INTERVENIENTE -> "Interveniente"
-                                            PapelParticipante.OUTRO -> "Outro"
-                                        }
+                                    PapelParticipante.obterPapeisOficiais().forEach { papel ->
                                         DropdownMenuItem(
-                                            text = { Text(rotulo) },
+                                            text = { Text(papel.rotulo) },
                                             onClick = {
                                                 viewModel.definirPapel(signatario.signatarioId, papel)
                                                 expandido = false

@@ -19,14 +19,6 @@ fun BadgePapel(
     papel: PapelParticipante,
     modifier: Modifier = Modifier
 ) {
-    val rotulo = when (papel) {
-        PapelParticipante.CONTRATANTE -> "Contratante"
-        PapelParticipante.CONTRATADO -> "Contratado"
-        PapelParticipante.TESTEMUNHA -> "Testemunha"
-        PapelParticipante.INTERVENIENTE -> "Interveniente"
-        PapelParticipante.OUTRO -> "Outro"
-    }
-
     Box(
         modifier = modifier
             .background(color = LetsSignTheme.colors.corNeutroContainer, shape = FormaPequena)
@@ -34,7 +26,7 @@ fun BadgePapel(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = rotulo,
+            text = papel.rotulo,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Medium,
             color = LetsSignTheme.colors.corNeutro

@@ -352,6 +352,108 @@ class AcompanhamentoAuditoriaTest {
         val envios = docRepo.listarEventosAuditoria(versaoId, FiltroAuditoria.ENVIOS_E_NOTIFICACOES).first()
         assertEquals(2, envios.size)
     }
+
+    @Test
+    fun testConsultarAcompanhamentoCompletoEDocumentoFinal() = runTest(testDispatcher) {
+        val docId = "doc-acompanhamento-final"
+        val versaoId = "versao-acompanhamento-final"
+        val adminId = "admin-carla"
+        val tCriacao = 1700000000000L
+        val tEnvio = 1700000100000L
+        val tAssinatura = 1700000500000L
+
+        // 1. Inserir documento concluído
+        docDao.inserir(
+            DocumentoEntity(
+                id = docId,
+                usuarioAdminId = adminId,
+                titulo = "Contrato de Parceria Comercial",
+                dataCriacaoUtc = tCriacao,
+                dataUltimaAtualizacaoUtc = tAssinatura,
+                situacaoAtual = SituacaoDocumento.CONCLUIDO
+            )
+        )
+
+        // 2. Inserir versão com hash final registrado
+        versaoDao.inserir(
+            VersaoDocumentoEntity(
+                id = versaoId,
+                documentoId = docId,
+                numeroVersao = 1,
+                pdfPathInterno = "docs/contrato_final.pdf",
+                sha256Original = "sha256-original-doc",
+                sha256Final = "sha256-final-icp-brasil",
+                tipoOrdem = TipoOrdem.PARALELA,
+                mensagemConvite = "Convite oficial",
+                chaveIdempotencia = "idem-final-99",
+                etapaWizardAtual = 9,
+                situacao = SituacaoDocumento.CONCLUIDO
+            )
+        )
+
+        // 3. Participantes: 1 assinado (Carla) e 1 assinado (João)
+        val part1 = ParticipanteDocumentoEntity(
+            id = "part-c1",
+            versaoDocumentoId = versaoId,
+            usuarioId = "user-c1",
+            nomeSnapshot = "Carla Mendes",
+            emailSnapshot = "carla@empresa.com",
+            telefoneSnapshot = "11999999999",
+            dataNascimentoSnapshot = "01/01/1985",
+            papel = PapelParticipante.CONTRATANTE,
+            obrigatorio = true,
+            ordem = 1,
+            situacao = SituacaoParticipante.ASSINADO
+        )
+        val part2 = ParticipanteDocumentoEntity(
+            id = "part-j2",
+            versaoDocumentoId = versaoId,
+            usuarioId = "user-j2",
+            nomeSnapshot = "João Lima",
+            emailSnapshot = "joao@empresa.com",
+            telefoneSnapshot = "11988888888",
+            dataNascimentoSnapshot = "10/05/1992",
+            papel = PapelParticipante.CONTRATADO,
+            obrigatorio = true,
+            ordem = 2,
+            situacao = SituacaoParticipante.ASSINADO
+        )
+        partDao.inserirVarios(listOf(part1, part2))
+
+        // 4. Campos posicionados
+        val campo1 = CampoAssinaturaEntity("c-1", versaoId, part1.id, 1, 0.25f, 0.40f, 0.50f, 0.08f, PapelParticipante.CONTRATANTE)
+        val campo2 = CampoAssinaturaEntity("c-2", versaoId, part2.id, 2, 0.25f, 0.65f, 0.50f, 0.08f, PapelParticipante.CONTRATADO)
+        campoDao.inserirVarios(listOf(campo1, campo2))
+
+        // 5. Trilha cronológica de auditoria
+        eventoDao.inserir(EventoHistoricoEntity("ev-cria", versaoId, tCriacao, TipoEventoHistorico.CRIACAO, "Carla", "Criado"))
+        eventoDao.inserir(EventoHistoricoEntity("ev-env", versaoId, tEnvio, TipoEventoHistorico.ENVIO, "Sistema", "Enviado"))
+        eventoDao.inserir(EventoHistoricoEntity("ev-ass1", versaoId, tAssinatura, TipoEventoHistorico.ASSINATURA, "Carla", "Assinado"))
+        eventoDao.inserir(EventoHistoricoEntity("ev-ass2", versaoId, tAssinatura, TipoEventoHistorico.ASSINATURA, "João", "Assinado"))
+        eventoDao.inserir(EventoHistoricoEntity("ev-conc", versaoId, tAssinatura, TipoEventoHistorico.CONCLUSAO, "Sistema", "Concluído"))
+
+        // Consulta de Acompanhamento
+        val detalhe = docRepo.carregarDocumentoDetalhado(docId).first()
+        assertNotNull(detalhe)
+        assertEquals(SituacaoDocumento.CONCLUIDO, detalhe?.documento?.situacaoAtual)
+        assertEquals(2, detalhe?.totalObrigatorios)
+        assertEquals(2, detalhe?.assinadosObrigatorios)
+        assertEquals(1.0f, detalhe?.progressoPercentual ?: 0f, 0.001f)
+        assertEquals("sha256-final-icp-brasil", detalhe?.versao?.sha256Final)
+
+        // Consulta individual dos signatários
+        val participantes = detalhe?.participantes ?: emptyList()
+        assertEquals(2, participantes.size)
+        assertTrue(participantes.all { it.situacao == SituacaoParticipante.ASSINADO })
+
+        // Histórico de auditoria
+        val eventos = docRepo.listarEventosAuditoria(versaoId, FiltroAuditoria.TODOS).first()
+        assertEquals(5, eventos.size)
+        assertTrue(eventos.any { it.tipoEvento == TipoEventoHistorico.CRIACAO })
+        assertTrue(eventos.any { it.tipoEvento == TipoEventoHistorico.ENVIO })
+        assertTrue(eventos.any { it.tipoEvento == TipoEventoHistorico.ASSINATURA })
+        assertTrue(eventos.any { it.tipoEvento == TipoEventoHistorico.CONCLUSAO })
+    }
 }
 
 class FakeRecusaDao : RecusaDao {

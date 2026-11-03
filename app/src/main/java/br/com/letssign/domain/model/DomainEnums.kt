@@ -30,12 +30,44 @@ enum class TipoOrdem {
     PARALELA
 }
 
-enum class PapelParticipante {
-    CONTRATANTE,
-    CONTRATADO,
-    TESTEMUNHA,
-    INTERVENIENTE,
-    OUTRO
+enum class PapelParticipante(val rotulo: String) {
+    CONTRATANTE("Contratante"),
+    CONTRATADO("Contratado"),
+    COMPRADOR("Comprador"),
+    VENDEDOR("Vendedor"),
+    LOCADOR("Locador"),
+    LOCATARIO("Locatário"),
+    REPRESENTANTE_LEGAL("Representante Legal"),
+    PROCURADOR("Procurador"),
+    INTERVENIENTE_ANUENTE("Interveniente Anuente"),
+    FIADOR("Fiador"),
+    AVALISTA("Avalista"),
+    DEVEDOR_SOLIDARIO("Devedor Solidário"),
+    TESTEMUNHA("Testemunha"),
+    APROVADOR("Aprovador"),
+    NOTARIO("Notário"),
+    INTERVENIENTE("Interveniente"),
+    OUTRO("Outro");
+
+    companion object {
+        fun obterPapeisOficiais(): List<PapelParticipante> = listOf(
+            CONTRATANTE,
+            CONTRATADO,
+            COMPRADOR,
+            VENDEDOR,
+            LOCADOR,
+            LOCATARIO,
+            REPRESENTANTE_LEGAL,
+            PROCURADOR,
+            INTERVENIENTE_ANUENTE,
+            FIADOR,
+            AVALISTA,
+            DEVEDOR_SOLIDARIO,
+            TESTEMUNHA,
+            APROVADOR,
+            NOTARIO
+        )
+    }
 }
 
 enum class TipoAssinatura {

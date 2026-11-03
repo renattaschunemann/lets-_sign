@@ -6,9 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,7 +25,8 @@ import br.com.letssign.domain.model.PapelParticipante
 import br.com.letssign.presentation.admin.wizard.CampoVisual
 
 /**
- * MOD-03 — Modal / Bottom Sheet para atribuir o campo selecionado a um signatário.
+ * MOD-03 — Modal / Bottom Sheet para atribuir o campo selecionado a um signatário
+ * e permitir classificar o papel do signatário diretamente na seleção do campo.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +36,7 @@ fun Mod03AtribuirCampoModal(
     campos: List<CampoVisual>,
     signatarioAtualId: String?,
     aoSelecionarSignatario: (String) -> Unit,
+    aoAlterarPapel: ((signatarioId: String, novoPapel: PapelParticipante) -> Unit)? = null,
     aoFechar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -64,6 +67,7 @@ fun Mod03AtribuirCampoModal(
                     val isSelecionado = part.signatarioId == signatarioAtualId
                     val qtdCampos = campos.count { it.signatarioId == part.signatarioId }
                     val papel = papeis[part.signatarioId] ?: PapelParticipante.CONTRATADO
+                    var expandirMenuPapel by remember { mutableStateOf(false) }
 
                     Surface(
                         shape = FormaMedia,
@@ -106,12 +110,47 @@ fun Mod03AtribuirCampoModal(
                                     fontWeight = FontWeight.SemiBold,
                                     color = LetsSignTheme.colors.corTextoPrincipal
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    BadgePapel(papel = papel)
+                                    Box {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.clickable(enabled = aoAlterarPapel != null) {
+                                                expandirMenuPapel = true
+                                            }
+                                        ) {
+                                            BadgePapel(papel = papel)
+                                            if (aoAlterarPapel != null) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowDropDown,
+                                                    contentDescription = "Alterar papel",
+                                                    tint = LetsSignTheme.colors.corTextoSecundario,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+
+                                        if (aoAlterarPapel != null) {
+                                            DropdownMenu(
+                                                expanded = expandirMenuPapel,
+                                                onDismissRequest = { expandirMenuPapel = false }
+                                            ) {
+                                                PapelParticipante.obterPapeisOficiais().forEach { p ->
+                                                    DropdownMenuItem(
+                                                        text = { Text(p.rotulo) },
+                                                        onClick = {
+                                                            aoAlterarPapel(part.signatarioId, p)
+                                                            expandirMenuPapel = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     Text(
                                         text = if (qtdCampos > 0) {
                                             stringResource(R.string.mod03_qtd_campos_formato, qtdCampos)

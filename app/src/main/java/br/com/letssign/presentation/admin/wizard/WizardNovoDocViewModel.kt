@@ -30,6 +30,7 @@ import javax.inject.Inject
 data class CampoVisual(
     val id: String = UUID.randomUUID().toString(),
     val signatarioId: String,
+    val papel: PapelParticipante? = null,
     val numeroPagina: Int = 1,
     val normX: Float = 0.25f,
     val normY: Float = 0.5f,
@@ -375,11 +376,13 @@ class WizardNovoDocViewModel @Inject constructor(
             ?: return
 
         val offsetContador = estado.camposNaPaginaAtual.size
-        val novoY = (0.25f + (offsetContador * 0.12f)).coerceAtMost(0.75f)
+        val novoY = (0.20f + (offsetContador * 0.12f)).coerceAtMost(0.75f)
+        val papelPadrao = estado.papelPorSignatario[participanteAlvo] ?: PapelParticipante.CONTRATADO
 
         val novoCampo = CampoVisual(
             id = UUID.randomUUID().toString(),
             signatarioId = participanteAlvo,
+            papel = papelPadrao,
             numeroPagina = estado.paginaAtualPdf,
             normX = 0.25f,
             normY = novoY,
@@ -408,12 +411,49 @@ class WizardNovoDocViewModel @Inject constructor(
         _uiState.update { it.copy(mostrarModalAtribuirCampo = false) }
     }
 
-    fun atribuirCampo(campoId: String, novoSignatarioId: String) {
+    fun atribuirCampo(campoId: String, novoSignatarioId: String, novoPapel: PapelParticipante? = null) {
         _uiState.update { estado ->
+            val papelFinal = novoPapel ?: estado.papelPorSignatario[novoSignatarioId] ?: PapelParticipante.CONTRATADO
             val atualizados = estado.campos.map {
-                if (it.id == campoId) it.copy(signatarioId = novoSignatarioId) else it
+                if (it.id == campoId) it.copy(signatarioId = novoSignatarioId, papel = papelFinal) else it
             }
             estado.copy(campos = atualizados, mostrarModalAtribuirCampo = false)
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun atualizarPosicaoCampo(campoId: String, novoNormX: Float, novoNormY: Float) {
+        _uiState.update { estado ->
+            val atualizados = estado.campos.map { campo ->
+                if (campo.id == campoId) {
+                    campo.copy(
+                        normX = novoNormX.coerceIn(0.02f, (1f - campo.normLargura - 0.02f).coerceAtLeast(0f)),
+                        normY = novoNormY.coerceIn(0.02f, (1f - campo.normAltura - 0.02f).coerceAtLeast(0f))
+                    )
+                } else campo
+            }
+            estado.copy(campos = atualizados)
+        }
+    }
+
+    fun definirPapelCampo(campoId: String, novoPapel: PapelParticipante) {
+        _uiState.update { estado ->
+            val atualizados = estado.campos.map {
+                if (it.id == campoId) it.copy(papel = novoPapel) else it
+            }
+            estado.copy(campos = atualizados)
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun moverCampoParaPagina(campoId: String, novaPagina: Int) {
+        val total = _uiState.value.pdfTotalPaginas.coerceAtLeast(1)
+        val pag = novaPagina.coerceIn(1, total)
+        _uiState.update { estado ->
+            val atualizados = estado.campos.map { campo ->
+                if (campo.id == campoId) campo.copy(numeroPagina = pag) else campo
+            }
+            estado.copy(campos = atualizados, paginaAtualPdf = pag)
         }
         salvarRascunhoAutomatico()
     }
@@ -446,21 +486,8 @@ class WizardNovoDocViewModel @Inject constructor(
             _uiState.update { it.copy(estadoModalResultado = EstadoEnvio.ENVIANDO) }
             val estado = _uiState.value
 
-            // Salva os campos antes do envio
-            val versaoId = "versao-${estado.documentoId}-1"
-            val camposEntity = estado.campos.map { cv ->
-                CampoAssinaturaEntity(
-                    id = cv.id,
-                    versaoDocumentoId = versaoId,
-                    participanteId = "part-${estado.documentoId}-${cv.signatarioId}",
-                    numeroPagina = cv.numeroPagina,
-                    normX = cv.normX,
-                    normY = cv.normY,
-                    normLargura = cv.normLargura,
-                    normAltura = cv.normAltura
-                )
-            }
-            documentoRepository.salvarCampos(versaoId, camposEntity)
+            // Garante persistência completa do documento, versão, participantes e campos antes do despacho
+            salvarRascunhoNoBanco()
 
             val resultado = documentoRepository.enviarDocumento(
                 adminId = adminIdAtual,
@@ -588,7 +615,8 @@ class WizardNovoDocViewModel @Inject constructor(
                 normX = cv.normX,
                 normY = cv.normY,
                 normLargura = cv.normLargura,
-                normAltura = cv.normAltura
+                normAltura = cv.normAltura,
+                papelEspecifico = cv.papel
             )
         }
         documentoRepository.salvarCampos(versaoId, camposEntity)

@@ -123,6 +123,20 @@ fun Mod01ResultadoEnvioModal(
                             color = LetsSignTheme.colors.corTextoSecundario,
                             textAlign = TextAlign.Center
                         )
+                        Surface(
+                            shape = br.com.letssign.core.designsystem.theme.FormaPequena,
+                            color = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.2f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria.copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Seus dados estão preservados. A nova tentativa utiliza a chave de idempotência do documento para garantir que nenhum convite seja duplicado.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoPrincipal,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(10.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                         BotaoPrincipal(
                             texto = stringResource(R.string.mod01_btn_tentar_novamente),

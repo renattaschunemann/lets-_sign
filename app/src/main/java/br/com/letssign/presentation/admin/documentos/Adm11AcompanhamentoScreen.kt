@@ -9,10 +9,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,10 +46,14 @@ import br.com.letssign.domain.model.TipoOrdem
 import br.com.letssign.presentation.admin.documentos.modals.Mod07CancelarDocumentoDialog
 import br.com.letssign.presentation.admin.documentos.modals.Mod09DetalhesRecusaModal
 import br.com.letssign.presentation.admin.documentos.modals.Mod11NovaVersaoModal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * ADM-11 — Acompanhamento do Documento.
- * Visão consolidada de progresso, status dos participantes, "Vez de" e ações de ciclo de vida.
+ * Visão consolidada de situação geral, situação individual dos signatários,
+ * datas e horários dos principais eventos, histórico de auditoria e acesso ao documento final concluído.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +68,7 @@ fun Adm11AcompanhamentoScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val formatoData = remember { SimpleDateFormat("dd/MM/yyyy 'às' HH:mm", Locale.getDefault()) }
 
     LaunchedEffect(uiState.mensagemFeedback) {
         uiState.mensagemFeedback?.let { msg ->
@@ -84,10 +93,11 @@ fun Adm11AcompanhamentoScreen(
     if (uiState.mostrarModalRecusa) {
         val partRecusado = uiState.documento?.participantes?.find { it.situacao == SituacaoParticipante.RECUSADO }
         val recusa = uiState.documento?.recusa
+        val dataRecusaFormatada = recusa?.dataHoraUtc?.let { formatoData.format(Date(it)) } ?: "Data recente"
         Mod09DetalhesRecusaModal(
             nomeSignatario = partRecusado?.nomeSnapshot ?: "Signatário",
-            dataHoraFormatada = "26/10/2026 às 15:42 (UTC)",
-            justificativa = recusa?.observacao ?: "O signatário solicitou alteração nas cláusulas comerciais antes de assinar.",
+            dataHoraFormatada = dataRecusaFormatada,
+            justificativa = recusa?.observacao ?: "O signatário solicitou alteração nas cláusulas antes de assinar.",
             aoFechar = { viewModel.fecharModalRecusa() }
         )
     }
@@ -157,7 +167,7 @@ fun Adm11AcompanhamentoScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Card 1: Resumo do documento e situação
+                // Card 1: Situação Geral do Documento e Progresso
                 item {
                     Surface(
                         shape = FormaMedia,
@@ -192,7 +202,20 @@ fun Adm11AcompanhamentoScreen(
                                 )
                             }
 
-                            SeloSituacaoDocumento(situacao = detalhe.documento.situacaoAtual)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                SeloSituacaoDocumento(situacao = detalhe.documento.situacaoAtual)
+
+                                val modoOrdemTexto = if (detalhe.versao.tipoOrdem == TipoOrdem.PARALELA) "Envio Paralelo" else "Envio Sequencial"
+                                Text(
+                                    text = modoOrdemTexto,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
 
                             // Progresso de assinaturas
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -203,7 +226,7 @@ fun Adm11AcompanhamentoScreen(
                                     Text(
                                         text = stringResource(
                                             R.string.adm01_progresso_assinaturas,
-                                            detalhe.assinadosObrigatorios,
+                                             detalhe.assinadosObrigatorios,
                                             detalhe.totalObrigatorios
                                         ),
                                         style = MaterialTheme.typography.bodyMedium,
@@ -230,7 +253,167 @@ fun Adm11AcompanhamentoScreen(
                     }
                 }
 
-                // Card 2: Ações Principais do Ciclo de Vida
+                // Card de Destaque: Documento Final Concluído (quando concluído)
+                if (detalhe.documento.situacaoAtual == SituacaoDocumento.CONCLUIDO) {
+                    item {
+                        Surface(
+                            shape = FormaMedia,
+                            color = LetsSignTheme.colors.corSucesso.copy(alpha = 0.08f),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, LetsSignTheme.colors.corSucesso),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = LetsSignTheme.colors.corSucesso,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text(
+                                        text = "Documento Final 100% Concluído",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = LetsSignTheme.colors.corSucesso
+                                    )
+                                }
+
+                                Text(
+                                    text = "Todas as partes assinaram eletronicamente. O documento possui carimbo de tempo e integridade ICP-Brasil registrada.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    BotaoPrincipal(
+                                        texto = "Visualizar Documento Final",
+                                        aoClicar = { aoNavegarParaVisualizador(detalhe.versao.id) },
+                                        icone = Icons.Default.Visibility,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    BotaoSecundario(
+                                        texto = "Baixar PDF Assinado",
+                                        aoClicar = {
+                                            try {
+                                                val arquivo = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+                                                br.com.letssign.core.pdf.PdfDemoGenerator.compartilharPdf(context, arquivo)
+                                                viewModel.definirFeedback("Contrato assinado aberto para download!")
+                                            } catch (e: Exception) {
+                                                viewModel.definirFeedback("Erro ao exportar PDF: ${e.message}")
+                                            }
+                                        },
+                                        icone = Icons.Default.Download,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Card 2: Datas e Horários dos Principais Eventos
+                item {
+                    Surface(
+                        shape = FormaMedia,
+                        color = LetsSignTheme.colors.corSuperficie,
+                        shadowElevation = LetsSignTheme.elevation.nivel1,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Event,
+                                    contentDescription = null,
+                                    tint = LetsSignTheme.colors.corPrimaria
+                                )
+                                Text(
+                                    text = "Datas e Horários dos Principais Eventos",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                            }
+
+                            HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
+
+                            // Data de Criação
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Criação do documento:",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = formatoData.format(Date(detalhe.documento.dataCriacaoUtc)),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                            }
+
+                            // Data de Envio / Última Atualização
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Última atualização:",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = formatoData.format(Date(detalhe.documento.dataUltimaAtualizacaoUtc)),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                            }
+
+                            // Hash de Integridade
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "SHA-256 Original:",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                                Text(
+                                    text = detalhe.versao.sha256Original.take(16) + "...",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = LetsSignTheme.colors.corPrimaria
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Card 3: Ações e Acesso ao Histórico de Auditoria
                 item {
                     Surface(
                         shape = FormaMedia,
@@ -285,35 +468,6 @@ fun Adm11AcompanhamentoScreen(
                                     )
                                 }
 
-                                SituacaoDocumento.CONCLUIDO -> {
-                                    BotaoPrincipal(
-                                        texto = stringResource(R.string.adm11_btn_baixar_assinado),
-                                        aoClicar = {
-                                            try {
-                                                val arquivo = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
-                                                br.com.letssign.core.pdf.PdfDemoGenerator.compartilharPdf(context, arquivo)
-                                                viewModel.definirFeedback("Contrato assinado aberto para download e compartilhamento!")
-                                            } catch (e: Exception) {
-                                                viewModel.definirFeedback("Erro ao exportar PDF: ${e.message}")
-                                            }
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                    BotaoSecundario(
-                                        texto = stringResource(R.string.adm11_btn_baixar_original),
-                                        aoClicar = {
-                                            try {
-                                                val arquivo = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
-                                                br.com.letssign.core.pdf.PdfDemoGenerator.compartilharPdf(context, arquivo)
-                                                viewModel.definirFeedback("PDF preparado para download!")
-                                            } catch (e: Exception) {
-                                                viewModel.definirFeedback("Erro ao exportar PDF: ${e.message}")
-                                            }
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-
                                 SituacaoDocumento.ENVIADO,
                                 SituacaoDocumento.PARCIALMENTE_ASSINADO -> {
                                     BotaoDestrutivo(
@@ -329,7 +483,7 @@ fun Adm11AcompanhamentoScreen(
                     }
                 }
 
-                // Card 3: Seção Signatários e Progresso
+                // Card 4: Situação Individual dos Signatários
                 item {
                     Text(
                         text = stringResource(R.string.adm11_secao_signatarios),
@@ -343,6 +497,7 @@ fun Adm11AcompanhamentoScreen(
                     val isSequencial = detalhe.versao.tipoOrdem == TipoOrdem.SEQUENCIAL
                     val isVezAtual = isSequencial && part.situacao == SituacaoParticipante.PENDENTE
                     val isAguardando = isSequencial && part.situacao == SituacaoParticipante.AGUARDANDO_VEZ
+                    val camposDoPart = detalhe.campos.filter { it.participanteId == part.id }
 
                     Surface(
                         shape = FormaMedia,
@@ -359,39 +514,101 @@ fun Adm11AcompanhamentoScreen(
                             LinhaParticipante(
                                 nome = part.nomeSnapshot,
                                 email = part.emailSnapshot,
-                                papel = part.papel.name.lowercase().replaceFirstChar { it.uppercase() },
+                                papel = part.papel.rotulo,
                                 obrigatorio = part.obrigatorio,
                                 ordem = part.ordem,
                                 situacao = part.situacao,
                                 modo = ModoLinhaParticipante.ACOMPANHAMENTO
                             )
 
-                            // Badge de Vez de assinar ou Aguardando vez
-                            if (isVezAtual) {
-                                Surface(
-                                    shape = FormaPequena,
-                                    color = LetsSignTheme.colors.corAvisoContainer,
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corAviso)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.adm11_badge_vez_de),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = LetsSignTheme.colors.corAviso,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                    )
+                            // Detalhamento dos campos atribuídos
+                            if (camposDoPart.isNotEmpty()) {
+                                val resumoCampos = camposDoPart.joinToString(", ") { c ->
+                                    val rotulo = c.papelEspecifico?.rotulo ?: part.papel.rotulo
+                                    "Pág. ${c.numeroPagina} ($rotulo)"
                                 }
-                            } else if (isAguardando) {
-                                Surface(
-                                    shape = FormaPequena,
-                                    color = LetsSignTheme.colors.corNeutroContainer
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.adm11_badge_aguardando),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = LetsSignTheme.colors.corNeutro,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                    )
+                                Text(
+                                    text = "Campos: $resumoCampos",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
+
+                            // Badges de status individual
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                when (part.situacao) {
+                                    SituacaoParticipante.ASSINADO -> {
+                                        Surface(
+                                            shape = FormaPequena,
+                                            color = LetsSignTheme.colors.corSucesso.copy(alpha = 0.12f),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corSucesso)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.CheckCircle,
+                                                    contentDescription = null,
+                                                    tint = LetsSignTheme.colors.corSucesso,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Text(
+                                                    text = "Assinatura realizada",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = LetsSignTheme.colors.corSucesso
+                                                )
+                                            }
+                                        }
+                                    }
+                                    SituacaoParticipante.PENDENTE -> {
+                                        Surface(
+                                            shape = FormaPequena,
+                                            color = LetsSignTheme.colors.corAvisoContainer,
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corAviso)
+                                        ) {
+                                            Text(
+                                                text = if (isVezAtual) stringResource(R.string.adm11_badge_vez_de) else "Pendente de assinatura",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = LetsSignTheme.colors.corAviso,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    SituacaoParticipante.AGUARDANDO_VEZ -> {
+                                        Surface(
+                                            shape = FormaPequena,
+                                            color = LetsSignTheme.colors.corNeutroContainer
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.adm11_badge_aguardando),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = LetsSignTheme.colors.corNeutro,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    SituacaoParticipante.RECUSADO -> {
+                                        Surface(
+                                            shape = FormaPequena,
+                                            color = LetsSignTheme.colors.corErro.copy(alpha = 0.12f),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corErro)
+                                        ) {
+                                            Text(
+                                                text = "Assinatura Recusada",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = LetsSignTheme.colors.corErro,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
 

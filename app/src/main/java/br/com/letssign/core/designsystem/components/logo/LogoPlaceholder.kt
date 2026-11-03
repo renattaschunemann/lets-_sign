@@ -1,18 +1,16 @@
 package br.com.letssign.core.designsystem.components.logo
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -31,15 +29,18 @@ enum class LogoSize(val width: Dp, val height: Dp) {
 
 /**
  * Componente oficial de exibição da Logomarca LetsSign:
- * Renderiza o asset oficial da LetsSign (R.drawable.logo_letssign)
- * com proporção preservada, cantos arredondados suaves e acessibilidade.
+ * Alterna dinamicamente entre as versões oficiais para Tema Claro e Tema Escuro:
+ * - Tema Claro: R.drawable.letssign_logo (letssign-logo: com texto escuro e slogan)
+ * - Tema Escuro: R.drawable.letssign_logo_branco (letssign-logo-branco: com texto branco e ícone gradiente)
  */
 @Composable
 fun LogoPlaceholder(
     tamanho: LogoSize = LogoSize.MEDIO,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    usarVersaoEscura: Boolean = isSystemInDarkTheme()
 ) {
     val descricao = stringResource(R.string.logo_content_description)
+    val logoResId = if (usarVersaoEscura) R.drawable.letssign_logo_branco else R.drawable.letssign_logo
 
     Box(
         modifier = modifier
@@ -48,16 +49,32 @@ fun LogoPlaceholder(
             .semantics { contentDescription = descricao },
         contentAlignment = Alignment.Center
     ) {
-        androidx.compose.foundation.Image(
-            painter = androidx.compose.ui.res.painterResource(id = R.drawable.logo_letssign),
+        Image(
+            painter = painterResource(id = logoResId),
             contentDescription = descricao,
-            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+            contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize()
         )
     }
 }
 
-@Preview(name = "Logo Grande 160x160", showBackground = true)
+@Preview(name = "Logo Claro (letssign-logo)", showBackground = true)
+@Composable
+private fun LogoClaroPreview() {
+    LetsSignTheme(darkTheme = false) {
+        LogoPlaceholder(tamanho = LogoSize.MEDIO, usarVersaoEscura = false)
+    }
+}
+
+@Preview(name = "Logo Escuro (letssign-logo-branco)", showBackground = true, backgroundColor = 0xFF12141C)
+@Composable
+private fun LogoEscuroPreview() {
+    LetsSignTheme(darkTheme = true) {
+        LogoPlaceholder(tamanho = LogoSize.MEDIO, usarVersaoEscura = true)
+    }
+}
+
+@Preview(name = "Logo Grande 188x64", showBackground = true)
 @Composable
 private fun LogoGrandePreview() {
     LetsSignTheme {
@@ -65,15 +82,7 @@ private fun LogoGrandePreview() {
     }
 }
 
-@Preview(name = "Logo Médio 120x48", showBackground = true)
-@Composable
-private fun LogoMedioPreview() {
-    LetsSignTheme {
-        LogoPlaceholder(tamanho = LogoSize.MEDIO)
-    }
-}
-
-@Preview(name = "Logo Pequeno 32x32", showBackground = true)
+@Preview(name = "Logo Pequeno 94x32", showBackground = true)
 @Composable
 private fun LogoPequenoPreview() {
     LetsSignTheme {

@@ -206,6 +206,83 @@ class CamposEnvioTest {
         val docSalvo = docDao.buscarPorId(vm.uiState.value.documentoId)
         assertNotNull(docSalvo)
         assertEquals(SituacaoDocumento.FALHA_ENVIO, docSalvo?.situacaoAtual)
+
+        // Administrador clica em 'Tentar novamente' após orientação do modal
+        vm.enviarDocumento(simularFalha = false)
+        testScheduler.advanceUntilIdle()
+
+        // Verifica que a nova tentativa foi concluída com sucesso
+        assertEquals(EstadoEnvio.SUCESSO, vm.uiState.value.estadoModalResultado)
+
+        // Verifica que o mesmo documento foi atualizado para ENVIADO sem duplicar registros
+        val docsNoBanco = docDao.db.values.filter { it.titulo == "Acordo de Confidencialidade" }
+        assertEquals("Não deve duplicar documentos após retentativa", 1, docsNoBanco.size)
+        assertEquals(SituacaoDocumento.ENVIADO, docsNoBanco.first().situacaoAtual)
+    }
+
+    @Test
+    fun testMultiplosCamposMesmoSignatarioComPapeisDistintosECoordenadasNormalizadas() = runTest(testDispatcher) {
+        val adminId = "admin-carla-mendes"
+        sigRepo.inicializarDadosDemoSeNecessario(adminId)
+
+        val vm = WizardNovoDocViewModel(
+            documentoRepository = docRepo,
+            signatarioRepository = sigRepo,
+            sessionManager = sessionManager,
+            savedStateHandle = SavedStateHandle()
+        )
+        testScheduler.advanceUntilIdle()
+
+        vm.atualizarTitulo("Contrato de Locação com Fiador")
+        val sig1 = vm.uiState.value.signatariosCadastrados[0].signatarioId
+        vm.alternarSelecaoSignatario(sig1)
+
+        // 1. Adiciona primeiro campo para sig1 como LOCADOR na página 1
+        vm.adicionarCampo()
+        val campo1 = vm.uiState.value.campos.first()
+        vm.definirPapelCampo(campo1.id, br.com.letssign.domain.model.PapelParticipante.LOCADOR)
+
+        // 2. Adiciona segundo campo para o mesmo sig1 como FIADOR
+        vm.adicionarCampo()
+        val campo2 = vm.uiState.value.campos.last()
+        vm.atribuirCampo(campo2.id, sig1, br.com.letssign.domain.model.PapelParticipante.FIADOR)
+
+        assertEquals(2, vm.uiState.value.campos.size)
+        assertEquals(sig1, vm.uiState.value.campos[0].signatarioId)
+        assertEquals(sig1, vm.uiState.value.campos[1].signatarioId)
+        assertEquals(br.com.letssign.domain.model.PapelParticipante.LOCADOR, vm.uiState.value.campos[0].papel)
+        assertEquals(br.com.letssign.domain.model.PapelParticipante.FIADOR, vm.uiState.value.campos[1].papel)
+
+        // 3. Arrastar e atualizar posição com coordenadas normalizadas
+        vm.atualizarPosicaoCampo(campo2.id, 0.40f, 0.75f)
+        val campo2Atualizado = vm.uiState.value.campos.find { it.id == campo2.id }
+        assertNotNull(campo2Atualizado)
+        assertEquals(0.40f, campo2Atualizado!!.normX, 0.001f)
+        assertEquals(0.75f, campo2Atualizado.normY, 0.001f)
+
+        // 4. Mudar de página do campo
+        vm.moverCampoParaPagina(campo2.id, 2)
+        val campo2NaPag2 = vm.uiState.value.campos.find { it.id == campo2.id }
+        assertEquals(2, campo2NaPag2?.numeroPagina)
+
+        // 5. Enviar documento e persistir no banco
+        vm.enviarDocumento(simularFalha = false)
+        testScheduler.advanceUntilIdle()
+
+        // 6. Verificar se os campos foram salvos com integridade de coordenadas e papéis
+        val versaoId = "versao-${vm.uiState.value.documentoId}-1"
+        val camposSalvos = campoDao.db.values.filter { it.versaoDocumentoId == versaoId }
+        assertEquals(2, camposSalvos.size)
+
+        val campoSalvo1 = camposSalvos.find { it.id == campo1.id }
+        val campoSalvo2 = camposSalvos.find { it.id == campo2.id }
+        assertNotNull(campoSalvo1)
+        assertNotNull(campoSalvo2)
+        assertEquals(1, campoSalvo1!!.numeroPagina)
+        assertEquals(2, campoSalvo2!!.numeroPagina)
+        assertEquals(0.40f, campoSalvo2.normX, 0.001f)
+        assertEquals(0.75f, campoSalvo2.normY, 0.001f)
+        assertEquals(br.com.letssign.domain.model.PapelParticipante.FIADOR, campoSalvo2.papelEspecifico)
     }
 }
 

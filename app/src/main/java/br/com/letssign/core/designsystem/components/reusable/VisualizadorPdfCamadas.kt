@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -133,7 +134,7 @@ fun VisualizadorPdfCamadas(
             Card(
                 modifier = Modifier
                     .fillMaxWidth(escalaZoom.coerceAtMost(1.0f))
-                    .wrapContentHeight(),
+                    .heightIn(min = 520.dp),
                 shape = FormaMedia,
                 colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corPaginaPdf),
                 elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel1)
@@ -141,15 +142,15 @@ fun VisualizadorPdfCamadas(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 520.dp)
                         .padding(20.dp)
                 ) {
+                    // 1. Conteúdo de fundo da página do documento
                     if (paginaAtual == 1) {
-                        // Conteúdo da Página 1: Minuta Contratual
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Barra superior azul institucional
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -188,7 +189,7 @@ fun VisualizadorPdfCamadas(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "DAS PARTES CONTRATANTES:\nCONTRATANTE: TechSolutions Inovação S.A. (Carla Mendes)\nCONTRATADO: João Lima Desenvolvimento de Software ME",
+                                text = "DAS PARTES CONTRATANTES:\nCONTRATANTE: TechSolutions Inovação S.A.\nCONTRATADO: João Lima Desenvolvimento ME",
                                 style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                                 color = LetsSignTheme.colors.corTextoPrincipal
                             )
@@ -207,7 +208,7 @@ fun VisualizadorPdfCamadas(
                                 style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                                 color = LetsSignTheme.colors.corTextoPrincipal
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.weight(1f, fill = false))
                             HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -226,12 +227,10 @@ fun VisualizadorPdfCamadas(
                             }
                         }
                     } else {
-                        // Conteúdo da Página 2: Folha de Assinaturas e Auditoria
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Barra superior verde de sucesso
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -250,10 +249,9 @@ fun VisualizadorPdfCamadas(
                                     color = LetsSignTheme.colors.corSucesso
                                 )
                                 Text(
-                                    text = "100% ASSINADO",
+                                    text = "Pág. $paginaAtual de $totalPaginas",
                                     style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    color = LetsSignTheme.colors.corSucesso
+                                    color = LetsSignTheme.colors.corTextoSecundario
                                 )
                             }
                             HorizontalDivider(color = LetsSignTheme.colors.corDivisor)
@@ -264,15 +262,11 @@ fun VisualizadorPdfCamadas(
                                 color = LetsSignTheme.colors.corTextoPrincipal
                             )
                             Text(
-                                text = "Emitido em conformidade com a MP nº 2.200-2/2001 e a Lei nº 14.063/2020.",
+                                text = "Emitido em conformidade com a MP nº 2.200-2/2001 e a Lei nº 14.063/2020. As partes abaixo assinam e chancelam este documento.",
                                 style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                                 color = LetsSignTheme.colors.corTextoSecundario
                             )
-
-                            // Camada de campos sobrepostos
-                            camadaCampos()
-
-                            // Rodapé criptográfico
+                            Spacer(modifier = Modifier.weight(1f, fill = false))
                             Card(
                                 shape = FormaPequena,
                                 colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corFundo),
@@ -305,6 +299,13 @@ fun VisualizadorPdfCamadas(
                                 }
                             }
                         }
+                    }
+
+                    // 2. Camada sobreposta de campos em coordenadas normalizadas (ativa em todas as páginas)
+                    Box(
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        camadaCampos()
                     }
                 }
             }

@@ -5,6 +5,7 @@ import br.com.letssign.data.local.dao.AdminSignatarioDao
 import br.com.letssign.data.local.dao.UsuarioDao
 import br.com.letssign.data.local.entities.AdminSignatarioEntity
 import br.com.letssign.data.local.entities.UsuarioEntity
+import br.com.letssign.data.remote.RemoteDataSource
 import br.com.letssign.domain.model.PerfilUsuario
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -17,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class SignatarioRepository @Inject constructor(
     private val adminSignatarioDao: AdminSignatarioDao,
-    private val usuarioDao: UsuarioDao
+    private val usuarioDao: UsuarioDao,
+    private val remoteDataSource: RemoteDataSource? = null
 ) {
 
     suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
@@ -42,53 +44,53 @@ class SignatarioRepository @Inject constructor(
 
             val agora = System.currentTimeMillis()
             val demoSignatarios = listOf(
-            AdminSignatarioEntity(
-                adminId = adminId,
-                signatarioId = "sig-maria-souza",
-                nome = "Maria Souza",
-                email = "maria.souza@empresa.com",
-                telefone = "(11) 91234-5678",
-                dataNascimento = "14/03/1988",
-                dataVinculoUtc = agora
-            ),
-            AdminSignatarioEntity(
-                adminId = adminId,
-                signatarioId = "sig-ana-lima",
-                nome = "Ana Lima",
-                email = "ana.lima@empresa.com",
-                telefone = "(11) 92345-6789",
-                dataNascimento = "20/07/1990",
-                dataVinculoUtc = agora
-            ),
-            AdminSignatarioEntity(
-                adminId = adminId,
-                signatarioId = "sig-joao-lima",
-                nome = "João Lima",
-                email = "joao.lima@email.com",
-                telefone = "(11) 91234-5678",
-                dataNascimento = "10/05/1992",
-                dataVinculoUtc = agora
-            ),
-            AdminSignatarioEntity(
-                adminId = adminId,
-                signatarioId = "sig-pedro-alves",
-                nome = "Pedro Alves",
-                email = "pedro.alves@empresa.com",
-                telefone = "(11) 94567-8901",
-                dataNascimento = "03/11/1985",
-                dataVinculoUtc = agora
-            ),
-            AdminSignatarioEntity(
-                adminId = adminId,
-                signatarioId = "sig-carlos-silva",
-                nome = "Carlos Silva",
-                email = "carlos.silva@empresa.com",
-                telefone = "(11) 95678-9012",
-                dataNascimento = "18/09/1995",
-                dataVinculoUtc = agora
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-maria-souza",
+                    nome = "Maria Souza",
+                    email = "maria.souza@empresa.com",
+                    telefone = "(11) 91234-5678",
+                    dataNascimento = "14/03/1988",
+                    dataVinculoUtc = agora
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-ana-lima",
+                    nome = "Ana Lima",
+                    email = "ana.lima@empresa.com",
+                    telefone = "(11) 92345-6789",
+                    dataNascimento = "20/07/1990",
+                    dataVinculoUtc = agora
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-joao-lima",
+                    nome = "João Lima",
+                    email = "joao.lima@email.com",
+                    telefone = "(11) 91234-5678",
+                    dataNascimento = "10/05/1992",
+                    dataVinculoUtc = agora
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-pedro-alves",
+                    nome = "Pedro Alves",
+                    email = "pedro.alves@empresa.com",
+                    telefone = "(11) 94567-8901",
+                    dataNascimento = "03/11/1985",
+                    dataVinculoUtc = agora
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-carlos-silva",
+                    nome = "Carlos Silva",
+                    email = "carlos.silva@empresa.com",
+                    telefone = "(11) 95678-9012",
+                    dataNascimento = "18/09/1995",
+                    dataVinculoUtc = agora
+                )
             )
-        )
-        adminSignatarioDao.inserirVarios(demoSignatarios)
+            adminSignatarioDao.inserirVarios(demoSignatarios)
         } catch (e: Exception) {
             println("SignatarioRepository: aviso ao inicializar dados demo: ${e.message}")
         }
@@ -152,7 +154,7 @@ class SignatarioRepository @Inject constructor(
         }
 
         if (signatarioIdExistente != null) {
-            // Edição
+            // Edição local
             val existente = adminSignatarioDao.buscarSignatarioPorId(adminId, signatarioIdExistente)
                 ?: return Result.failure(IllegalStateException("Signatário não encontrado"))
             val atualizado = existente.copy(
@@ -180,6 +182,19 @@ class SignatarioRepository @Inject constructor(
                     dataCriacaoUtc = agora
                 )
                 usuarioDao.inserir(novoUsuario)
+
+                // Notifica persistência remota/REST se disponível
+                try {
+                    remoteDataSource?.cadastrarSignatario(
+                        nome = nome.trim(),
+                        email = emailNorm,
+                        telefone = telefone.trim(),
+                        senhaHash = senha ?: "Senha123",
+                        dataNascimento = dataNascimento.trim()
+                    )
+                } catch (e: Exception) {
+                    println("SignatarioRepository: aviso ao sincronizar signatario remotamente: ${e.message}")
+                }
             }
 
             val relacao = AdminSignatarioEntity(
