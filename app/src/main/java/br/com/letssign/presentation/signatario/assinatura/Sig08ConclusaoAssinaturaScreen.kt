@@ -19,6 +19,9 @@ import br.com.letssign.core.designsystem.components.base.BotaoPrincipal
 import br.com.letssign.core.designsystem.components.base.BotaoSecundario
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
+import androidx.compose.material.icons.filled.Security
+import br.com.letssign.core.designsystem.theme.FormaPequena
+
 @Composable
 fun Sig08ConclusaoAssinaturaScreen(
     aoIrParaInicio: () -> Unit,
@@ -63,7 +66,33 @@ fun Sig08ConclusaoAssinaturaScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Surface(
+                shape = FormaPequena,
+                color = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.35f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria),
+                modifier = Modifier.padding(vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = LetsSignTheme.colors.corPrimaria,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Autenticação ICP-Brasil & Trilha de Auditoria Gravadas",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = LetsSignTheme.colors.corPrimaria
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Column(
                 modifier = Modifier.fillMaxWidth(),

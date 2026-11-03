@@ -707,12 +707,16 @@ class DocumentoRepository @Inject constructor(
             val campos = campoAssinaturaDao?.listarPorVersaoSync(versao.id) ?: emptyList()
             val recusa = recusaDao?.buscarPorParticipante(participantes.firstOrNull { it.situacao == SituacaoParticipante.RECUSADO }?.id ?: "")
             val cancelamento = cancelamentoDao?.buscarPorVersao(versao.id)
+            val assinaturas = if (campos.isNotEmpty()) {
+                assinaturaDao?.listarPorCamposSync(campos.map { it.id }) ?: emptyList()
+            } else emptyList()
 
             DocumentoDetalhado(
                 documento = doc,
                 versao = versao,
                 participantes = participantes,
                 campos = campos,
+                assinaturas = assinaturas,
                 recusa = recusa,
                 cancelamento = cancelamento
             )
@@ -1307,6 +1311,7 @@ data class DocumentoDetalhado(
     val versao: VersaoDocumentoEntity,
     val participantes: List<ParticipanteDocumentoEntity>,
     val campos: List<CampoAssinaturaEntity> = emptyList(),
+    val assinaturas: List<AssinaturaEntity> = emptyList(),
     val recusa: RecusaEntity? = null,
     val cancelamento: CancelamentoEntity? = null
 ) {

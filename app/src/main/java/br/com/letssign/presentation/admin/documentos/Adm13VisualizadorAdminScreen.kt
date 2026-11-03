@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,6 +26,7 @@ import br.com.letssign.core.designsystem.components.reusable.CampoAssinaturaSobr
 import br.com.letssign.core.designsystem.components.reusable.EstadoCampoAssinatura
 import br.com.letssign.core.designsystem.components.reusable.ModoVisualizadorPdf
 import br.com.letssign.core.designsystem.components.reusable.VisualizadorPdfCamadas
+import br.com.letssign.core.designsystem.theme.FormaPequena
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 import br.com.letssign.core.pdf.PdfDemoGenerator
 import br.com.letssign.data.local.dao.AssinaturaDao
@@ -195,18 +198,52 @@ fun Adm13VisualizadorAdminScreen(
             }
         } else {
             val camposNaPagina = uiState.campos.filter { it.numeroPagina == uiState.paginaAtual }
+            val temCertificado = uiState.assinaturasPorCampo.values.any { !it.detalhesCertificado.isNullOrBlank() }
 
-            VisualizadorPdfCamadas(
-                totalPaginas = uiState.totalPaginas,
-                paginaAtual = uiState.paginaAtual,
-                aoMudarPagina = { viewModel.mudarPagina(it) },
-                modo = ModoVisualizadorPdf.LEITURA,
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                pdfPath = uiState.versao?.pdfPathInterno,
-                tituloDocumento = uiState.versao?.documentoId ?: "Documento",
-                camadaCampos = {
+                    .padding(paddingValues)
+            ) {
+                if (temCertificado) {
+                    Surface(
+                        color = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.35f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = FormaPequena,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                tint = LetsSignTheme.colors.corPrimaria,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Autenticação ICP-Brasil: Este documento possui assinaturas com Certificado Digital (e-CPF / e-CNPJ) válidas e auditadas.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = LetsSignTheme.colors.corPrimaria,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+
+                VisualizadorPdfCamadas(
+                    totalPaginas = uiState.totalPaginas,
+                    paginaAtual = uiState.paginaAtual,
+                    aoMudarPagina = { viewModel.mudarPagina(it) },
+                    modo = ModoVisualizadorPdf.LEITURA,
+                    modifier = Modifier.fillMaxSize(),
+                    pdfPath = uiState.versao?.pdfPathInterno,
+                    tituloDocumento = uiState.versao?.documentoId ?: "Documento",
+                    camadaCampos = {
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -244,6 +281,7 @@ fun Adm13VisualizadorAdminScreen(
                     }
                 }
             )
+            }
         }
     }
 }

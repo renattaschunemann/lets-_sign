@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.letssign.R
 import br.com.letssign.core.designsystem.components.base.BotaoDestrutivo
@@ -534,6 +536,8 @@ fun Adm11AcompanhamentoScreen(
                                 )
                             }
 
+                            val assinaturaDoPart = detalhe.assinaturas.find { it.participanteId == part.id }
+
                             // Badges de status individual
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -563,6 +567,33 @@ fun Adm11AcompanhamentoScreen(
                                                     fontWeight = FontWeight.Bold,
                                                     color = LetsSignTheme.colors.corSucesso
                                                 )
+                                            }
+                                        }
+
+                                        if (assinaturaDoPart?.detalhesCertificado != null) {
+                                            Surface(
+                                                shape = FormaPequena,
+                                                color = LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.25f),
+                                                border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria)
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Security,
+                                                        contentDescription = null,
+                                                        tint = LetsSignTheme.colors.corPrimaria,
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
+                                                    Text(
+                                                        text = if (assinaturaDoPart.tipoAssinatura == br.com.letssign.domain.model.TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ) "e-CNPJ (ICP-Brasil)" else "e-CPF (ICP-Brasil)",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = LetsSignTheme.colors.corPrimaria
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -621,6 +652,32 @@ fun Adm11AcompanhamentoScreen(
                                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                             )
                                         }
+                                    }
+                                }
+                            }
+
+                            if (assinaturaDoPart != null && !assinaturaDoPart.detalhesCertificado.isNullOrBlank()) {
+                                Surface(
+                                    shape = FormaPequena,
+                                    color = LetsSignTheme.colors.corSuperficieVariante.copy(alpha = 0.5f),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(
+                                            text = "Metadados do Certificado Digital Registrado:",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = LetsSignTheme.colors.corTextoPrincipal
+                                        )
+                                        Text(
+                                            text = assinaturaDoPart.detalhesCertificado,
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                            color = LetsSignTheme.colors.corTextoSecundario
+                                        )
+                                        Text(
+                                            text = "Hash Validador: ${assinaturaDoPart.hashValidador} • IP: ${assinaturaDoPart.ipDispositivo}",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                            color = LetsSignTheme.colors.corTextoSecundario
+                                        )
                                     }
                                 }
                             }
