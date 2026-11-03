@@ -1,4 +1,4 @@
-package br.com.letssign.data.remote
+﻿package br.com.letssign.data.remote
 
 import br.com.letssign.core.common.text.TextNormalizer
 import br.com.letssign.domain.model.*
@@ -150,9 +150,10 @@ class FakeRemoteDataSource(
             telefone = "11987654321",
             perfil = PerfilUsuario.ADMIN,
             senhaHash = "Senha123",
-            cpf = "123.456.789-00",
-            dataNascimento = "15/04/1988",
-            endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP"
+            cpf = "12345678901",
+            dataNascimento = "15041988",
+            endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
+            profissao = "Administradora de Contratos"
         )
         usuariosDb[carla.email] = carla
         usuariosDb["carla.mendes@empresa.com"] = carla.copy(email = "carla.mendes@empresa.com")
@@ -168,9 +169,10 @@ class FakeRemoteDataSource(
             telefone = "11912345678",
             perfil = PerfilUsuario.SIGNATARIO,
             senhaHash = "Senha123",
-            cpf = "987.654.321-99",
-            dataNascimento = "20/08/1992",
-            endereco = "Rua Augusta, 500, Consolação, São Paulo - SP"
+            cpf = "98765432199",
+            dataNascimento = "20081992",
+            endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
+            profissao = "Analista de Operações"
         )
         usuariosDb[joao.email] = joao
         usuariosDb["joao.lima@empresa.com"] = joao.copy(email = "joao.lima@empresa.com")
@@ -179,6 +181,67 @@ class FakeRemoteDataSource(
         usuariosDb["joão.lima@email.com"] = joao.copy(email = "joão.lima@email.com")
         usuariosDb["joão@empresa.com.br"] = joao.copy(email = "joão@empresa.com.br")
         usuariosDb["joão.lima@empresa.com.br"] = joao.copy(email = "joão.lima@empresa.com.br")
+
+        // Usuários de demonstração adicionais (Signatários)
+        val maria = RemoteUsuarioDto(
+            id = "sig-maria-souza",
+            nome = "Maria Souza",
+            email = "maria.souza@empresa.com",
+            telefone = "11912345678",
+            perfil = PerfilUsuario.SIGNATARIO,
+            senhaHash = "Senha123",
+            cpf = "23456789012",
+            dataNascimento = "14031988",
+            endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
+            profissao = "Advogada Corporativa"
+        )
+        usuariosDb[maria.email] = maria
+        usuariosDb["maria.souza@empresa.com.br"] = maria.copy(email = "maria.souza@empresa.com.br")
+
+        val ana = RemoteUsuarioDto(
+            id = "sig-ana-lima",
+            nome = "Ana Lima",
+            email = "ana.lima@empresa.com",
+            telefone = "11923456789",
+            perfil = PerfilUsuario.SIGNATARIO,
+            senhaHash = "Senha123",
+            cpf = "34567890123",
+            dataNascimento = "20071990",
+            endereco = "Alameda Santos, 800, Cerqueira César, São Paulo - SP",
+            profissao = "Consultora Financeira"
+        )
+        usuariosDb[ana.email] = ana
+        usuariosDb["ana.lima@empresa.com.br"] = ana.copy(email = "ana.lima@empresa.com.br")
+
+        val pedro = RemoteUsuarioDto(
+            id = "sig-pedro-alves",
+            nome = "Pedro Alves",
+            email = "pedro.alves@empresa.com",
+            telefone = "11945678901",
+            perfil = PerfilUsuario.SIGNATARIO,
+            senhaHash = "Senha123",
+            cpf = "45678901234",
+            dataNascimento = "03111985",
+            endereco = "Rua da Consolação, 1200, Consolação, São Paulo - SP",
+            profissao = "Engenheiro de Produção"
+        )
+        usuariosDb[pedro.email] = pedro
+        usuariosDb["pedro.alves@empresa.com.br"] = pedro.copy(email = "pedro.alves@empresa.com.br")
+
+        val carlos = RemoteUsuarioDto(
+            id = "sig-carlos-silva",
+            nome = "Carlos Silva",
+            email = "carlos.silva@empresa.com",
+            telefone = "11956789012",
+            perfil = PerfilUsuario.SIGNATARIO,
+            senhaHash = "Senha123",
+            cpf = "56789012345",
+            dataNascimento = "18091995",
+            endereco = "Av. Brigadeiro Faria Lima, 2500, Itaim Bibi, São Paulo - SP",
+            profissao = "Arquiteto de Soluções"
+        )
+        usuariosDb[carlos.email] = carlos
+        usuariosDb["carlos.silva@empresa.com.br"] = carlos.copy(email = "carlos.silva@empresa.com.br")
     }
 
     private suspend fun simularRede() {
