@@ -155,3 +155,4 @@ Abra o projeto no **Android Studio**, aguarde a sincronização do Gradle e cliq
    - Confirme a assinatura.
 8. **Acompanhar e Auditar:**
    - Retorne com o perfil Administrador, acesse o documento no menu Acompanhamento e confira a situação individual, o progresso percentual, as datas/horários dos eventos e a trilha de auditoria completa.
+
