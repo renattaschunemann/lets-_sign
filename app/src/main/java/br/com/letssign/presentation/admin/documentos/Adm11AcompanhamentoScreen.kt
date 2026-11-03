@@ -609,6 +609,19 @@ fun Adm11AcompanhamentoScreen(
                                             )
                                         }
                                     }
+                                    else -> {
+                                        Surface(
+                                            shape = FormaPequena,
+                                            color = LetsSignTheme.colors.corNeutroContainer
+                                        ) {
+                                            Text(
+                                                text = "Encerrado",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = LetsSignTheme.colors.corNeutro,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
 

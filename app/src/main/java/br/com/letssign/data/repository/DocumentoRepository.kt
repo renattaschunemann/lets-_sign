@@ -583,7 +583,7 @@ class DocumentoRepository @Inject constructor(
         try {
             remoteDataSource?.let { remote ->
                 val partesSync = participanteDao.listarPorVersaoSync(versao.id)
-                val camposSync = campoAssinaturaDao?.listarPorVersao(versao.id) ?: emptyList()
+                val camposSync = campoAssinaturaDao?.listarPorVersaoSync(versao.id) ?: emptyList()
                 val request = br.com.letssign.data.remote.RemoteDocumentoEnvioRequest(
                     versaoId = versao.id,
                     documentoId = doc.id,

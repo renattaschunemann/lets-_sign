@@ -447,13 +447,13 @@ class WizardNovoDocViewModel @Inject constructor(
     }
 
     fun moverCampoParaPagina(campoId: String, novaPagina: Int) {
-        val total = _uiState.value.pdfTotalPaginas.coerceAtLeast(1)
+        val total = maxOf(_uiState.value.pdfTotalPaginas, novaPagina).coerceAtLeast(1)
         val pag = novaPagina.coerceIn(1, total)
         _uiState.update { estado ->
             val atualizados = estado.campos.map { campo ->
                 if (campo.id == campoId) campo.copy(numeroPagina = pag) else campo
             }
-            estado.copy(campos = atualizados, paginaAtualPdf = pag)
+            estado.copy(campos = atualizados, paginaAtualPdf = pag, pdfTotalPaginas = total)
         }
         salvarRascunhoAutomatico()
     }

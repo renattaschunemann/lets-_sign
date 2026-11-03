@@ -271,7 +271,7 @@ class CamposEnvioTest {
 
         // 6. Verificar se os campos foram salvos com integridade de coordenadas e papéis
         val versaoId = "versao-${vm.uiState.value.documentoId}-1"
-        val camposSalvos = campoDao.db.values.filter { it.versaoDocumentoId == versaoId }
+        val camposSalvos = campoDao.campos.filter { it.versaoDocumentoId == versaoId }
         assertEquals(2, camposSalvos.size)
 
         val campoSalvo1 = camposSalvos.find { it.id == campo1.id }
