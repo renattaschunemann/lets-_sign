@@ -110,7 +110,8 @@ data class Sig06CriarAssinaturaRoute(
 data class Sig07AssinaturaSucessoRoute(
     val documentoId: String = "",
     val tipoAssinatura: String = "DESENHADA",
-    val detalhesCertificado: String = ""
+    val detalhesCertificado: String = "",
+    val caminhoPngAssinatura: String = ""
 )
 
 /** SIG-08 — Conclusão da assinatura */

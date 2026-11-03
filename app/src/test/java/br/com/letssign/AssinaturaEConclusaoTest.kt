@@ -285,4 +285,10 @@ class FakeAssinaturaDao : AssinaturaDao {
 
     override fun listarPorParticipante(participanteId: String): Flow<List<AssinaturaEntity>> =
         flow.map { it.filter { a -> a.participanteId == participanteId } }
+
+    override suspend fun listarPorParticipanteSync(participanteId: String): List<AssinaturaEntity> =
+        assinaturas.filter { it.participanteId == participanteId }
+
+    override suspend fun listarPorCamposSync(campoIds: List<String>): List<AssinaturaEntity> =
+        assinaturas.filter { it.campoAssinaturaId in campoIds }
 }

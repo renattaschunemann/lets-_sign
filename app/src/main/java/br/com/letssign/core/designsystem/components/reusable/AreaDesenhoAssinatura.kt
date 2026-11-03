@@ -56,7 +56,8 @@ enum class EstiloFonteCursiva(val nomeExibicao: String) {
 @Composable
 fun AreaDesenhoAssinatura(
     aoMudarTemDesenho: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    aoAtualizarPontos: ((List<Offset>) -> Unit)? = null
 ) {
     val pontos = remember { mutableStateListOf<Offset>() }
     val corTinta = LetsSignTheme.colors.corTintaAssinatura
@@ -74,10 +75,12 @@ fun AreaDesenhoAssinatura(
                         onDragStart = { offset ->
                             pontos.add(offset)
                             aoMudarTemDesenho(true)
+                            aoAtualizarPontos?.invoke(pontos.toList())
                         },
                         onDrag = { change, _ ->
                             change.consume()
                             pontos.add(change.position)
+                            aoAtualizarPontos?.invoke(pontos.toList())
                         }
                     )
                 }
@@ -121,6 +124,7 @@ fun AreaDesenhoAssinatura(
                 onClick = {
                     pontos.clear()
                     aoMudarTemDesenho(false)
+                    aoAtualizarPontos?.invoke(emptyList())
                 }
             )
         }

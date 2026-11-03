@@ -41,22 +41,51 @@ import br.com.letssign.core.designsystem.theme.FormaMedia
 import br.com.letssign.core.designsystem.theme.FormaPequena
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalContext
+import br.com.letssign.data.local.file.AssinaturaStorageManager
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sig06CapturaAssinaturaScreen(
     aoVoltar: () -> Unit,
-    aoAssinaturaConfirmada: (documentoId: String, tipoAssinatura: String, detalhesCertificado: String) -> Unit,
+    aoAssinaturaConfirmada: (documentoId: String, tipoAssinatura: String, detalhesCertificado: String, caminhoPng: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: Sig06CapturaAssinaturaViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var pontosDesenho by remember { mutableStateOf<List<Offset>>(emptyList()) }
 
     LaunchedEffect(uiState.assinaturaPronta) {
         if (uiState.assinaturaPronta) {
+            val bitmap = when (uiState.abaSelecionada) {
+                AbaCapturaAssinatura.DESENHAR -> {
+                    AssinaturaStorageManager.gerarBitmapDesenho(pontosDesenho)
+                }
+                AbaCapturaAssinatura.DIGITAR -> {
+                    AssinaturaStorageManager.gerarBitmapDigitado(
+                        nome = uiState.textoDigitado,
+                        estiloFonteNome = uiState.estiloFonteSelecionado.nomeExibicao
+                    )
+                }
+                AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> {
+                    AssinaturaStorageManager.gerarBitmapCertificado(
+                        titular = uiState.titularCertificado,
+                        documento = uiState.documentoCertificado,
+                        tipoCertificado = uiState.tipoCertificado,
+                        autoridadeCertificadora = uiState.autoridadeCertificadora
+                    )
+                }
+            }
+            val nomeArquivo = "sig_${viewModel.documentoId}_${System.currentTimeMillis()}.png"
+            val caminhoSalvo = AssinaturaStorageManager.salvarBitmapComoPng(context, nomeArquivo, bitmap)
+
             aoAssinaturaConfirmada(
                 viewModel.documentoId,
                 uiState.tipoAssinatura.name,
-                uiState.detalhesCertificado
+                uiState.detalhesCertificado,
+                caminhoSalvo
             )
         }
     }
@@ -175,7 +204,8 @@ fun Sig06CapturaAssinaturaScreen(
                         )
 
                         AreaDesenhoAssinatura(
-                            aoMudarTemDesenho = { tem -> viewModel.atualizarTemDesenho(tem) }
+                            aoMudarTemDesenho = { tem -> viewModel.atualizarTemDesenho(tem) },
+                            aoAtualizarPontos = { pontos -> pontosDesenho = pontos }
                         )
                     }
 

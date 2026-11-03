@@ -26,9 +26,11 @@ import br.com.letssign.core.designsystem.components.reusable.ModoVisualizadorPdf
 import br.com.letssign.core.designsystem.components.reusable.VisualizadorPdfCamadas
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 import br.com.letssign.core.pdf.PdfDemoGenerator
+import br.com.letssign.data.local.dao.AssinaturaDao
 import br.com.letssign.data.local.dao.CampoAssinaturaDao
 import br.com.letssign.data.local.dao.ParticipanteDocumentoDao
 import br.com.letssign.data.local.dao.VersaoDocumentoDao
+import br.com.letssign.data.local.entities.AssinaturaEntity
 import br.com.letssign.data.local.entities.CampoAssinaturaEntity
 import br.com.letssign.data.local.entities.ParticipanteDocumentoEntity
 import br.com.letssign.data.local.entities.VersaoDocumentoEntity
@@ -46,6 +48,7 @@ data class Adm13VisualizadorUiState(
     val versao: VersaoDocumentoEntity? = null,
     val participantes: List<ParticipanteDocumentoEntity> = emptyList(),
     val campos: List<CampoAssinaturaEntity> = emptyList(),
+    val assinaturasPorCampo: Map<String, AssinaturaEntity> = emptyMap(),
     val paginaAtual: Int = 1,
     val totalPaginas: Int = 2,
     val carregando: Boolean = true,
@@ -57,6 +60,7 @@ class Adm13VisualizadorViewModel @Inject constructor(
     private val versaoDao: VersaoDocumentoDao,
     private val participanteDao: ParticipanteDocumentoDao,
     private val campoDao: CampoAssinaturaDao,
+    private val assinaturaDao: AssinaturaDao,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -77,6 +81,10 @@ class Adm13VisualizadorViewModel @Inject constructor(
             val resolvedVersaoId = versao?.id ?: paramVersaoId
             val parts = if (resolvedVersaoId.isNotBlank()) participanteDao.listarPorVersaoSync(resolvedVersaoId) else emptyList()
             val campos = if (resolvedVersaoId.isNotBlank()) campoDao.listarPorVersaoSync(resolvedVersaoId) else emptyList()
+            val assinaturas = if (campos.isNotEmpty()) {
+                assinaturaDao.listarPorCamposSync(campos.map { it.id })
+            } else emptyList()
+            val assinaturasMap = assinaturas.associateBy { it.campoAssinaturaId }
             val maxPagina = maxOf(2, campos.maxOfOrNull { it.numeroPagina } ?: 2)
 
             _uiState.update {
@@ -84,6 +92,7 @@ class Adm13VisualizadorViewModel @Inject constructor(
                     versao = versao,
                     participantes = parts,
                     campos = campos,
+                    assinaturasPorCampo = assinaturasMap,
                     totalPaginas = maxPagina,
                     carregando = false
                 )
@@ -207,14 +216,15 @@ fun Adm13VisualizadorAdminScreen(
 
                         camposNaPagina.forEach { campo ->
                             val part = uiState.participantes.find { it.id == campo.participanteId }
-                            val isAssinado = part?.situacao == SituacaoParticipante.ASSINADO
+                            val assinatura = uiState.assinaturasPorCampo[campo.id]
+                            val isAssinado = assinatura != null || part?.situacao == SituacaoParticipante.ASSINADO
                             val papelRotulo = campo.papelEspecifico?.rotulo ?: part?.papel?.rotulo ?: ""
                             val nomeExibicao = if (part != null) {
                                 if (papelRotulo.isNotBlank()) "${part.nomeSnapshot} ($papelRotulo)" else part.nomeSnapshot
                             } else "Signatário"
 
-                            val larguraDp = with(densidade) { (totalLarguraPx * campo.normLargura).toDp() }.coerceIn(130.dp, 280.dp)
-                            val alturaDp = with(densidade) { (totalAlturaPx * campo.normAltura).toDp() }.coerceIn(50.dp, 84.dp)
+                            val larguraDp = with(densidade) { (totalLarguraPx * campo.normLargura).toDp() }.coerceAtLeast(80.dp)
+                            val alturaDp = with(densidade) { (totalAlturaPx * campo.normAltura).toDp() }.coerceAtLeast(36.dp)
                             val posX = campo.normX * totalLarguraPx
                             val posY = campo.normY * totalAlturaPx
 
@@ -225,7 +235,9 @@ fun Adm13VisualizadorAdminScreen(
                                     nomeSignatario = nomeExibicao,
                                     estado = if (isAssinado) EstadoCampoAssinatura.ASSINADO else EstadoCampoAssinatura.VAZIO,
                                     largura = larguraDp,
-                                    altura = alturaDp
+                                    altura = alturaDp,
+                                    caminhoAssinatura = assinatura?.caminhoPngAssinatura,
+                                    detalhesCertificado = assinatura?.detalhesCertificado
                                 )
                             }
                         }

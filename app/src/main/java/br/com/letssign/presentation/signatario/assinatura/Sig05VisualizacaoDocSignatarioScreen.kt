@@ -13,7 +13,12 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Draw
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -122,6 +127,10 @@ fun Sig05VisualizacaoDocSignatarioScreen(
                 IndicadorCarregamentoCircular()
             }
         } else {
+            var escalaZoom by remember { mutableFloatStateOf(1.0f) }
+            var panX by remember { mutableFloatStateOf(0f) }
+            var panY by remember { mutableFloatStateOf(0f) }
+
             val detalhe = uiState.detalhe
             Column(
                 modifier = Modifier
@@ -131,11 +140,39 @@ fun Sig05VisualizacaoDocSignatarioScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Simulação da página do documento PDF
+                // Simulação da página do documento PDF com suporte a pinch-to-zoom
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .clipToBounds()
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                val novoZoom = (escalaZoom * zoom).coerceIn(1.0f, 3.0f)
+                                escalaZoom = novoZoom
+                                if (novoZoom > 1.05f) {
+                                    val maxPan = (novoZoom - 1f) * 400f
+                                    panX = (panX + pan.x).coerceIn(-maxPan, maxPan)
+                                    panY = (panY + pan.y).coerceIn(-maxPan, maxPan)
+                                } else {
+                                    panX = 0f
+                                    panY = 0f
+                                }
+                            }
+                        }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = {
+                                    if (escalaZoom > 1.1f) {
+                                        escalaZoom = 1.0f
+                                        panX = 0f
+                                        panY = 0f
+                                    } else {
+                                        escalaZoom = 2.0f
+                                    }
+                                }
+                            )
+                        },
                     shape = FormaMedia,
                     colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corSuperficie),
                     elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel2)
@@ -143,7 +180,13 @@ fun Sig05VisualizacaoDocSignatarioScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(20.dp),
+                            .padding(20.dp)
+                            .graphicsLayer {
+                                scaleX = escalaZoom
+                                scaleY = escalaZoom
+                                translationX = panX
+                                translationY = panY
+                            },
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
                         PaginaDocumentoDinamicaOuPdf(

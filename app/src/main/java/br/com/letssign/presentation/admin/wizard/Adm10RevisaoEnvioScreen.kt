@@ -228,8 +228,8 @@ fun Adm10RevisaoEnvioScreen(
                                     val signatario = uiState.signatariosCadastrados.find { it.signatarioId == campo.signatarioId }
                                     val papelDoCampo = campo.papel ?: uiState.papelPorSignatario[campo.signatarioId]
 
-                                    val larguraDp = with(densidade) { (larguraTotalPx * campo.normLargura).toDp() }.coerceIn(130.dp, 280.dp)
-                                    val alturaDp = with(densidade) { (alturaTotalPx * campo.normAltura).toDp() }.coerceIn(50.dp, 84.dp)
+                                    val larguraDp = with(densidade) { (larguraTotalPx * campo.normLargura).toDp() }.coerceAtLeast(80.dp)
+                                    val alturaDp = with(densidade) { (alturaTotalPx * campo.normAltura).toDp() }.coerceAtLeast(36.dp)
 
                                     val posX = (campo.normX * larguraTotalPx)
                                     val posY = (campo.normY * alturaTotalPx)

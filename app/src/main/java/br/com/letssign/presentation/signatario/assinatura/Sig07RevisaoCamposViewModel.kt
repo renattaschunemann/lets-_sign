@@ -24,6 +24,7 @@ data class Sig07UiState(
     val conclusaoComSucesso: Boolean = false,
     val tipoAssinatura: TipoAssinatura = TipoAssinatura.DESENHADA,
     val detalhesCertificado: String? = null,
+    val caminhoPngAssinatura: String = "",
     val erro: String? = null
 )
 
@@ -37,6 +38,7 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
     val documentoId: String = savedStateHandle.get<String>("documentoId") ?: ""
     private val tipoAssinaturaStr: String = savedStateHandle.get<String>("tipoAssinatura") ?: "DESENHADA"
     private val detalhesCertificadoArg: String = savedStateHandle.get<String>("detalhesCertificado") ?: ""
+    val caminhoPngAssinatura: String = savedStateHandle.get<String>("caminhoPngAssinatura") ?: ""
 
     val tipoAssinatura: TipoAssinatura = try {
         TipoAssinatura.valueOf(tipoAssinaturaStr)
@@ -49,7 +51,8 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         Sig07UiState(
             tipoAssinatura = tipoAssinatura,
-            detalhesCertificado = detalhesCertificado
+            detalhesCertificado = detalhesCertificado,
+            caminhoPngAssinatura = caminhoPngAssinatura
         )
     )
     val uiState: StateFlow<Sig07UiState> = _uiState.asStateFlow()
@@ -83,11 +86,12 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
         val detalhe = _uiState.value.detalhe ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(emitindoAssinatura = true, erro = null) }
+            val caminhoFinal = caminhoPngAssinatura.ifBlank { "assinaturas/${detalhe.participanteId}.png" }
             val resultado = documentoRepository.salvarAssinaturaSignatario(
                 versaoId = detalhe.versaoId,
                 participanteId = detalhe.participanteId,
                 tipoAssinatura = tipoAssinatura,
-                caminhoPngOuSvg = "assinaturas/${detalhe.participanteId}.png",
+                caminhoPngOuSvg = caminhoFinal,
                 ipDispositivo = "192.168.1.100",
                 detalhesCertificado = detalhesCertificado
             )

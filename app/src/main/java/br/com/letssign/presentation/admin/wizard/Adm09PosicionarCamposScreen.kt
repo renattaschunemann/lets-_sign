@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -246,6 +247,93 @@ fun Adm09PosicionarCamposScreen(
                             }
                         }
 
+                        // Controles de ajuste de tamanho do campo selecionado
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Tamanho do campo:",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = LetsSignTheme.colors.corTextoPrincipal
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                FilterChip(
+                                    selected = campoSelecionado.normLargura in 0.28f..0.38f,
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, 0.35f, 0.06f) },
+                                    label = { Text("P", style = MaterialTheme.typography.labelSmall) }
+                                )
+                                FilterChip(
+                                    selected = campoSelecionado.normLargura in 0.45f..0.55f,
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, 0.50f, 0.08f) },
+                                    label = { Text("M", style = MaterialTheme.typography.labelSmall) }
+                                )
+                                FilterChip(
+                                    selected = campoSelecionado.normLargura in 0.65f..0.75f,
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, 0.70f, 0.12f) },
+                                    label = { Text("G", style = MaterialTheme.typography.labelSmall) }
+                                )
+                            }
+                        }
+
+                        // Ajuste granular de Largura e Altura
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Largura (${(campoSelecionado.normLargura * 100).toInt()}%):",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoSecundario
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                IconButton(
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, campoSelecionado.normLargura - 0.05f, campoSelecionado.normAltura) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Filled.Remove, contentDescription = "Diminuir largura", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, campoSelecionado.normLargura + 0.05f, campoSelecionado.normAltura) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Filled.Add, contentDescription = "Aumentar largura", modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Altura (${(campoSelecionado.normAltura * 100).toInt()}%):",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LetsSignTheme.colors.corTextoSecundario
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                IconButton(
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, campoSelecionado.normLargura, campoSelecionado.normAltura - 0.02f) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Filled.Remove, contentDescription = "Diminuir altura", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(
+                                    onClick = { viewModel.atualizarDimensoesCampo(campoSelecionado.id, campoSelecionado.normLargura, campoSelecionado.normAltura + 0.02f) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(Icons.Filled.Add, contentDescription = "Aumentar altura", modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+
                         // Controles de ajuste fino de posicionamento livre
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -397,8 +485,8 @@ fun Adm09PosicionarCamposScreen(
                             val papelDoCampo = campo.papel ?: uiState.papelPorSignatario[campo.signatarioId]
                             val isSelecionado = campo.id == uiState.campoSelecionadoId
 
-                            val larguraDp = with(densidade) { (larguraTotalPx * campo.normLargura).toDp() }.coerceIn(130.dp, 280.dp)
-                            val alturaDp = with(densidade) { (alturaTotalPx * campo.normAltura).toDp() }.coerceIn(50.dp, 84.dp)
+                            val larguraDp = with(densidade) { (larguraTotalPx * campo.normLargura).toDp() }.coerceAtLeast(80.dp)
+                            val alturaDp = with(densidade) { (alturaTotalPx * campo.normAltura).toDp() }.coerceAtLeast(36.dp)
 
                             val posX = (campo.normX * larguraTotalPx)
                             val posY = (campo.normY * alturaTotalPx)
@@ -431,7 +519,12 @@ fun Adm09PosicionarCamposScreen(
                                     nomeSignatario = textoExibicao,
                                     estado = if (isSelecionado) EstadoCampoAssinatura.SELECIONADO else EstadoCampoAssinatura.VAZIO,
                                     largura = larguraDp,
-                                    altura = alturaDp
+                                    altura = alturaDp,
+                                    onRedimensionar = { dragAmount ->
+                                        val novaW = currentCampo.normLargura + (dragAmount.x / larguraTotalPx)
+                                        val novaH = currentCampo.normAltura + (dragAmount.y / alturaTotalPx)
+                                        viewModel.atualizarDimensoesCampo(campo.id, novaW, novaH)
+                                    }
                                 )
                             }
                         }

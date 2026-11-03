@@ -459,6 +459,27 @@ class WizardNovoDocViewModel @Inject constructor(
         }
     }
 
+    fun atualizarDimensoesCampo(campoId: String, novaNormLargura: Float, novaNormAltura: Float) {
+        _uiState.update { estado ->
+            val atualizados = estado.campos.map { campo ->
+                if (campo.id == campoId) {
+                    val clampedW = novaNormLargura.coerceIn(0.18f, 0.95f)
+                    val clampedH = novaNormAltura.coerceIn(0.04f, 0.35f)
+                    val clampedX = campo.normX.coerceIn(0f, (1f - clampedW).coerceAtLeast(0f))
+                    val clampedY = campo.normY.coerceIn(0f, (1f - clampedH).coerceAtLeast(0f))
+                    campo.copy(
+                        normLargura = clampedW,
+                        normAltura = clampedH,
+                        normX = clampedX,
+                        normY = clampedY
+                    )
+                } else campo
+            }
+            estado.copy(campos = atualizados)
+        }
+        salvarRascunhoAutomatico()
+    }
+
     fun definirPapelCampo(campoId: String, novoPapel: PapelParticipante) {
         _uiState.update { estado ->
             val atualizados = estado.campos.map {

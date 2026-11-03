@@ -26,6 +26,12 @@ import br.com.letssign.core.designsystem.theme.FormaMedia
 import br.com.letssign.core.designsystem.theme.LetsSignTheme
 import br.com.letssign.presentation.signatario.modals.Mod10TermosAceiteDialog
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import br.com.letssign.data.local.file.AssinaturaStorageManager
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sig07RevisaoCamposScreen(
@@ -34,6 +40,7 @@ fun Sig07RevisaoCamposScreen(
     modifier: Modifier = Modifier,
     viewModel: Sig07RevisaoCamposViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.conclusaoComSucesso) {
@@ -166,6 +173,57 @@ fun Sig07RevisaoCamposScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = LetsSignTheme.colors.corTextoPrincipal
                             )
+                        }
+                    }
+                }
+
+                if (uiState.caminhoPngAssinatura.isNotBlank()) {
+                    var bmpAssinatura by remember(uiState.caminhoPngAssinatura) { mutableStateOf<android.graphics.Bitmap?>(null) }
+                    LaunchedEffect(uiState.caminhoPngAssinatura) {
+                        try {
+                            val f = AssinaturaStorageManager.obterArquivoAssinatura(context, uiState.caminhoPngAssinatura)
+                            if (f.exists() && f.length() > 0) {
+                                bmpAssinatura = BitmapFactory.decodeFile(f.absolutePath)
+                            }
+                        } catch (_: Exception) {
+                            bmpAssinatura = null
+                        }
+                    }
+
+                    if (bmpAssinatura != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = FormaMedia,
+                            colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corSuperficie),
+                            elevation = CardDefaults.cardElevation(defaultElevation = LetsSignTheme.elevation.nivel1)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Pré-visualização da Assinatura",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corTextoPrincipal
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp)
+                                        .background(LetsSignTheme.colors.corSuperficieVariante.copy(alpha = 0.5f), FormaMedia)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        bitmap = bmpAssinatura!!.asImageBitmap(),
+                                        contentDescription = "Assinatura registrada",
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
                         }
                     }
                 }

@@ -137,6 +137,12 @@ interface AssinaturaDao {
 
     @Query("SELECT * FROM assinaturas WHERE participanteId = :participanteId")
     fun listarPorParticipante(participanteId: String): Flow<List<AssinaturaEntity>>
+
+    @Query("SELECT * FROM assinaturas WHERE participanteId = :participanteId")
+    suspend fun listarPorParticipanteSync(participanteId: String): List<AssinaturaEntity>
+
+    @Query("SELECT * FROM assinaturas WHERE campoAssinaturaId IN (:campoIds)")
+    suspend fun listarPorCamposSync(campoIds: List<String>): List<AssinaturaEntity>
 }
 
 @Dao

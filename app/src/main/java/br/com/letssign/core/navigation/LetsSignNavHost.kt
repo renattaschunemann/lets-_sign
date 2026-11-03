@@ -442,8 +442,8 @@ fun LetsSignNavHost(
         composable<Sig06CriarAssinaturaRoute> {
             Sig06CapturaAssinaturaScreen(
                 aoVoltar = { navController.popBackStack() },
-                aoAssinaturaConfirmada = { docId, tipoAssinatura, detalhes ->
-                    navController.navigate(Sig07AssinaturaSucessoRoute(docId, tipoAssinatura, detalhes))
+                aoAssinaturaConfirmada = { docId, tipoAssinatura, detalhes, caminhoPng ->
+                    navController.navigate(Sig07AssinaturaSucessoRoute(docId, tipoAssinatura, detalhes, caminhoPng))
                 }
             )
         }
@@ -459,7 +459,8 @@ fun LetsSignNavHost(
             )
         }
 
-        composable<Sig08ConclusaoRoute> {
+        composable<Sig08ConclusaoRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<Sig08ConclusaoRoute>()
             Sig08ConclusaoAssinaturaScreen(
                 aoIrParaInicio = {
                     navController.navigate(Sig01InicioPendentesRoute) {
@@ -467,7 +468,7 @@ fun LetsSignNavHost(
                     }
                 },
                 aoVisualizarComprovante = {
-                    navController.navigate(Sig08VisualizadorLeituraRoute())
+                    navController.navigate(Sig08VisualizadorLeituraRoute(documentoId = route.documentoId))
                 }
             )
         }
