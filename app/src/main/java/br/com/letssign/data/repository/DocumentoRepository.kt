@@ -43,8 +43,9 @@ class DocumentoRepository @Inject constructor(
         try {
             val doc5Existente = documentoDao.buscarPorId("doc-demo-5")
             val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
-            if (doc5Existente != null && doc5Existente.situacaoAtual == SituacaoDocumento.CONCLUIDO && qtdEventos >= 10) {
-                // Já inicializado com todos os eventos de demonstração
+            val qtdAssinaturasDoc5 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-5-carla", "campo-part-doc-demo-5-joao"))?.size ?: 0
+            if (doc5Existente != null && doc5Existente.situacaoAtual == SituacaoDocumento.CONCLUIDO && qtdEventos >= 10 && qtdAssinaturasDoc5 >= 2) {
+                // Já inicializado com todos os eventos e assinaturas de demonstração
                 return
             }
 
@@ -331,12 +332,35 @@ class DocumentoRepository @Inject constructor(
                     versaoDocumentoId = versaoId,
                     participanteId = partId,
                     numeroPagina = if (isDoc5) 2 else 1,
-                    normX = 100f,
-                    normY = 120f + (i * 110f),
-                    normLargura = 180f,
-                    normAltura = 60f
+                    normX = 0.15f,
+                    normY = 0.20f + ((i - 1) * 0.22f),
+                    normLargura = 0.70f,
+                    normAltura = 0.15f
                 )
             )
+
+            // Registra assinatura para signatários que já assinaram no mock
+            if (sitPart == SituacaoParticipante.ASSINADO) {
+                val tipoAssinaturaDemo = when (i) {
+                    1 -> TipoAssinatura.CERTIFICADO_DIGITAL_ECPF
+                    2 -> TipoAssinatura.DESENHADA
+                    else -> TipoAssinatura.DIGITADA
+                }
+                val detalhesCert = if (i == 1 && isDoc5) "ICP-Brasil • AC SERPRO v5 • CN=Carla Mendes" else null
+                assinaturaDao?.inserir(
+                    AssinaturaEntity(
+                        id = "ass-$partId",
+                        campoAssinaturaId = "campo-$partId",
+                        participanteId = partId,
+                        tipoAssinatura = tipoAssinaturaDemo,
+                        caminhoPngAssinatura = "assinaturas/$partId.png",
+                        dataHoraUtc = dataUtc + (i * 3600000L),
+                        ipDispositivo = "201.86.102.1$i",
+                        hashValidador = "hash-demo-$partId",
+                        detalhesCertificado = detalhesCert
+                    )
+                )
+            }
         }
         participanteDao.inserirVarios(participantes)
         campoAssinaturaDao?.inserirVarios(campos)
