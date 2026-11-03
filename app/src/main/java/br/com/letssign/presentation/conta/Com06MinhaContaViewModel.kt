@@ -1,4 +1,4 @@
-package br.com.letssign.presentation.conta
+﻿package br.com.letssign.presentation.conta
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -134,10 +134,10 @@ class Com06MinhaContaViewModel @Inject constructor(
                         nome = if (ehAdmin) "Carla Mendes" else "João Lima",
                         email = if (ehAdmin) "carla@empresa.com.br" else "joao.lima@email.com",
                         telefone = if (ehAdmin) "(11) 98765-4321" else "(11) 91234-5678",
-                        cpf = if (ehAdmin) "12345678900" else "98765432199",
+                        cpf = if (ehAdmin) "12345678901" else "98765432199",
                         dataNascimento = if (ehAdmin) "15041988" else "20081992",
                         endereco = if (ehAdmin) "Av. Paulista, 1000, Bela Vista, São Paulo - SP" else "Rua Augusta, 500, Consolação, São Paulo - SP",
-                        profissao = if (ehAdmin) "Administradora de Contratos" else "Signatário / Analista",
+                        profissao = if (ehAdmin) "Administradora de Contratos" else "Analista de Operações",
                         dataCriacao = "Recente",
                         statusConta = "Ativo"
                     )

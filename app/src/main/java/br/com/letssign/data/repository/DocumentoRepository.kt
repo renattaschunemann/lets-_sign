@@ -48,7 +48,7 @@ class DocumentoRepository @Inject constructor(
                 return
             }
 
-            // Garante que os usuários de demonstração existam na tabela 'usuarios' para satisfazer a foreign key
+            // Garante que os usuários de demonstração existam na tabela 'usuarios' com cadastro completo
             if (usuarioDao != null) {
                 if (usuarioDao.buscarPorId(adminId) == null) {
                     usuarioDao.inserir(
@@ -59,7 +59,11 @@ class DocumentoRepository @Inject constructor(
                             telefone = "(11) 98765-4321",
                             perfil = PerfilUsuario.ADMIN,
                             senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis()
+                            dataCriacaoUtc = System.currentTimeMillis(),
+                            cpf = "12345678901",
+                            dataNascimento = "15041988",
+                            endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
+                            profissao = "Administradora de Contratos"
                         )
                     )
                 }
@@ -69,10 +73,14 @@ class DocumentoRepository @Inject constructor(
                             id = "sig-joao-lima",
                             nome = "João Lima",
                             email = "joao.lima@email.com",
-                            telefone = "11988887777",
+                            telefone = "(11) 91234-5678",
                             perfil = PerfilUsuario.SIGNATARIO,
                             senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis()
+                            dataCriacaoUtc = System.currentTimeMillis(),
+                            cpf = "98765432199",
+                            dataNascimento = "20081992",
+                            endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
+                            profissao = "Analista de Operações"
                         )
                     )
                 }
@@ -82,10 +90,14 @@ class DocumentoRepository @Inject constructor(
                             id = "user-maria-souza",
                             nome = "Maria Souza",
                             email = "maria.souza@empresa.com.br",
-                            telefone = "11977776666",
+                            telefone = "(11) 91234-5678",
                             perfil = PerfilUsuario.SIGNATARIO,
                             senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis()
+                            dataCriacaoUtc = System.currentTimeMillis(),
+                            cpf = "23456789012",
+                            dataNascimento = "14031988",
+                            endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
+                            profissao = "Advogada Corporativa"
                         )
                     )
                 }

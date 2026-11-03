@@ -27,7 +27,7 @@ class SignatarioRepository @Inject constructor(
             val existente = adminSignatarioDao.buscarSignatarioPorEmail(adminId, "maria.souza@empresa.com")
             if (existente != null) return
 
-            // Garante que o usuário Admin exista na tabela 'usuarios' para satisfazer a foreign key
+            // Garante que o usuário Admin exista na tabela 'usuarios' com dados cadastrais completos
             if (usuarioDao.buscarPorId(adminId) == null) {
                 usuarioDao.inserir(
                     UsuarioEntity(
@@ -37,7 +37,11 @@ class SignatarioRepository @Inject constructor(
                         telefone = "(11) 98765-4321",
                         perfil = PerfilUsuario.ADMIN,
                         senhaHash = "Senha123",
-                        dataCriacaoUtc = System.currentTimeMillis()
+                        dataCriacaoUtc = System.currentTimeMillis(),
+                        cpf = "12345678901",
+                        dataNascimento = "15041988",
+                        endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
+                        profissao = "Administradora de Contratos"
                     )
                 )
             }
@@ -68,7 +72,7 @@ class SignatarioRepository @Inject constructor(
                     nome = "João Lima",
                     email = "joao.lima@email.com",
                     telefone = "(11) 91234-5678",
-                    dataNascimento = "10/05/1992",
+                    dataNascimento = "20/08/1992",
                     dataVinculoUtc = agora
                 ),
                 AdminSignatarioEntity(
@@ -91,6 +95,80 @@ class SignatarioRepository @Inject constructor(
                 )
             )
             adminSignatarioDao.inserirVarios(demoSignatarios)
+
+            // Garante que cada signatário de demonstração também exista na tabela 'usuarios' com todos os dados completos
+            val usuariosSignatariosDemo = listOf(
+                UsuarioEntity(
+                    id = "sig-maria-souza",
+                    nome = "Maria Souza",
+                    email = "maria.souza@empresa.com",
+                    telefone = "(11) 91234-5678",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "23456789012",
+                    dataNascimento = "14031988",
+                    endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
+                    profissao = "Advogada Corporativa"
+                ),
+                UsuarioEntity(
+                    id = "sig-ana-lima",
+                    nome = "Ana Lima",
+                    email = "ana.lima@empresa.com",
+                    telefone = "(11) 92345-6789",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "34567890123",
+                    dataNascimento = "20071990",
+                    endereco = "Alameda Santos, 800, Cerqueira César, São Paulo - SP",
+                    profissao = "Consultora Financeira"
+                ),
+                UsuarioEntity(
+                    id = "sig-joao-lima",
+                    nome = "João Lima",
+                    email = "joao.lima@email.com",
+                    telefone = "(11) 91234-5678",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "98765432199",
+                    dataNascimento = "20081992",
+                    endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
+                    profissao = "Analista de Operações"
+                ),
+                UsuarioEntity(
+                    id = "sig-pedro-alves",
+                    nome = "Pedro Alves",
+                    email = "pedro.alves@empresa.com",
+                    telefone = "(11) 94567-8901",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "45678901234",
+                    dataNascimento = "03111985",
+                    endereco = "Rua da Consolação, 1200, Consolação, São Paulo - SP",
+                    profissao = "Engenheiro de Produção"
+                ),
+                UsuarioEntity(
+                    id = "sig-carlos-silva",
+                    nome = "Carlos Silva",
+                    email = "carlos.silva@empresa.com",
+                    telefone = "(11) 95678-9012",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "56789012345",
+                    dataNascimento = "18091995",
+                    endereco = "Av. Brigadeiro Faria Lima, 2500, Itaim Bibi, São Paulo - SP",
+                    profissao = "Arquiteto de Soluções"
+                )
+            )
+            for (usuario in usuariosSignatariosDemo) {
+                if (usuarioDao.buscarPorId(usuario.id) == null) {
+                    usuarioDao.inserir(usuario)
+                }
+            }
         } catch (e: Exception) {
             println("SignatarioRepository: aviso ao inicializar dados demo: ${e.message}")
         }
