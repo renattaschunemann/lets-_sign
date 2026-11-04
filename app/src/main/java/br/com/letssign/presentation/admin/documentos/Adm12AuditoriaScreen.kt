@@ -11,6 +11,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.History
+import br.com.letssign.domain.model.TipoEventoHistorico
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -263,12 +270,38 @@ fun Adm12AuditoriaScreen(
                 } else {
                     itemsIndexed(uiState.eventos, key = { _, ev -> ev.id }) { index, ev ->
                         val dataFormatada = remember(ev.dataHoraUtc) { formatoData.format(Date(ev.dataHoraUtc)) }
+                        val iconeEvento = when (ev.tipoEvento) {
+                            TipoEventoHistorico.ASSINATURA, TipoEventoHistorico.CONCLUSAO -> Icons.Default.CheckCircle
+                            TipoEventoHistorico.RECUSA, TipoEventoHistorico.CANCELAMENTO -> Icons.Default.Cancel
+                            TipoEventoHistorico.ENVIO -> Icons.AutoMirrored.Filled.Send
+                            TipoEventoHistorico.CONFIRMACAO_IDENTIDADE -> Icons.Default.VerifiedUser
+                            TipoEventoHistorico.CRIACAO, TipoEventoHistorico.UPLOAD_PDF -> Icons.Default.Description
+                            else -> Icons.Default.History
+                        }
+                        val corEvento = when (ev.tipoEvento) {
+                            TipoEventoHistorico.ASSINATURA, TipoEventoHistorico.CONCLUSAO -> LetsSignTheme.colors.corSucesso
+                            TipoEventoHistorico.RECUSA, TipoEventoHistorico.CANCELAMENTO -> LetsSignTheme.colors.corErro
+                            TipoEventoHistorico.CONFIRMACAO_IDENTIDADE -> LetsSignTheme.colors.corAviso
+                            else -> LetsSignTheme.colors.corPrimaria
+                        }
+                        val geo = if (ev.tipoEvento == TipoEventoHistorico.ASSINATURA || ev.tipoEvento == TipoEventoHistorico.CONFIRMACAO_IDENTIDADE) {
+                            "São Paulo, SP • Brasil"
+                        } else null
+
+                        val ip = if (ev.tipoEvento == TipoEventoHistorico.ASSINATURA || ev.tipoEvento == TipoEventoHistorico.CONFIRMACAO_IDENTIDADE) {
+                            "IP 187.54.12.98 • Android"
+                        } else null
+
                         ItemLinhaDoTempo(
                             dataHora = dataFormatada,
                             evento = ev.tipoEvento.name.lowercase().replace("_", " ").replaceFirstChar { it.uppercase() },
                             autor = ev.autorNome,
                             detalhe = ev.detalhe,
-                            ehUltimo = index == uiState.eventos.size - 1
+                            ehUltimo = index == uiState.eventos.size - 1,
+                            icone = iconeEvento,
+                            corMarcador = corEvento,
+                            geolocalizacao = geo,
+                            ipDispositivo = ip
                         )
                     }
                 }

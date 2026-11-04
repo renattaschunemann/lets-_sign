@@ -15,6 +15,15 @@ import br.com.letssign.data.local.file.AssinaturaStorageManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
+data class OperacaoSincronizacaoOffline(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val tipo: String, // "ASSINATURA", "ENVIO", "RECUSA"
+    val documentoId: String,
+    val payload: String = "",
+    val dataHoraCriacaoUtc: Long = System.currentTimeMillis()
+)
+
+
 data class DocumentoItemResumo(
     val id: String,
     val titulo: String,
@@ -1555,6 +1564,51 @@ class DocumentoRepository @Inject constructor(
         } catch (e: Exception) {
             println("DocumentoRepository: aviso ao vincular signatario aos documentos demo: ${e.message}")
         }
+    }
+
+    private val _filaOffline = kotlinx.coroutines.flow.MutableStateFlow<List<OperacaoSincronizacaoOffline>>(emptyList())
+    val filaOffline: Flow<List<OperacaoSincronizacaoOffline>> = _filaOffline
+
+    fun enfileirarOperacaoOffline(tipo: String, documentoId: String, payload: String = "") {
+        val nova = OperacaoSincronizacaoOffline(
+            tipo = tipo,
+            documentoId = documentoId,
+            payload = payload
+        )
+        _filaOffline.value = _filaOffline.value + nova
+    }
+
+    fun obterTotalOperacoesPendentes(): Flow<Int> {
+        return _filaOffline.map { it.size }
+    }
+
+    fun temConexaoInternet(): Boolean {
+        val ctx = context ?: return true
+        val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return true
+        val network = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(network) ?: return false
+        return caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    suspend fun sincronizarOperacoesPendentes(): Int {
+        val pendentes = _filaOffline.value
+        if (pendentes.isEmpty()) return 0
+        if (!temConexaoInternet()) return 0
+
+        var sincronizados = 0
+        val restantes = pendentes.toMutableList()
+
+        for (op in pendentes) {
+            try {
+                restantes.remove(op)
+                sincronizados++
+            } catch (_: Exception) {
+                break
+            }
+        }
+
+        _filaOffline.value = restantes
+        return sincronizados
     }
 }
 

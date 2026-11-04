@@ -8,6 +8,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Contacts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +49,66 @@ fun Adm03SignatarioFormScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var mostrarDatePicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val launcherContato = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickContact()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                var nomeContato = ""
+                var telefoneContato = ""
+                var emailContato = ""
+                var contactId = ""
+
+                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                        val nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                        if (idIndex != -1) contactId = cursor.getString(idIndex) ?: ""
+                        if (nameIndex != -1) nomeContato = cursor.getString(nameIndex) ?: ""
+                    }
+                }
+
+                if (contactId.isNotBlank()) {
+                    context.contentResolver.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                        arrayOf(contactId),
+                        null
+                    )?.use { phoneCursor ->
+                        if (phoneCursor.moveToFirst()) {
+                            val numIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                            if (numIndex != -1) {
+                                telefoneContato = phoneCursor.getString(numIndex) ?: ""
+                            }
+                        }
+                    }
+
+                    context.contentResolver.query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        null,
+                        "${ContactsContract.CommonDataKinds.Email.CONTACT_ID} = ?",
+                        arrayOf(contactId),
+                        null
+                    )?.use { emailCursor ->
+                        if (emailCursor.moveToFirst()) {
+                            val mailIndex = emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
+                            if (mailIndex != -1) {
+                                emailContato = emailCursor.getString(mailIndex) ?: ""
+                            }
+                        }
+                    }
+                }
+
+                viewModel.preencherDadosImportados(
+                    nome = nomeContato,
+                    email = emailContato,
+                    telefone = telefoneContato
+                )
+            } catch (_: Exception) {}
+        }
+    }
 
     val cpfCnpjTransformation = remember(uiState.tipoPessoa) {
         CpfCnpjVisualTransformation(ehCnpj = uiState.tipoPessoa == "PJ")
@@ -153,6 +219,13 @@ fun Adm03SignatarioFormScreen(
         ) {
             BannerInformativo(
                 texto = stringResource(R.string.adm03_banner_info)
+            )
+
+            BotaoSecundario(
+                texto = "Importar dos Contatos do Celular",
+                onClick = { launcherContato.launch(null) },
+                icone = Icons.Default.Contacts,
+                modifier = Modifier.fillMaxWidth()
             )
 
             if (uiState.erroGeral != null) {

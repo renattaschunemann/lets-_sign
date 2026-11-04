@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ enum class EstiloFonteCursiva(val nomeExibicao: String) {
 /**
  * Área de desenho interativa em Canvas para assinatura manual:
  * - Traço corTintaAssinatura
+ * - Suavização de traço vetorial via curvas de Bézier quadráticas com pontos médios
  * - Linha de base corDivisor
  * - Botão "Limpar"
  */
@@ -94,12 +96,29 @@ fun AreaDesenhoAssinatura(
                     strokeWidth = 2.dp.toPx()
                 )
 
-                if (pontos.size > 1) {
+                if (pontos.isNotEmpty()) {
                     val path = Path().apply {
-                        moveTo(pontos.first().x, pontos.first().y)
-                        for (i in 1 until pontos.size) {
-                            val p = pontos[i]
-                            lineTo(p.x, p.y)
+                        if (pontos.size == 1) {
+                            val p = pontos.first()
+                            moveTo(p.x, p.y)
+                            lineTo(p.x + 1f, p.y + 1f)
+                        } else if (pontos.size == 2) {
+                            moveTo(pontos[0].x, pontos[0].y)
+                            lineTo(pontos[1].x, pontos[1].y)
+                        } else {
+                            // Suavização vetorial com curvas de Bézier e pontos médios
+                            moveTo(pontos[0].x, pontos[0].y)
+                            for (i in 1 until pontos.size - 1) {
+                                val pAtual = pontos[i]
+                                val pProximo = pontos[i + 1]
+                                val midX = (pAtual.x + pProximo.x) / 2f
+                                val midY = (pAtual.y + pProximo.y) / 2f
+                                quadraticTo(pAtual.x, pAtual.y, midX, midY)
+                            }
+                            // Conecta até o último ponto
+                            val penultimo = pontos[pontos.size - 2]
+                            val ultimo = pontos.last()
+                            quadraticTo(penultimo.x, penultimo.y, ultimo.x, ultimo.y)
                         }
                     }
                     drawPath(
@@ -162,37 +181,22 @@ fun SeletorEstiloCursivo(
             ) {
                 Text(
                     text = nomeParaAssinar,
-                    fontSize = 22.sp,
                     fontStyle = FontStyle.Italic,
-                    fontFamily = FontFamily.Cursive,
+                    fontFamily = when (estilo) {
+                        EstiloFonteCursiva.ESTILO_1 -> FontFamily.Cursive
+                        EstiloFonteCursiva.ESTILO_2 -> FontFamily.Serif
+                        EstiloFonteCursiva.ESTILO_3 -> FontFamily.SansSerif
+                        EstiloFonteCursiva.ESTILO_4 -> FontFamily.Default
+                    },
+                    fontSize = 20.sp,
                     color = LetsSignTheme.colors.corTintaAssinatura
                 )
                 Text(
                     text = estilo.nomeExibicao,
-                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall,
                     color = LetsSignTheme.colors.corTextoSecundario
                 )
             }
         }
-    }
-}
-
-@Preview(name = "Área de Desenho", showBackground = true)
-@Composable
-private fun AreaDesenhoPreview() {
-    LetsSignTheme {
-        AreaDesenhoAssinatura(aoMudarTemDesenho = {})
-    }
-}
-
-@Preview(name = "Seletor Cursivo", showBackground = true)
-@Composable
-private fun SeletorCursivoPreview() {
-    LetsSignTheme {
-        SeletorEstiloCursivo(
-            nomeParaAssinar = "João Lima",
-            estiloSelecionado = EstiloFonteCursiva.ESTILO_1,
-            aoSelecionarEstilo = {}
-        )
     }
 }

@@ -38,6 +38,21 @@ data class CampoVisual(
     val normAltura: Float = 0.08f
 )
 
+enum class TemplateDocumentoRapido(val titulo: String, val descricao: String) {
+    CONTRATO_DUPLO(
+        "Contrato Padrão (2 Partes)",
+        "Posiciona 2 assinaturas lado a lado no rodapé da página final"
+    ),
+    INDIVIDUAL_CENTRALIZADO(
+        "Declaração Simples (1 Signatário)",
+        "Posiciona 1 assinatura centralizada no rodapé da página final"
+    ),
+    MULTIPLAS_PARTES(
+        "Acordo Multi-Partes (Até 4 Signatários)",
+        "Distribui as assinaturas em grade no rodapé do documento"
+    )
+}
+
 enum class EstadoEnvio {
     ENVIANDO,
     SUCESSO,
@@ -72,6 +87,7 @@ data class WizardNovoDocUiState(
     val paginaAtualPdf: Int = 1,
     val mensagemConvite: String = "",
     val mostrarModalAtribuirCampo: Boolean = false,
+    val mostrarModalTemplates: Boolean = false,
     val estadoModalResultado: EstadoEnvio? = null
 ) {
     val signatariosFiltrados: List<AdminSignatarioEntity>
@@ -389,6 +405,194 @@ class WizardNovoDocViewModel @Inject constructor(
             mutavel.add(posicao + 1, item)
             estado.copy(ordemSignatarios = mutavel)
         }
+    }
+
+    fun abrirModalTemplates() {
+        _uiState.update { it.copy(mostrarModalTemplates = true) }
+    }
+
+    fun fecharModalTemplates() {
+        _uiState.update { it.copy(mostrarModalTemplates = false) }
+    }
+
+    fun sugerirPosicionamentoCampos() {
+        val estado = _uiState.value
+        val pendentes = estado.participantesSemCampo
+        if (pendentes.isEmpty()) return
+
+        val paginaAlvo = estado.pdfTotalPaginas.coerceAtLeast(1)
+        val novosCampos = mutableListOf<CampoVisual>()
+
+        when (pendentes.size) {
+            1 -> {
+                val sigId = pendentes[0]
+                val papel = estado.papelPorSignatario[sigId] ?: PapelParticipante.CONTRATADO
+                novosCampos.add(
+                    CampoVisual(
+                        id = UUID.randomUUID().toString(),
+                        signatarioId = sigId,
+                        papel = papel,
+                        numeroPagina = paginaAlvo,
+                        normX = 0.25f,
+                        normY = 0.76f,
+                        normLargura = 0.50f,
+                        normAltura = 0.08f
+                    )
+                )
+            }
+            2 -> {
+                val papel0 = estado.papelPorSignatario[pendentes[0]] ?: PapelParticipante.CONTRATANTE
+                val papel1 = estado.papelPorSignatario[pendentes[1]] ?: PapelParticipante.CONTRATADO
+                novosCampos.add(
+                    CampoVisual(
+                        id = UUID.randomUUID().toString(),
+                        signatarioId = pendentes[0],
+                        papel = papel0,
+                        numeroPagina = paginaAlvo,
+                        normX = 0.06f,
+                        normY = 0.76f,
+                        normLargura = 0.42f,
+                        normAltura = 0.08f
+                    )
+                )
+                novosCampos.add(
+                    CampoVisual(
+                        id = UUID.randomUUID().toString(),
+                        signatarioId = pendentes[1],
+                        papel = papel1,
+                        numeroPagina = paginaAlvo,
+                        normX = 0.52f,
+                        normY = 0.76f,
+                        normLargura = 0.42f,
+                        normAltura = 0.08f
+                    )
+                )
+            }
+            else -> {
+                pendentes.forEachIndexed { index, sigId ->
+                    val linha = index / 2
+                    val coluna = index % 2
+                    val normX = if (coluna == 0) 0.06f else 0.52f
+                    val normY = (0.64f + (linha * 0.12f)).coerceAtMost(0.85f)
+                    val papel = estado.papelPorSignatario[sigId] ?: PapelParticipante.CONTRATADO
+                    novosCampos.add(
+                        CampoVisual(
+                            id = UUID.randomUUID().toString(),
+                            signatarioId = sigId,
+                            papel = papel,
+                            numeroPagina = paginaAlvo,
+                            normX = normX,
+                            normY = normY,
+                            normLargura = 0.42f,
+                            normAltura = 0.08f
+                        )
+                    )
+                }
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                campos = it.campos + novosCampos,
+                paginaAtualPdf = paginaAlvo,
+                campoSelecionadoId = novosCampos.firstOrNull()?.id ?: it.campoSelecionadoId
+            )
+        }
+        salvarRascunhoAutomatico()
+    }
+
+    fun aplicarTemplate(template: TemplateDocumentoRapido) {
+        val estado = _uiState.value
+        val ordenados = estado.participantesOrdenados.ifEmpty {
+            estado.signatariosSelecionadosIds.mapNotNull { id ->
+                estado.signatariosCadastrados.find { it.signatarioId == id }
+            }
+        }
+        if (ordenados.isEmpty()) {
+            _uiState.update { it.copy(mostrarModalTemplates = false) }
+            return
+        }
+
+        val paginaAlvo = estado.pdfTotalPaginas.coerceAtLeast(1)
+        val novosCampos = mutableListOf<CampoVisual>()
+
+        when (template) {
+            TemplateDocumentoRapido.CONTRATO_DUPLO -> {
+                val sig0 = ordenados.getOrNull(0)
+                val sig1 = ordenados.getOrNull(1) ?: sig0
+                if (sig0 != null) {
+                    novosCampos.add(
+                        CampoVisual(
+                            signatarioId = sig0.signatarioId,
+                            papel = estado.papelPorSignatario[sig0.signatarioId] ?: PapelParticipante.CONTRATANTE,
+                            numeroPagina = paginaAlvo,
+                            normX = 0.06f,
+                            normY = 0.76f,
+                            normLargura = 0.42f,
+                            normAltura = 0.08f
+                        )
+                    )
+                }
+                if (sig1 != null && sig1.signatarioId != sig0?.signatarioId) {
+                    novosCampos.add(
+                        CampoVisual(
+                            signatarioId = sig1.signatarioId,
+                            papel = estado.papelPorSignatario[sig1.signatarioId] ?: PapelParticipante.CONTRATADO,
+                            numeroPagina = paginaAlvo,
+                            normX = 0.52f,
+                            normY = 0.76f,
+                            normLargura = 0.42f,
+                            normAltura = 0.08f
+                        )
+                    )
+                }
+            }
+            TemplateDocumentoRapido.INDIVIDUAL_CENTRALIZADO -> {
+                val sig0 = ordenados.firstOrNull()
+                if (sig0 != null) {
+                    novosCampos.add(
+                        CampoVisual(
+                            signatarioId = sig0.signatarioId,
+                            papel = estado.papelPorSignatario[sig0.signatarioId] ?: PapelParticipante.CONTRATADO,
+                            numeroPagina = paginaAlvo,
+                            normX = 0.25f,
+                            normY = 0.76f,
+                            normLargura = 0.50f,
+                            normAltura = 0.08f
+                        )
+                    )
+                }
+            }
+            TemplateDocumentoRapido.MULTIPLAS_PARTES -> {
+                ordenados.take(4).forEachIndexed { index, sig ->
+                    val linha = index / 2
+                    val coluna = index % 2
+                    val normX = if (coluna == 0) 0.06f else 0.52f
+                    val normY = (0.64f + (linha * 0.12f)).coerceAtMost(0.85f)
+                    novosCampos.add(
+                        CampoVisual(
+                            signatarioId = sig.signatarioId,
+                            papel = estado.papelPorSignatario[sig.signatarioId] ?: PapelParticipante.CONTRATADO,
+                            numeroPagina = paginaAlvo,
+                            normX = normX,
+                            normY = normY,
+                            normLargura = 0.42f,
+                            normAltura = 0.08f
+                        )
+                    )
+                }
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                campos = novosCampos,
+                paginaAtualPdf = paginaAlvo,
+                campoSelecionadoId = novosCampos.firstOrNull()?.id,
+                mostrarModalTemplates = false
+            )
+        }
+        salvarRascunhoAutomatico()
     }
 
     fun adicionarCampo() {

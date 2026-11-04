@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -70,6 +72,65 @@ fun Adm09PosicionarCamposScreen(
             aoSalvarRascunho = { viewModel.salvarRascunhoManual(aoSairParaInicio) },
             aoDescartar = { viewModel.descartarRascunhoManual(aoSairParaInicio) },
             aoContinuarEditando = { viewModel.fecharModalSair() }
+        )
+    }
+
+
+    if (uiState.mostrarModalTemplates) {
+        AlertDialog(
+            onDismissRequest = { viewModel.fecharModalTemplates() },
+            title = {
+                Text(
+                    text = "Modelos Rápidos de Documentos",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = LetsSignTheme.colors.corTextoPrincipal
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Selecione um layout predefinido para distribuir os signatários automaticamente:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = LetsSignTheme.colors.corTextoSecundario
+                    )
+
+                    TemplateDocumentoRapido.entries.forEach { template ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.aplicarTemplate(template) },
+                            shape = FormaMedia,
+                            colors = CardDefaults.cardColors(containerColor = LetsSignTheme.colors.corSuperficie),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, LetsSignTheme.colors.corPrimaria.copy(alpha = 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = template.titulo,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LetsSignTheme.colors.corPrimaria
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = template.descricao,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = LetsSignTheme.colors.corTextoSecundario
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { viewModel.fecharModalTemplates() }) {
+                    Text("Cancelar")
+                }
+            }
         )
     }
 
@@ -151,11 +212,46 @@ fun Adm09PosicionarCamposScreen(
                             )
                         }
 
-                        BotaoTonal(
-                            texto = stringResource(R.string.adm09_btn_adicionar_campo),
-                            aoClicar = { viewModel.adicionarCampo() },
-                            icone = Icons.Default.Add
-                        )
+                    }
+
+                    // Ações Rápidas: Adicionar, Sugerir Posições e Templates
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = { viewModel.sugerirPosicionamentoCampos() },
+                            modifier = Modifier.weight(1f),
+                            shape = FormaMedia,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Sugerir", style = MaterialTheme.typography.labelSmall)
+                        }
+
+                        OutlinedButton(
+                            onClick = { viewModel.abrirModalTemplates() },
+                            modifier = Modifier.weight(1f),
+                            shape = FormaMedia,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.Dashboard, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Modelos", style = MaterialTheme.typography.labelSmall)
+                        }
+
+                        Button(
+                            onClick = { viewModel.adicionarCampo() },
+                            modifier = Modifier.weight(1.2f),
+                            shape = FormaMedia,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("+ Campo", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
 
                     // Banner de status dos campos

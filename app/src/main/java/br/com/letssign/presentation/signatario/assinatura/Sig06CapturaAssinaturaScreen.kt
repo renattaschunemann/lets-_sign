@@ -43,6 +43,13 @@ import br.com.letssign.core.designsystem.theme.LetsSignTheme
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import br.com.letssign.data.local.file.AssinaturaStorageManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +63,17 @@ fun Sig06CapturaAssinaturaScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var pontosDesenho by remember { mutableStateOf<List<Offset>>(emptyList()) }
+    var bitmapUpload by remember { mutableStateOf<Bitmap?>(null) }
+    val launcherFoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        viewModel.definirImagemUpload(uri)
+        if (uri != null) {
+            bitmapUpload = AssinaturaStorageManager.processarImagemUploadParaRubrica(context, uri)
+        } else {
+            bitmapUpload = null
+        }
+    }
 
     LaunchedEffect(uiState.assinaturaPronta) {
         if (uiState.assinaturaPronta) {
@@ -69,7 +87,10 @@ fun Sig06CapturaAssinaturaScreen(
                         estiloFonteNome = uiState.estiloFonteSelecionado.nomeExibicao
                     )
                 }
-                AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> {
+                AbaCapturaAssinatura.UPLOAD_FOTO -> {
+                    bitmapUpload ?: AssinaturaStorageManager.gerarBitmapDigitado("Rubrica", "Cursive")
+                }
+                    AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> {
                     AssinaturaStorageManager.gerarBitmapCertificado(
                         titular = uiState.titularCertificado,
                         documento = uiState.documentoCertificado,
@@ -160,7 +181,8 @@ fun Sig06CapturaAssinaturaScreen(
             val tabIndex = when (uiState.abaSelecionada) {
                 AbaCapturaAssinatura.DESENHAR -> 0
                 AbaCapturaAssinatura.DIGITAR -> 1
-                AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> 2
+                AbaCapturaAssinatura.UPLOAD_FOTO -> 2
+                AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> 3
             }
 
             TabRow(
@@ -179,6 +201,12 @@ fun Sig06CapturaAssinaturaScreen(
                     onClick = { viewModel.selecionarAba(AbaCapturaAssinatura.DIGITAR) },
                     text = { Text(stringResource(R.string.sig06_aba_digitar)) },
                     icon = { Icon(Icons.Default.TextFields, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
+                Tab(
+                    selected = uiState.abaSelecionada == AbaCapturaAssinatura.UPLOAD_FOTO,
+                    onClick = { viewModel.selecionarAba(AbaCapturaAssinatura.UPLOAD_FOTO) },
+                    text = { Text("Foto") },
+                    icon = { Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
                 Tab(
                     selected = uiState.abaSelecionada == AbaCapturaAssinatura.CERTIFICADO_DIGITAL,
@@ -254,6 +282,89 @@ fun Sig06CapturaAssinaturaScreen(
                                         fontStyle = FontStyle.Italic,
                                         color = LetsSignTheme.colors.corTintaAssinatura
                                     )
+                                }
+                            }
+                        }
+                    }
+
+                    AbaCapturaAssinatura.UPLOAD_FOTO -> {
+                        Text(
+                            text = "Envie uma foto ou imagem da sua assinatura em papel branco.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LetsSignTheme.colors.corTextoSecundario
+                        )
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp)
+                                .clickable { launcherFoto.launch("image/*") }
+                                .border(
+                                    width = 1.5.dp,
+                                    color = if (bitmapUpload != null) LetsSignTheme.colors.corSucesso else LetsSignTheme.colors.corPrimaria,
+                                    shape = FormaMedia
+                                ),
+                            shape = FormaMedia,
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (bitmapUpload != null) LetsSignTheme.colors.corSuperficie
+                                else LetsSignTheme.colors.corPrimariaContainer.copy(alpha = 0.25f)
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val bmp = bitmapUpload
+                                if (bmp != null) {
+                                    Image(
+                                        bitmap = bmp.asImageBitmap(),
+                                        contentDescription = "Pré-visualização da rubrica",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                    )
+                                } else {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Image,
+                                            contentDescription = null,
+                                            tint = LetsSignTheme.colors.corPrimaria,
+                                            modifier = Modifier.size(48.dp)
+                                        )
+                                        Text(
+                                            text = "Toque para selecionar imagem da galeria",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = LetsSignTheme.colors.corPrimaria
+                                        )
+                                        Text(
+                                            text = "Formatos suportados: PNG, JPG ou WEBP",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = LetsSignTheme.colors.corTextoSecundario
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (bitmapUpload != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "✓ Imagem pronta para uso",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LetsSignTheme.colors.corSucesso,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                TextButton(onClick = { launcherFoto.launch("image/*") }) {
+                                    Text("Trocar foto")
                                 }
                             }
                         }

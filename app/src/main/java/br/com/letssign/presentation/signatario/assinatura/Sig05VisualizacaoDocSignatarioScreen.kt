@@ -12,6 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Draw
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.TouchApp
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -73,6 +75,18 @@ fun Sig05VisualizacaoDocSignatarioScreen(
                     containerColor = LetsSignTheme.colors.corSuperficie
                 )
             )
+        },
+        floatingActionButton = {
+            if (!uiState.campoAssinado) {
+                ExtendedFloatingActionButton(
+                    onClick = { aoNavegarParaCaptura(viewModel.documentoId) },
+                    icon = { Icon(Icons.Default.TouchApp, contentDescription = null) },
+                    text = { Text("Ir para Assinar") },
+                    containerColor = LetsSignTheme.colors.corPrimaria,
+                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+                )
+            }
         },
         bottomBar = {
             Surface(

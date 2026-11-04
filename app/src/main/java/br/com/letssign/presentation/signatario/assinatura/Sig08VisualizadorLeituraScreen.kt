@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -98,6 +99,28 @@ fun Sig08VisualizadorLeituraScreen(
                     containerColor = LetsSignTheme.colors.corSuperficie
                 )
             )
+        },
+        floatingActionButton = {
+            val camposPendentes = uiState.campos.filter { campo ->
+                val part = uiState.participantes.find { it.id == campo.participanteId }
+                val assinatura = uiState.assinaturasPorCampo[campo.id]
+                assinatura == null && part?.situacao != SituacaoParticipante.ASSINADO
+            }
+            if (camposPendentes.isNotEmpty()) {
+                val primeiroPendente = camposPendentes.first()
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (uiState.paginaAtual != primeiroPendente.numeroPagina) {
+                            viewModel.mudarPagina(primeiroPendente.numeroPagina)
+                        }
+                    },
+                    icon = { Icon(Icons.Default.TouchApp, contentDescription = null) },
+                    text = { Text("Ir para Assinar (Pág. ${primeiroPendente.numeroPagina})") },
+                    containerColor = LetsSignTheme.colors.corPrimaria,
+                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+                )
+            }
         }
     ) { paddingValues ->
         if (uiState.carregando) {

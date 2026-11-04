@@ -100,11 +100,37 @@ object AssinaturaStorageManager {
         }
 
         val path = Path()
-        val primeiro = pontos.first()
-        path.moveTo(primeiro.x * escala + offsetX, primeiro.y * escala + offsetY)
-        for (i in 1 until pontos.size) {
-            val p = pontos[i]
-            path.lineTo(p.x * escala + offsetX, p.y * escala + offsetY)
+        if (pontos.size == 1) {
+            val p = pontos.first()
+            val px = p.x * escala + offsetX
+            val py = p.y * escala + offsetY
+            path.moveTo(px, py)
+            path.lineTo(px + 1f, py + 1f)
+        } else if (pontos.size == 2) {
+            path.moveTo(pontos[0].x * escala + offsetX, pontos[0].y * escala + offsetY)
+            path.lineTo(pontos[1].x * escala + offsetX, pontos[1].y * escala + offsetY)
+        } else {
+            val p0 = pontos[0]
+            path.moveTo(p0.x * escala + offsetX, p0.y * escala + offsetY)
+            for (i in 1 until pontos.size - 1) {
+                val pAtual = pontos[i]
+                val pProx = pontos[i + 1]
+                val ax = pAtual.x * escala + offsetX
+                val ay = pAtual.y * escala + offsetY
+                val bx = pProx.x * escala + offsetX
+                val by = pProx.y * escala + offsetY
+                val midX = (ax + bx) / 2f
+                val midY = (ay + by) / 2f
+                path.quadTo(ax, ay, midX, midY)
+            }
+            val penultimo = pontos[pontos.size - 2]
+            val ultimo = pontos.last()
+            path.quadTo(
+                penultimo.x * escala + offsetX,
+                penultimo.y * escala + offsetY,
+                ultimo.x * escala + offsetX,
+                ultimo.y * escala + offsetY
+            )
         }
         canvas.drawPath(path, paint)
         return bitmap
@@ -227,5 +253,47 @@ object AssinaturaStorageManager {
 
         return bitmap
     }
-}
 
+    /**
+     * Processa imagem da galeria (PNG/JPEG) para rubrica transparente recortada e otimizada.
+     */
+    fun processarImagemUploadParaRubrica(
+        context: Context,
+        uri: android.net.Uri,
+        larguraDesejada: Int = 600,
+        alturaDesejada: Int = 240
+    ): Bitmap? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val original = android.graphics.BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+            if (original == null) return null
+
+            val resultado = Bitmap.createBitmap(larguraDesejada, alturaDesejada, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(resultado)
+            resultado.eraseColor(Color.TRANSPARENT)
+
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+            val ratioOrig = original.width.toFloat() / original.height.toFloat()
+            val ratioDest = larguraDesejada.toFloat() / alturaDesejada.toFloat()
+
+            val w: Float
+            val h: Float
+            if (ratioOrig > ratioDest) {
+                w = larguraDesejada.toFloat() * 0.9f
+                h = w / ratioOrig
+            } else {
+                h = alturaDesejada.toFloat() * 0.85f
+                w = h * ratioOrig
+            }
+            val left = (larguraDesejada - w) / 2f
+            val top = (alturaDesejada - h) / 2f
+            val destRect = RectF(left, top, left + w, top + h)
+            canvas.drawBitmap(original, null, destRect, paint)
+            resultado
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+}

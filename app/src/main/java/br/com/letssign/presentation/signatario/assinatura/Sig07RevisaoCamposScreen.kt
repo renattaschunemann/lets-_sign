@@ -280,7 +280,13 @@ fun Sig07RevisaoCamposScreen(
 
     if (uiState.exibindoTermosAceite) {
         Mod10TermosAceiteDialog(
-            aoConfirmarEmissao = { viewModel.emitirAssinatura() },
+            aoConfirmarEmissao = {
+                br.com.letssign.core.security.BiometricAuthManager.autenticar(
+                    context = context,
+                    aoSucesso = { viewModel.emitirAssinatura() },
+                    aoErroOuCancelado = {}
+                )
+            },
             aoFechar = { viewModel.exibirTermosAceite(false) },
             processando = uiState.emitindoAssinatura
         )

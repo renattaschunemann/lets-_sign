@@ -115,6 +115,12 @@ class Adm03SignatarioFormViewModel @Inject constructor(
         }
     }
 
+    fun preencherDadosImportados(nome: String, email: String, telefone: String) {
+        if (nome.isNotBlank()) aoAlterarNome(nome)
+        if (email.isNotBlank()) aoAlterarEmail(email)
+        if (telefone.isNotBlank()) aoAlterarTelefone(telefone)
+    }
+
     fun aoAlterarTelefone(novoTelefone: String) {
         val digitos = novoTelefone.filter { it.isDigit() }.take(11)
         _uiState.update { it.copy(telefone = digitos, erroTelefone = null) }

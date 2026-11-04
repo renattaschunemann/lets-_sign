@@ -14,6 +14,7 @@ import javax.inject.Inject
 enum class AbaCapturaAssinatura {
     DESENHAR,
     DIGITAR,
+    UPLOAD_FOTO,
     CERTIFICADO_DIGITAL
 }
 
@@ -31,12 +32,14 @@ data class Sig06UiState(
     val validadeCertificado: String = "18/12/2027",
     val pinCertificado: String = "",
     val certificadoInstalado: Boolean = true,
+    val uriImagemUpload: android.net.Uri? = null,
     val assinaturaPronta: Boolean = false
 ) {
     val podeConfirmar: Boolean
         get() = when (abaSelecionada) {
             AbaCapturaAssinatura.DESENHAR -> temDesenho
             AbaCapturaAssinatura.DIGITAR -> textoDigitado.isNotBlank()
+            AbaCapturaAssinatura.UPLOAD_FOTO -> uriImagemUpload != null
             AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> pinCertificado.length >= 4 && titularCertificado.isNotBlank()
         }
 
@@ -44,6 +47,7 @@ data class Sig06UiState(
         get() = when (abaSelecionada) {
             AbaCapturaAssinatura.DESENHAR -> TipoAssinatura.DESENHADA
             AbaCapturaAssinatura.DIGITAR -> TipoAssinatura.DIGITADA
+            AbaCapturaAssinatura.UPLOAD_FOTO -> TipoAssinatura.DESENHADA
             AbaCapturaAssinatura.CERTIFICADO_DIGITAL -> {
                 if (tipoCertificado == "e-CNPJ") TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ
                 else TipoAssinatura.CERTIFICADO_DIGITAL_ECPF
@@ -119,12 +123,21 @@ class Sig06CapturaAssinaturaViewModel @Inject constructor(
         _uiState.update { it.copy(pinCertificado = pin.filter { c -> c.isDigit() }.take(8)) }
     }
 
+        fun definirImagemUpload(uri: android.net.Uri?) {
+        _uiState.update { it.copy(uriImagemUpload = uri) }
+    }
+
+    fun removerImagemUpload() {
+        _uiState.update { it.copy(uriImagemUpload = null) }
+    }
+
     fun limpar() {
         _uiState.update {
             it.copy(
                 temDesenho = false,
                 textoDigitado = "",
-                pinCertificado = ""
+                pinCertificado = "",
+                uriImagemUpload = null
             )
         }
     }
