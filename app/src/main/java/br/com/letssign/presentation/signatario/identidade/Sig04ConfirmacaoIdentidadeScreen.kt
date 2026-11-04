@@ -3,9 +3,11 @@ package br.com.letssign.presentation.signatario.identidade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -16,10 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.letssign.R
+import br.com.letssign.core.common.transformation.DataNascimentoVisualTransformation
 import br.com.letssign.core.designsystem.components.base.BotaoPrincipal
 import br.com.letssign.core.designsystem.components.base.CampoTextoContornado
 import br.com.letssign.core.designsystem.components.base.IndicadorCarregamentoCircular
@@ -35,6 +39,7 @@ fun Sig04ConfirmacaoIdentidadeScreen(
     viewModel: Sig04ConfirmacaoIdentidadeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val dataNascTransformation = remember { DataNascimentoVisualTransformation() }
 
     LaunchedEffect(uiState.sucesso) {
         if (uiState.sucesso) {
@@ -138,7 +143,18 @@ fun Sig04ConfirmacaoIdentidadeScreen(
                     valor = uiState.dataNascimento,
                     aoMudarValor = { viewModel.atualizarDataNascimento(it) },
                     rotulo = stringResource(R.string.sig04_label_nascimento),
-                    dicaAjuda = "Ex: 10/05/1992",
+                    placeholder = "00/00/0000",
+                    dicaAjuda = "Ex: 00/00/0000 (DD/MM/AAAA)",
+                    visualTransformation = dataNascTransformation,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    limiteCaracteres = 8,
+                    iconeFim = {
+                        Icon(
+                            imageVector = Icons.Filled.CalendarMonth,
+                            contentDescription = stringResource(R.string.sig04_label_nascimento),
+                            tint = LetsSignTheme.colors.corPrimaria
+                        )
+                    },
                     habilitado = !uiState.bloqueado && !uiState.validando
                 )
 

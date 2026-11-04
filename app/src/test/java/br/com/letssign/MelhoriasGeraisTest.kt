@@ -1,11 +1,15 @@
 package br.com.letssign
 
+import androidx.compose.ui.text.AnnotatedString
 import br.com.letssign.core.common.contacts.AgendaContatosMockHelper
+import br.com.letssign.core.common.transformation.DataNascimentoVisualTransformation
+import br.com.letssign.core.common.validation.CadastroValidator
 import br.com.letssign.data.repository.OperacaoSincronizacaoOffline
 import br.com.letssign.presentation.admin.wizard.CampoVisual
 import br.com.letssign.presentation.admin.wizard.TemplateDocumentoRapido
 import br.com.letssign.presentation.signatario.assinatura.AbaCapturaAssinatura
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -75,5 +79,34 @@ class MelhoriasGeraisTest {
             assertEquals("Telefone deve ter 11 dígitos com DDD", 11, contato.telefone.length)
             assertTrue("Cargo deve estar preenchido", contato.cargo.isNotBlank())
         }
+    }
+
+    @Test
+    fun `verificar mascara e validacao de data de nascimento com ano completo`() {
+        val transformation = DataNascimentoVisualTransformation()
+
+        // Teste de formatação com 8 dígitos
+        val resultado = transformation.filter(AnnotatedString("20081992"))
+        assertEquals("20/08/1992", resultado.text.text)
+
+        // Teste de formatação parcial
+        assertEquals("20", transformation.filter(AnnotatedString("20")).text.text)
+        assertEquals("20/08", transformation.filter(AnnotatedString("2008")).text.text)
+
+        // Rejeitar ano incompleto (apenas 2 dígitos ou 6 dígitos totais)
+        assertFalse(CadastroValidator.validarDataNascimento("20/08/92"))
+        assertFalse(CadastroValidator.validarDataNascimento("200892"))
+        assertFalse(CadastroValidator.validarDataNascimento("2008199"))
+
+        // Aceitar somente ano completo de 4 dígitos (8 dígitos numéricos válidos)
+        assertTrue(CadastroValidator.validarDataNascimento("20081992"))
+        assertTrue(CadastroValidator.validarDataNascimento("20/08/1992"))
+        assertTrue(CadastroValidator.validarDataNascimento("15/04/1988"))
+        assertTrue(CadastroValidator.validarDataNascimento("01/01/2000"))
+
+        // Rejeitar datas impossíveis
+        assertFalse(CadastroValidator.validarDataNascimento("32/01/2000"))
+        assertFalse(CadastroValidator.validarDataNascimento("15/13/2000"))
+        assertFalse(CadastroValidator.validarDataNascimento("00/01/2000"))
     }
 }

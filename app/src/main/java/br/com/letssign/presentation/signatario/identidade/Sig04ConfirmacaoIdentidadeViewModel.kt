@@ -3,6 +3,7 @@ package br.com.letssign.presentation.signatario.identidade
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.letssign.core.common.validation.CadastroValidator
 import br.com.letssign.data.local.datastore.SessionManager
 import br.com.letssign.data.repository.DocumentoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,7 +71,8 @@ class Sig04ConfirmacaoIdentidadeViewModel @Inject constructor(
     }
 
     fun atualizarDataNascimento(novaData: String) {
-        _uiState.update { it.copy(dataNascimento = novaData, erro = null) }
+        val digitos = CadastroValidator.apenasNumeros(novaData).take(8)
+        _uiState.update { it.copy(dataNascimento = digitos, erro = null) }
     }
 
     fun atualizarSenha(novaSenha: String) {
@@ -83,8 +85,17 @@ class Sig04ConfirmacaoIdentidadeViewModel @Inject constructor(
             _uiState.update { it.copy(erro = "Informe seu nome completo.") }
             return
         }
-        if (state.dataNascimento.isBlank()) {
+        val digitosNascimento = CadastroValidator.apenasNumeros(state.dataNascimento)
+        if (digitosNascimento.isBlank()) {
             _uiState.update { it.copy(erro = "Informe sua data de nascimento.") }
+            return
+        }
+        if (digitosNascimento.length < 8) {
+            _uiState.update { it.copy(erro = "Informe a data de nascimento completa no formato 00/00/0000 com ano de 4 dígitos.") }
+            return
+        }
+        if (!CadastroValidator.validarDataNascimento(digitosNascimento)) {
+            _uiState.update { it.copy(erro = "Data de nascimento inválida. Digite no formato 00/00/0000.") }
             return
         }
         if (state.senha.isBlank()) {
@@ -98,7 +109,7 @@ class Sig04ConfirmacaoIdentidadeViewModel @Inject constructor(
                 participanteId = state.participanteId,
                 usuarioId = state.usuarioId,
                 nomeDigitado = state.nome,
-                dataNascimentoDigitada = state.dataNascimento,
+                dataNascimentoDigitada = digitosNascimento,
                 senhaDigitada = state.senha
             )
 
