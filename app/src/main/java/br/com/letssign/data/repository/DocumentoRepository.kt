@@ -43,7 +43,7 @@ class DocumentoRepository @Inject constructor(
     @ApplicationContext private val context: Context? = null
 ) {
 
-        suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
+            suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
         try {
             val demoDocIds = listOf(
                 "doc-demo-1", "doc-demo-2", "doc-demo-3", "doc-demo-4", "doc-demo-5",
@@ -66,224 +66,326 @@ class DocumentoRepository @Inject constructor(
                 return
             }
 
-            // Garante que os usuários de demonstração existam na tabela 'usuarios'
+            // Garante que TODOS os usuários de demonstração existam na tabela 'usuarios' com dados cadastrais completos
             if (usuarioDao != null) {
-                if (usuarioDao.buscarPorId(adminId) == null) {
-                    usuarioDao.inserir(
-                        UsuarioEntity(
-                            id = adminId,
-                            nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
-                            email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
-                            telefone = "(11) 98765-4321",
-                            perfil = PerfilUsuario.ADMIN,
-                            senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis(),
-                            cpf = "12345678901",
-                            dataNascimento = "15041988",
-                            endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
-                            profissao = "Administradora de Contratos"
-                        )
+                val agoraUtc = System.currentTimeMillis()
+                val demoUsuarios = listOf(
+                    UsuarioEntity(
+                        id = adminId,
+                        nome = if (adminId == "admin-carla-mendes") "Carla Mendes" else "Administrador",
+                        email = if (adminId == "admin-carla-mendes") "carla@empresa.com.br" else "admin-$adminId@empresa.com",
+                        telefone = "(11) 98765-4321",
+                        perfil = PerfilUsuario.ADMIN,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "12345678901",
+                        dataNascimento = "15041988",
+                        endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
+                        profissao = "Administradora de Contratos"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-joao-lima",
+                        nome = "João Lima",
+                        email = "joao.lima@email.com",
+                        telefone = "(11) 91234-5678",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "98765432199",
+                        dataNascimento = "20081992",
+                        endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
+                        profissao = "Analista de Operações"
+                    ),
+                    UsuarioEntity(
+                        id = "user-maria-souza",
+                        nome = "Maria Souza",
+                        email = "maria.souza@empresa.com.br",
+                        telefone = "(11) 91234-5678",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "23456789012",
+                        dataNascimento = "14031988",
+                        endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
+                        profissao = "Advogada Corporativa"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-pedro-alves",
+                        nome = "Pedro Alves",
+                        email = "pedro.alves@empresa.com",
+                        telefone = "(11) 94567-8901",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "45678901234",
+                        dataNascimento = "03111985",
+                        endereco = "Rua da Consolação, 1200, Consolação, São Paulo - SP",
+                        profissao = "Consultor Comercial"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-carlos-silva",
+                        nome = "Carlos Silva",
+                        email = "carlos.silva@empresa.com",
+                        telefone = "(11) 95678-9012",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "56789012345",
+                        dataNascimento = "12061979",
+                        endereco = "Av. Brigadeiro Luís Antônio, 2500, Jardim Paulista, São Paulo - SP",
+                        profissao = "Engenheiro Civil"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-ana-lima",
+                        nome = "Ana Lima Consultoria Financeira Ltda",
+                        email = "ana.lima@empresa.com",
+                        telefone = "(11) 92345-6789",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "12345678000195",
+                        dataNascimento = "20072015",
+                        endereco = "Alameda Santos, 800, Cerqueira César, São Paulo - SP",
+                        profissao = "Consultoria Financeira"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-techsolutions",
+                        nome = "TechSolutions Inovações e Softwares S.A.",
+                        email = "contato@techsolutions.com.br",
+                        telefone = "(11) 93456-7890",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "45678901000123",
+                        dataNascimento = "10022012",
+                        endereco = "Av. Brigadeiro Faria Lima, 3477, Itaim Bibi, São Paulo - SP",
+                        profissao = "Desenvolvimento de Software"
+                    ),
+                    UsuarioEntity(
+                        id = "sig-global-logistics",
+                        nome = "Global Logistics & Transportes Ltda",
+                        email = "contato@globallogistics.com.br",
+                        telefone = "(11) 96789-0123",
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = agoraUtc,
+                        cpf = "34567890000112",
+                        dataNascimento = "18092010",
+                        endereco = "Rodovia Presidente Dutra, KM 218, Galpão 4, Guarulhos - SP",
+                        profissao = "Logística Integrada"
                     )
-                }
-                if (usuarioDao.buscarPorId("sig-joao-lima") == null) {
-                    usuarioDao.inserir(
-                        UsuarioEntity(
-                            id = "sig-joao-lima",
-                            nome = "João Lima",
-                            email = "joao.lima@email.com",
-                            telefone = "(11) 91234-5678",
-                            perfil = PerfilUsuario.SIGNATARIO,
-                            senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis(),
-                            cpf = "98765432199",
-                            dataNascimento = "20081992",
-                            endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
-                            profissao = "Analista de Operações"
-                        )
-                    )
-                }
-                if (usuarioDao.buscarPorId("user-maria-souza") == null) {
-                    usuarioDao.inserir(
-                        UsuarioEntity(
-                            id = "user-maria-souza",
-                            nome = "Maria Souza",
-                            email = "maria.souza@empresa.com.br",
-                            telefone = "(11) 91234-5678",
-                            perfil = PerfilUsuario.SIGNATARIO,
-                            senhaHash = "Senha123",
-                            dataCriacaoUtc = System.currentTimeMillis(),
-                            cpf = "23456789012",
-                            dataNascimento = "14031988",
-                            endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
-                            profissao = "Advogada Corporativa"
-                        )
-                    )
+                )
+
+                for (u in demoUsuarios) {
+                    if (usuarioDao.buscarPorId(u.id) == null && usuarioDao.buscarPorEmail(u.email) == null) {
+                        usuarioDao.inserir(u)
+                    }
                 }
             }
 
             val agora = System.currentTimeMillis()
 
             // 1. Contrato de Prestação de Serviços de TI (PARCIALMENTE_ASSINADO, 2 de 3 assinaram)
-            criarDocDemo(
-                docId = "doc-demo-1",
-                versaoId = "versao-demo-1",
-                titulo = "Contrato de Prestação de Serviços de TI",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.PARCIALMENTE_ASSINADO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 3600000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-1-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 91234-5678", "14/03/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "234.567.890-12"),
-                    DemoPartDef("part-doc-demo-1-2", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DIGITADA, "123.456.789-01"),
-                    DemoPartDef("part-doc-demo-1-3", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.TESTEMUNHA, SituacaoParticipante.PENDENTE, 3, null, "987.654.321-99")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-1",
+                    versaoId = "versao-demo-1",
+                    titulo = "Contrato de Prestação de Serviços de TI",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.PARCIALMENTE_ASSINADO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 3600000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-1-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 91234-5678", "14/03/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "234.567.890-12"),
+                        DemoPartDef("part-doc-demo-1-2", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DIGITADA, "123.456.789-01"),
+                        DemoPartDef("part-doc-demo-1-3", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.TESTEMUNHA, SituacaoParticipante.PENDENTE, 3, null, "987.654.321-99")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-1: ${e.message}")
+            }
 
             // 2. Aditivo Contratual 02 — Reajuste Anual (FALHA_ENVIO, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-2",
-                versaoId = "versao-demo-2",
-                titulo = "Aditivo Contratual 02 — Reajuste Anual",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.FALHA_ENVIO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 7200000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-2-1", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "456.789.012-34"),
-                    DemoPartDef("part-doc-demo-2-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-2",
+                    versaoId = "versao-demo-2",
+                    titulo = "Aditivo Contratual 02 — Reajuste Anual",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.FALHA_ENVIO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 7200000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-2-1", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "456.789.012-34"),
+                        DemoPartDef("part-doc-demo-2-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-2: ${e.message}")
+            }
 
             // 3. Contrato de Locação Comercial — Sala 304 (RASCUNHO, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-3",
-                versaoId = "versao-demo-3",
-                titulo = "Contrato de Locação Comercial — Sala 304",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.RASCUNHO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 10800000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-3-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
-                    DemoPartDef("part-doc-demo-3-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-3",
+                    versaoId = "versao-demo-3",
+                    titulo = "Contrato de Locação Comercial — Sala 304",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.RASCUNHO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 10800000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-3-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
+                        DemoPartDef("part-doc-demo-3-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-3: ${e.message}")
+            }
 
             // 4. Acordo de Confidencialidade (NDA) — Projeto Fênix (ENVIADO, SEQUENCIAL, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-4",
-                versaoId = "versao-demo-4",
-                titulo = "Acordo de Confidencialidade (NDA) — Projeto Fênix",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.ENVIADO,
-                tipoOrdem = TipoOrdem.SEQUENCIAL,
-                dataUtc = agora - 14400000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-4-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
-                    DemoPartDef("part-doc-demo-4-2", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.AGUARDANDO_VEZ, 2, null, "987.654.321-99")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-4",
+                    versaoId = "versao-demo-4",
+                    titulo = "Acordo de Confidencialidade (NDA) — Projeto Fênix",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.ENVIADO,
+                    tipoOrdem = TipoOrdem.SEQUENCIAL,
+                    dataUtc = agora - 14400000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-4-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
+                        DemoPartDef("part-doc-demo-4-2", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.AGUARDANDO_VEZ, 2, null, "987.654.321-99")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-4: ${e.message}")
+            }
 
             // 5. Contrato de Prestação de Serviços (CONCLUIDO, v2, 3 de 3 assinaram)
-            criarDocDemo(
-                docId = "doc-demo-5",
-                versaoId = "versao-demo-5",
-                titulo = "Contrato de Prestação de Serviços",
-                adminId = adminId,
-                versao = 2,
-                situacao = SituacaoDocumento.CONCLUIDO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 86400000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-5-carla", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/03/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "123.456.789-01"),
-                    DemoPartDef("part-doc-demo-5-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "987.654.321-99"),
-                    DemoPartDef("part-doc-demo-5-maria", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 3, TipoAssinatura.DIGITADA, "234.567.890-12")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-5",
+                    versaoId = "versao-demo-5",
+                    titulo = "Contrato de Prestação de Serviços",
+                    adminId = adminId,
+                    versao = 2,
+                    situacao = SituacaoDocumento.CONCLUIDO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 86400000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-5-carla", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/03/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "123.456.789-01"),
+                        DemoPartDef("part-doc-demo-5-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "987.654.321-99"),
+                        DemoPartDef("part-doc-demo-5-maria", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 3, TipoAssinatura.DIGITADA, "234.567.890-12")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-5: ${e.message}")
+            }
 
             // 6. Termo de Rescisão e Quitação Trabalhista (RECUSADO, 1 assinou, 1 recusou)
-            criarDocDemo(
-                docId = "doc-demo-6",
-                versaoId = "versao-demo-6",
-                titulo = "Termo de Rescisão e Quitação Trabalhista",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.RECUSADO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 172800000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-6-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.RECUSADO, 1, null, "987.654.321-99"),
-                    DemoPartDef("part-doc-demo-6-pedro", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-6",
+                    versaoId = "versao-demo-6",
+                    titulo = "Termo de Rescisão e Quitação Trabalhista",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.RECUSADO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 172800000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-6-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.RECUSADO, 1, null, "987.654.321-99"),
+                        DemoPartDef("part-doc-demo-6-pedro", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-6: ${e.message}")
+            }
 
             // 7. Termo de Consentimento LGPD e Privacidade (CANCELADO, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-7",
-                versaoId = "versao-demo-7",
-                titulo = "Termo de Consentimento LGPD e Privacidade",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.CANCELADO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 259200000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-7-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "234.567.890-12"),
-                    DemoPartDef("part-doc-demo-7-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-7",
+                    versaoId = "versao-demo-7",
+                    titulo = "Termo de Consentimento LGPD e Privacidade",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.CANCELADO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 259200000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-7-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "234.567.890-12"),
+                        DemoPartDef("part-doc-demo-7-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-7: ${e.message}")
+            }
 
             // 8. Contrato de Fornecimento de Licenças SaaS (SUBSTITUIDO, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-8",
-                versaoId = "versao-demo-8",
-                titulo = "Contrato de Fornecimento de Licenças SaaS",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.SUBSTITUIDO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 345600000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-8-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "45.678.901/0001-23"),
-                    DemoPartDef("part-doc-demo-8-2", "sig-global-logistics", "Global Logistics & Transportes Ltda", "contato@globallogistics.com.br", "(11) 96789-0123", "18/09/2010", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "34.567.890/0001-12")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-8",
+                    versaoId = "versao-demo-8",
+                    titulo = "Contrato de Fornecimento de Licenças SaaS",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.SUBSTITUIDO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 345600000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-8-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "45.678.901/0001-23"),
+                        DemoPartDef("part-doc-demo-8-2", "sig-global-logistics", "Global Logistics & Transportes Ltda", "contato@globallogistics.com.br", "(11) 96789-0123", "18/09/2010", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "34.567.890/0001-12")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-8: ${e.message}")
+            }
 
             // 9. Procuração Ad Negotia com Poderes Bancários (ENVIANDO, 0 de 2)
-            criarDocDemo(
-                docId = "doc-demo-9",
-                versaoId = "versao-demo-9",
-                titulo = "Procuração Ad Negotia com Poderes Bancários",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.ENVIANDO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 1800000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-9-1", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "123.456.789-01"),
-                    DemoPartDef("part-doc-demo-9-2", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "12.345.678/0001-95")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-9",
+                    versaoId = "versao-demo-9",
+                    titulo = "Procuração Ad Negotia com Poderes Bancários",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.ENVIANDO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 1800000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-9-1", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "123.456.789-01"),
+                        DemoPartDef("part-doc-demo-9-2", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "12.345.678/0001-95")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-9: ${e.message}")
+            }
 
             // 10. Memorando de Entendimento (MoU) — Parceria Estratégica PJ/PF (CONCLUIDO, 2 de 2 assinaram)
-            criarDocDemo(
-                docId = "doc-demo-10",
-                versaoId = "versao-demo-10",
-                titulo = "Memorando de Entendimento (MoU) — Parceria Estratégica",
-                adminId = adminId,
-                versao = 1,
-                situacao = SituacaoDocumento.CONCLUIDO,
-                tipoOrdem = TipoOrdem.PARALELA,
-                dataUtc = agora - 50000000L,
-                participantesMock = listOf(
-                    DemoPartDef("part-doc-demo-10-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ, "45.678.901/0001-23"),
-                    DemoPartDef("part-doc-demo-10-2", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+            try {
+                criarDocDemo(
+                    docId = "doc-demo-10",
+                    versaoId = "versao-demo-10",
+                    titulo = "Memorando de Entendimento (MoU) — Parceria Estratégica",
+                    adminId = adminId,
+                    versao = 1,
+                    situacao = SituacaoDocumento.CONCLUIDO,
+                    tipoOrdem = TipoOrdem.PARALELA,
+                    dataUtc = agora - 50000000L,
+                    participantesMock = listOf(
+                        DemoPartDef("part-doc-demo-10-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ, "45.678.901/0001-23"),
+                        DemoPartDef("part-doc-demo-10-2", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("Erro ao criar doc-demo-10: ${e.message}")
+            }
         } catch (e: Exception) {
             println("DocumentoRepository: aviso ao inicializar dados demo: ${e.message}")
         }
@@ -303,7 +405,7 @@ class DocumentoRepository @Inject constructor(
         val documentoIdentidade: String
     )
 
-    private suspend fun criarDocDemo(
+        private suspend fun criarDocDemo(
         docId: String,
         versaoId: String,
         titulo: String,
@@ -345,13 +447,18 @@ class DocumentoRepository @Inject constructor(
 
         val participantes = mutableListOf<ParticipanteDocumentoEntity>()
         val campos = mutableListOf<CampoAssinaturaEntity>()
+        val assinaturas = mutableListOf<AssinaturaEntity>()
 
         for (partDef in participantesMock) {
+            val resolvedUserId = if (partDef.userId != null && usuarioDao?.buscarPorId(partDef.userId) != null) {
+                partDef.userId
+            } else null
+
             participantes.add(
                 ParticipanteDocumentoEntity(
                     id = partDef.partId,
                     versaoDocumentoId = versaoId,
-                    usuarioId = partDef.userId,
+                    usuarioId = resolvedUserId,
                     nomeSnapshot = partDef.nome,
                     emailSnapshot = partDef.email,
                     telefoneSnapshot = partDef.telefone,
@@ -377,7 +484,6 @@ class DocumentoRepository @Inject constructor(
                 )
             )
 
-            // Registra assinatura para participantes assinados
             if (partDef.situacao == SituacaoParticipante.ASSINADO && partDef.tipoAssinatura != null) {
                 val isCert = partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECPF || partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ
                 val detalhesCert = if (isCert) {
@@ -385,7 +491,6 @@ class DocumentoRepository @Inject constructor(
                     "$emissor • CN=${partDef.nome}"
                 } else null
 
-                // Gera e salva o PNG físico da assinatura no disco
                 try {
                     context?.let { ctx ->
                         val bitmap = when (partDef.tipoAssinatura) {
@@ -421,7 +526,7 @@ class DocumentoRepository @Inject constructor(
                     println("DocumentoRepository: aviso ao gravar PNG de assinatura demo: ${e.message}")
                 }
 
-                assinaturaDao?.inserir(
+                assinaturas.add(
                     AssinaturaEntity(
                         id = "ass-${partDef.partId}",
                         campoAssinaturaId = campoId,
@@ -437,8 +542,18 @@ class DocumentoRepository @Inject constructor(
             }
         }
 
+        // Insere participantes e campos PRIMEIRO para satisfazer foreign keys
         participanteDao.inserirVarios(participantes)
         campoAssinaturaDao?.inserirVarios(campos)
+
+        // Agora que campos e participantes existem no banco, insere as assinaturas com segurança
+        for (ass in assinaturas) {
+            try {
+                assinaturaDao?.inserir(ass)
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao inserir assinatura ${ass.id}: ${e.message}")
+            }
+        }
 
         // Gera o arquivo físico do PDF no disco para todos os documentos
         try {
@@ -462,58 +577,74 @@ class DocumentoRepository @Inject constructor(
 
         // Se for RECUSADO (doc-demo-6), insere registro de recusa
         if (docId == "doc-demo-6") {
-            recusaDao?.inserir(
-                RecusaEntity(
-                    id = "recusa-demo-6",
-                    participanteId = "part-doc-demo-6-joao",
-                    dataHoraUtc = dataUtc + 7200000L,
-                    observacao = "Cláusula 4ª de quitação com valor rescisório divergente do acordado preliminarmente.",
-                    senhaConfirmada = true
+            try {
+                recusaDao?.inserir(
+                    RecusaEntity(
+                        id = "recusa-demo-6",
+                        participanteId = "part-doc-demo-6-joao",
+                        dataHoraUtc = dataUtc + 7200000L,
+                        observacao = "Cláusula 4ª de quitação com valor rescisório divergente do acordado preliminarmente.",
+                        senhaConfirmada = true
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao inserir recusa: ${e.message}")
+            }
         }
 
         // Se for CANCELADO (doc-demo-7), insere registro de cancelamento
         if (docId == "doc-demo-7") {
-            cancelamentoDao?.inserir(
-                CancelamentoEntity(
-                    id = "canc-demo-7",
-                    versaoDocumentoId = versaoId,
-                    adminId = adminId,
-                    dataHoraUtc = dataUtc + 3600000L,
-                    motivo = "Cancelado pelo administrador devido à atualização da minuta jurídica de conformidade LGPD.",
-                    senhaConfirmada = true
+            try {
+                cancelamentoDao?.inserir(
+                    CancelamentoEntity(
+                        id = "canc-demo-7",
+                        versaoDocumentoId = versaoId,
+                        adminId = adminId,
+                        dataHoraUtc = dataUtc + 3600000L,
+                        motivo = "Cancelado pelo administrador devido à atualização da minuta jurídica de conformidade LGPD.",
+                        senhaConfirmada = true
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao inserir cancelamento: ${e.message}")
+            }
         }
 
         // Se for doc-demo-5, insere os 11 eventos de auditoria completos
         if (docId == "doc-demo-5") {
-            val eventosHistorico = listOf(
-                EventoHistoricoEntity("evt-demo-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Contrato de Prestação de Serviços' v2.0 criado com sucesso."),
-                EventoHistoricoEntity("evt-demo-2", versaoId, dataUtc + 300000, TipoEventoHistorico.UPLOAD_PDF, "Carla Mendes", "Upload do arquivo contrato_servicos.pdf concluído (SHA-256: $shaOrig)."),
-                EventoHistoricoEntity("evt-demo-3", versaoId, dataUtc + 600000, TipoEventoHistorico.CONFIGURACAO_ORDEM, "Carla Mendes", "Modo de assinatura configurado: Paralelo (3 signatários obrigatórios)."),
-                EventoHistoricoEntity("evt-demo-4", versaoId, dataUtc + 900000, TipoEventoHistorico.ENVIO, "Sistema LetsSign", "Convites de assinatura despachados por e-mail e push para 3 participantes."),
-                EventoHistoricoEntity("evt-demo-5", versaoId, dataUtc + 3600000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Carla Mendes", "Identidade confirmada com sucesso via biometria facial."),
-                EventoHistoricoEntity("evt-demo-6", versaoId, dataUtc + 3900000, TipoEventoHistorico.ASSINATURA, "Carla Mendes", "Assinatura eletrônica realizada com sucesso (IP 201.86.102.15 • São Paulo/SP)."),
-                EventoHistoricoEntity("evt-demo-7", versaoId, dataUtc + 7200000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "João Lima", "Identidade confirmada com sucesso via Token OTP (SMS) e dados cadastrais."),
-                EventoHistoricoEntity("evt-demo-8", versaoId, dataUtc + 7500000, TipoEventoHistorico.ASSINATURA, "João Lima", "Assinatura eletrônica realizada com sucesso (IP 189.120.45.12 • São Paulo/SP)."),
-                EventoHistoricoEntity("evt-demo-9", versaoId, dataUtc + 10800000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Maria Souza", "Identidade confirmada com sucesso via link seguro com verificação em duas etapas."),
-                EventoHistoricoEntity("evt-demo-10", versaoId, dataUtc + 11100000, TipoEventoHistorico.ASSINATURA, "Maria Souza", "Assinatura eletrônica realizada com sucesso (IP 177.18.99.40 • Rio de Janeiro/RJ)."),
-                EventoHistoricoEntity("evt-demo-11", versaoId, dataUtc + 11160000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento 100% concluído! Certificado gerado com SHA-256 final e carimbo de tempo ICP-Brasil.")
-            )
-            eventoHistoricoDao?.inserirVarios(eventosHistorico)
+            try {
+                val eventosHistorico = listOf(
+                    EventoHistoricoEntity("evt-demo-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Contrato de Prestação de Serviços' v2.0 criado com sucesso."),
+                    EventoHistoricoEntity("evt-demo-2", versaoId, dataUtc + 300000, TipoEventoHistorico.UPLOAD_PDF, "Carla Mendes", "Upload do arquivo contrato_servicos.pdf concluído (SHA-256: $shaOrig)."),
+                    EventoHistoricoEntity("evt-demo-3", versaoId, dataUtc + 600000, TipoEventoHistorico.CONFIGURACAO_ORDEM, "Carla Mendes", "Modo de assinatura configurado: Paralelo (3 signatários obrigatórios)."),
+                    EventoHistoricoEntity("evt-demo-4", versaoId, dataUtc + 900000, TipoEventoHistorico.ENVIO, "Sistema LetsSign", "Convites de assinatura despachados por e-mail e push para 3 participantes."),
+                    EventoHistoricoEntity("evt-demo-5", versaoId, dataUtc + 3600000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Carla Mendes", "Identidade confirmada com sucesso via biometria facial."),
+                    EventoHistoricoEntity("evt-demo-6", versaoId, dataUtc + 3900000, TipoEventoHistorico.ASSINATURA, "Carla Mendes", "Assinatura eletrônica realizada com sucesso (IP 201.86.102.15 • São Paulo/SP)."),
+                    EventoHistoricoEntity("evt-demo-7", versaoId, dataUtc + 7200000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "João Lima", "Identidade confirmada com sucesso via Token OTP (SMS) e dados cadastrais."),
+                    EventoHistoricoEntity("evt-demo-8", versaoId, dataUtc + 7500000, TipoEventoHistorico.ASSINATURA, "João Lima", "Assinatura eletrônica realizada com sucesso (IP 189.120.45.12 • São Paulo/SP)."),
+                    EventoHistoricoEntity("evt-demo-9", versaoId, dataUtc + 10800000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Maria Souza", "Identidade confirmada com sucesso via link seguro com verificação em duas etapas."),
+                    EventoHistoricoEntity("evt-demo-10", versaoId, dataUtc + 11100000, TipoEventoHistorico.ASSINATURA, "Maria Souza", "Assinatura eletrônica realizada com sucesso (IP 177.18.99.40 • Rio de Janeiro/RJ)."),
+                    EventoHistoricoEntity("evt-demo-11", versaoId, dataUtc + 11160000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento 100% concluído! Certificado gerado com SHA-256 final e carimbo de tempo ICP-Brasil.")
+                )
+                eventoHistoricoDao?.inserirVarios(eventosHistorico)
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao inserir eventos doc-demo-5: ${e.message}")
+            }
         }
 
         // Se for doc-demo-10, insere eventos de auditoria
         if (docId == "doc-demo-10") {
-            val eventos10 = listOf(
-                EventoHistoricoEntity("evt-doc10-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Memorando de Entendimento (MoU)' criado com sucesso."),
-                EventoHistoricoEntity("evt-doc10-2", versaoId, dataUtc + 3600000, TipoEventoHistorico.ASSINATURA, "TechSolutions Inovações e Softwares S.A.", "Assinado via Certificado Digital e-CNPJ ICP-Brasil."),
-                EventoHistoricoEntity("evt-doc10-3", versaoId, dataUtc + 7200000, TipoEventoHistorico.ASSINATURA, "Pedro Alves", "Assinatura manuscrita capturada com sucesso."),
-                EventoHistoricoEntity("evt-doc10-4", versaoId, dataUtc + 7300000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento concluído com sucesso e carimbo de tempo ICP-Brasil emitido.")
-            )
-            eventoHistoricoDao?.inserirVarios(eventos10)
+            try {
+                val eventos10 = listOf(
+                    EventoHistoricoEntity("evt-doc10-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Memorando de Entendimento (MoU)' criado com sucesso."),
+                    EventoHistoricoEntity("evt-doc10-2", versaoId, dataUtc + 3600000, TipoEventoHistorico.ASSINATURA, "TechSolutions Inovações e Softwares S.A.", "Assinado via Certificado Digital e-CNPJ ICP-Brasil."),
+                    EventoHistoricoEntity("evt-doc10-3", versaoId, dataUtc + 7200000, TipoEventoHistorico.ASSINATURA, "Pedro Alves", "Assinatura manuscrita capturada com sucesso."),
+                    EventoHistoricoEntity("evt-doc10-4", versaoId, dataUtc + 7300000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento concluído com sucesso e carimbo de tempo ICP-Brasil emitido.")
+                )
+                eventoHistoricoDao?.inserirVarios(eventos10)
+            } catch (e: Exception) {
+                println("DocumentoRepository: aviso ao inserir eventos doc-demo-10: ${e.message}")
+            }
         }
     }
 
