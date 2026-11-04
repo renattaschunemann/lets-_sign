@@ -477,7 +477,10 @@ fun LetsSignNavHost(
             val route = backStackEntry.toRoute<Sig08VisualizadorLeituraRoute>()
             Sig08VisualizadorLeituraScreen(
                 aoVoltar = { navController.popBackStack() },
-                documentoId = route.documentoId
+                documentoId = route.documentoId,
+                aoNavegarParaAssinar = { docId ->
+                    navController.navigate(Sig05AssinarDocumentoRoute(docId))
+                }
             )
         }
 

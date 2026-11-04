@@ -1,6 +1,7 @@
 package br.com.letssign.presentation.signatario.assinatura
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -38,6 +39,7 @@ import kotlin.math.roundToInt
 fun Sig08VisualizadorLeituraScreen(
     aoVoltar: () -> Unit,
     documentoId: String = "",
+    aoNavegarParaAssinar: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: Sig08VisualizadorLeituraViewModel = hiltViewModel()
 ) {
@@ -110,8 +112,12 @@ fun Sig08VisualizadorLeituraScreen(
                 val primeiroPendente = camposPendentes.first()
                 ExtendedFloatingActionButton(
                     onClick = {
+                        val targetDocId = documentoId.ifBlank { uiState.documento?.id ?: "" }
                         if (uiState.paginaAtual != primeiroPendente.numeroPagina) {
                             viewModel.mudarPagina(primeiroPendente.numeroPagina)
+                        }
+                        if (targetDocId.isNotBlank()) {
+                            aoNavegarParaAssinar(targetDocId)
                         }
                     },
                     icon = { Icon(Icons.Default.TouchApp, contentDescription = null) },
@@ -182,43 +188,54 @@ fun Sig08VisualizadorLeituraScreen(
                     pdfPath = pdfPath,
                     tituloDocumento = uiState.documento?.titulo ?: "Documento Concluído",
                     camadaCampos = {
-                    BoxWithConstraints(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        val totalLarguraPx = constraints.maxWidth.toFloat()
-                        val totalAlturaPx = constraints.maxHeight.toFloat()
-                        val densidade = LocalDensity.current
+                        BoxWithConstraints(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            val totalLarguraPx = constraints.maxWidth.toFloat()
+                            val totalAlturaPx = constraints.maxHeight.toFloat()
+                            val densidade = LocalDensity.current
 
-                        camposNaPagina.forEach { campo ->
-                            val part = uiState.participantes.find { it.id == campo.participanteId }
-                            val assinatura = uiState.assinaturasPorCampo[campo.id]
-                            val isAssinado = assinatura != null || part?.situacao == SituacaoParticipante.ASSINADO
-                            val papelRotulo = campo.papelEspecifico?.rotulo ?: part?.papel?.rotulo ?: ""
-                            val nomeExibicao = if (part != null) {
-                                if (papelRotulo.isNotBlank()) "${part.nomeSnapshot} ($papelRotulo)" else part.nomeSnapshot
-                            } else "Signatário"
+                            camposNaPagina.forEach { campo ->
+                                val part = uiState.participantes.find { it.id == campo.participanteId }
+                                val assinatura = uiState.assinaturasPorCampo[campo.id]
+                                val isAssinado = assinatura != null || part?.situacao == SituacaoParticipante.ASSINADO
+                                val papelRotulo = campo.papelEspecifico?.rotulo ?: part?.papel?.rotulo ?: ""
+                                val nomeExibicao = if (part != null) {
+                                    if (papelRotulo.isNotBlank()) "${part.nomeSnapshot} ($papelRotulo)" else part.nomeSnapshot
+                                } else "Signatário"
 
-                            val larguraDp = with(densidade) { (totalLarguraPx * campo.normLargura).toDp() }.coerceAtLeast(80.dp)
-                            val alturaDp = with(densidade) { (totalAlturaPx * campo.normAltura).toDp() }.coerceAtLeast(36.dp)
-                            val posX = campo.normX * totalLarguraPx
-                            val posY = campo.normY * totalAlturaPx
+                                val larguraDp = with(densidade) { (totalLarguraPx * campo.normLargura).toDp() }.coerceAtLeast(80.dp)
+                                val alturaDp = with(densidade) { (totalAlturaPx * campo.normAltura).toDp() }.coerceAtLeast(36.dp)
+                                val posX = campo.normX * totalLarguraPx
+                                val posY = campo.normY * totalAlturaPx
 
-                            Box(
-                                modifier = Modifier.offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
-                            ) {
-                                CampoAssinaturaSobreposto(
-                                    nomeSignatario = nomeExibicao,
-                                    estado = if (isAssinado) EstadoCampoAssinatura.ASSINADO else EstadoCampoAssinatura.VAZIO,
-                                    largura = larguraDp,
-                                    altura = alturaDp,
-                                    caminhoAssinatura = assinatura?.caminhoPngAssinatura,
-                                    detalhesCertificado = assinatura?.detalhesCertificado
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
+                                        .then(
+                                            if (!isAssinado) {
+                                                Modifier.clickable {
+                                                    val targetDocId = documentoId.ifBlank { uiState.documento?.id ?: "" }
+                                                    if (targetDocId.isNotBlank()) {
+                                                        aoNavegarParaAssinar(targetDocId)
+                                                    }
+                                                }
+                                            } else Modifier
+                                        )
+                                ) {
+                                    CampoAssinaturaSobreposto(
+                                        nomeSignatario = nomeExibicao,
+                                        estado = if (isAssinado) EstadoCampoAssinatura.ASSINADO else EstadoCampoAssinatura.VAZIO,
+                                        largura = larguraDp,
+                                        altura = alturaDp,
+                                        caminhoAssinatura = assinatura?.caminhoPngAssinatura,
+                                        detalhesCertificado = assinatura?.detalhesCertificado
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            )
+                )
             }
         }
     }
