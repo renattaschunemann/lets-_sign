@@ -2,13 +2,19 @@ package br.com.letssign.presentation.signatario.assinatura
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import br.com.letssign.core.common.validation.CadastroValidator
 import br.com.letssign.core.designsystem.components.reusable.EstiloFonteCursiva
+import br.com.letssign.data.local.dao.UsuarioDao
+import br.com.letssign.data.local.datastore.SessionManager
 import br.com.letssign.domain.model.TipoAssinatura
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class AbaCapturaAssinatura {
@@ -62,8 +68,13 @@ data class Sig06UiState(
 
 @HiltViewModel
 class Sig06CapturaAssinaturaViewModel @Inject constructor(
+    private val sessionManager: SessionManager? = null,
+    private val usuarioDao: UsuarioDao? = null,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    // Construtor de conveniência para instâncias ou testes que passam apenas savedStateHandle
+    constructor(savedStateHandle: SavedStateHandle) : this(null, null, savedStateHandle)
 
     val documentoId: String = savedStateHandle.get<String>("documentoId") ?: ""
     private val abaInicial: String = savedStateHandle.get<String>("abaInicial") ?: "DESENHAR"
@@ -78,6 +89,33 @@ class Sig06CapturaAssinaturaViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<Sig06UiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            try {
+                val sessao = sessionManager?.sessaoFlow?.firstOrNull()
+                val usuarioId = sessao?.usuarioId
+                val usuario = if (!usuarioId.isNullOrBlank()) usuarioDao?.buscarPorId(usuarioId) else null
+                val usuarioPorEmail = if (usuario == null && !sessao?.email.isNullOrBlank()) usuarioDao?.buscarPorEmail(sessao!!.email) else null
+                val userFinal = usuario ?: usuarioPorEmail
+
+                val nomeTitular = userFinal?.nome ?: sessao?.nome ?: "João Lima"
+                val rawDoc = userFinal?.cpf?.ifBlank { userFinal.cpfCnpj } ?: ""
+                val docFormatado = if (rawDoc.isNotBlank()) {
+                    val dig = CadastroValidator.apenasNumeros(rawDoc)
+                    if (dig.length > 11) CadastroValidator.formatarCnpj(dig) else CadastroValidator.formatarCpf(dig)
+                } else "123.456.789-00"
+
+                _uiState.update {
+                    it.copy(
+                        textoDigitado = nomeTitular,
+                        titularCertificado = nomeTitular.uppercase(),
+                        documentoCertificado = docFormatado
+                    )
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     fun selecionarAba(aba: AbaCapturaAssinatura) {
         _uiState.update { it.copy(abaSelecionada = aba) }
@@ -96,6 +134,8 @@ class Sig06CapturaAssinaturaViewModel @Inject constructor(
     }
 
     fun atualizarTipoCertificado(tipo: String) {
+        val nomeAtual = _uiState.value.textoDigitado.ifBlank { "João Lima" }
+        val cpfAtual = _uiState.value.documentoCertificado.ifBlank { "123.456.789-00" }
         _uiState.update {
             if (tipo == "e-CNPJ") {
                 it.copy(
@@ -107,8 +147,8 @@ class Sig06CapturaAssinaturaViewModel @Inject constructor(
             } else {
                 it.copy(
                     tipoCertificado = "e-CPF",
-                    titularCertificado = "JOAO CARLOS LIMA",
-                    documentoCertificado = "123.456.789-00",
+                    titularCertificado = nomeAtual.uppercase(),
+                    documentoCertificado = cpfAtual,
                     autoridadeCertificadora = "AC SERPRO v5 (ICP-Brasil)"
                 )
             }

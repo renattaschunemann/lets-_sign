@@ -68,15 +68,6 @@ class DocumentoRepository @Inject constructor(
                 }
             }
 
-            val todosDocsExistem = demoDocIds.all { documentoDao.buscarPorId(it) != null }
-            val qtdAssinaturasDoc5 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-5-carla", "campo-part-doc-demo-5-joao"))?.size ?: 0
-            val qtdAssinaturasDoc10 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-10-1", "campo-part-doc-demo-10-2"))?.size ?: 0
-            val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
-
-            if (todosDocsExistem && qtdAssinaturasDoc5 >= 2 && qtdAssinaturasDoc10 >= 2 && qtdEventos >= 10) {
-                return
-            }
-
             // Garante que TODOS os usuários de demonstração existam na tabela 'usuarios' com dados cadastrais completos
             if (usuarioDao != null) {
                 val agoraUtc = System.currentTimeMillis()
@@ -92,7 +83,15 @@ class DocumentoRepository @Inject constructor(
                         cpf = "12345678901",
                         dataNascimento = "15041988",
                         endereco = "Av. Paulista, 1000, Bela Vista, São Paulo - SP",
-                        profissao = "Administradora de Contratos"
+                        profissao = "Administradora de Contratos",
+                        tipoPessoa = "PF",
+                        cpfCnpj = "12345678901",
+                        cep = "01310-100",
+                        logradouro = "Av. Paulista",
+                        numero = "1000",
+                        bairro = "Bela Vista",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-joao-lima",
@@ -104,8 +103,17 @@ class DocumentoRepository @Inject constructor(
                         dataCriacaoUtc = agoraUtc,
                         cpf = "98765432199",
                         dataNascimento = "20081992",
-                        endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
-                        profissao = "Analista de Operações"
+                        endereco = "Rua Augusta, 500, Conjunto 81, Consolação, São Paulo - SP",
+                        profissao = "Analista de Operações",
+                        tipoPessoa = "PF",
+                        cpfCnpj = "98765432199",
+                        cep = "01305-000",
+                        logradouro = "Rua Augusta",
+                        numero = "500",
+                        complemento = "Conjunto 81",
+                        bairro = "Consolação",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "user-maria-souza",
@@ -117,8 +125,17 @@ class DocumentoRepository @Inject constructor(
                         dataCriacaoUtc = agoraUtc,
                         cpf = "23456789012",
                         dataNascimento = "14031988",
-                        endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
-                        profissao = "Advogada Corporativa"
+                        endereco = "Rua Oscar Freire, 350, Apto 42, Cerqueira César, São Paulo - SP",
+                        profissao = "Advogada Corporativa",
+                        tipoPessoa = "PF",
+                        cpfCnpj = "23456789012",
+                        cep = "01414-001",
+                        logradouro = "Rua Oscar Freire",
+                        numero = "350",
+                        complemento = "Apto 42",
+                        bairro = "Cerqueira César",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-pedro-alves",
@@ -130,8 +147,17 @@ class DocumentoRepository @Inject constructor(
                         dataCriacaoUtc = agoraUtc,
                         cpf = "45678901234",
                         dataNascimento = "03111985",
-                        endereco = "Rua da Consolação, 1200, Consolação, São Paulo - SP",
-                        profissao = "Consultor Comercial"
+                        endereco = "Rua da Consolação, 1200, Bloco B, Consolação, São Paulo - SP",
+                        profissao = "Consultor Comercial",
+                        tipoPessoa = "PF",
+                        cpfCnpj = "45678901234",
+                        cep = "01301-100",
+                        logradouro = "Rua da Consolação",
+                        numero = "1200",
+                        complemento = "Bloco B",
+                        bairro = "Consolação",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-carlos-silva",
@@ -142,9 +168,17 @@ class DocumentoRepository @Inject constructor(
                         senhaHash = "Senha123",
                         dataCriacaoUtc = agoraUtc,
                         cpf = "56789012345",
-                        dataNascimento = "12061979",
-                        endereco = "Av. Brigadeiro Luís Antônio, 2500, Jardim Paulista, São Paulo - SP",
-                        profissao = "Engenheiro Civil"
+                        dataNascimento = "18091995",
+                        endereco = "Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP",
+                        profissao = "Arquiteto de Soluções Cloud",
+                        tipoPessoa = "PF",
+                        cpfCnpj = "56789012345",
+                        cep = "04538-000",
+                        logradouro = "Av. Presidente Juscelino Kubitschek",
+                        numero = "1800",
+                        bairro = "Vila Nova Conceição",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-ana-lima",
@@ -156,8 +190,17 @@ class DocumentoRepository @Inject constructor(
                         dataCriacaoUtc = agoraUtc,
                         cpf = "12345678000195",
                         dataNascimento = "20072015",
-                        endereco = "Alameda Santos, 800, Cerqueira César, São Paulo - SP",
-                        profissao = "Consultoria Financeira"
+                        endereco = "Alameda Santos, 800, Sala 12, Cerqueira César, São Paulo - SP",
+                        profissao = "Consultoria Financeira",
+                        tipoPessoa = "PJ",
+                        cpfCnpj = "12345678000195",
+                        cep = "01419-001",
+                        logradouro = "Alameda Santos",
+                        numero = "800",
+                        complemento = "Sala 12",
+                        bairro = "Cerqueira César",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-techsolutions",
@@ -169,8 +212,17 @@ class DocumentoRepository @Inject constructor(
                         dataCriacaoUtc = agoraUtc,
                         cpf = "45678901000123",
                         dataNascimento = "10022012",
-                        endereco = "Av. Brigadeiro Faria Lima, 3477, Itaim Bibi, São Paulo - SP",
-                        profissao = "Desenvolvimento de Software"
+                        endereco = "Av. Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo - SP",
+                        profissao = "Desenvolvimento de Software",
+                        tipoPessoa = "PJ",
+                        cpfCnpj = "45678901000123",
+                        cep = "04538-133",
+                        logradouro = "Av. Brigadeiro Faria Lima",
+                        numero = "3477",
+                        complemento = "14º andar",
+                        bairro = "Itaim Bibi",
+                        cidade = "São Paulo",
+                        estado = "SP"
                     ),
                     UsuarioEntity(
                         id = "sig-global-logistics",
@@ -183,15 +235,54 @@ class DocumentoRepository @Inject constructor(
                         cpf = "34567890000112",
                         dataNascimento = "18092010",
                         endereco = "Rodovia Presidente Dutra, KM 218, Galpão 4, Guarulhos - SP",
-                        profissao = "Logística Integrada"
+                        profissao = "Logística Integrada",
+                        tipoPessoa = "PJ",
+                        cpfCnpj = "34567890000112",
+                        cep = "07180-000",
+                        logradouro = "Rodovia Presidente Dutra",
+                        numero = "KM 218",
+                        complemento = "Galpão 4",
+                        bairro = "Cumbica",
+                        cidade = "Guarulhos",
+                        estado = "SP"
                     )
                 )
 
                 for (u in demoUsuarios) {
-                    if (usuarioDao.buscarPorId(u.id) == null && usuarioDao.buscarPorEmail(u.email) == null) {
+                    val existente = usuarioDao.buscarPorId(u.id) ?: usuarioDao.buscarPorEmail(u.email)
+                    if (existente == null) {
                         usuarioDao.inserir(u)
+                    } else {
+                        if (existente.cpf.isBlank() || existente.endereco.isBlank() || existente.dataNascimento.isBlank() || existente.nome != u.nome) {
+                            usuarioDao.atualizar(
+                                existente.copy(
+                                    nome = existente.nome.ifBlank { u.nome },
+                                    cpf = existente.cpf.ifBlank { u.cpf },
+                                    cpfCnpj = existente.cpfCnpj.ifBlank { u.cpfCnpj },
+                                    dataNascimento = existente.dataNascimento.ifBlank { u.dataNascimento },
+                                    endereco = existente.endereco.ifBlank { u.endereco },
+                                    profissao = existente.profissao.ifBlank { u.profissao },
+                                    tipoPessoa = existente.tipoPessoa.ifBlank { u.tipoPessoa },
+                                    cep = existente.cep.ifBlank { u.cep },
+                                    logradouro = existente.logradouro.ifBlank { u.logradouro },
+                                    numero = existente.numero.ifBlank { u.numero },
+                                    bairro = existente.bairro.ifBlank { u.bairro },
+                                    cidade = existente.cidade.ifBlank { u.cidade },
+                                    estado = existente.estado.ifBlank { u.estado }
+                                )
+                            )
+                        }
                     }
                 }
+            }
+
+            val todosDocsExistem = demoDocIds.all { documentoDao.buscarPorId(it) != null }
+            val qtdAssinaturasDoc5 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-5-carla", "campo-part-doc-demo-5-joao"))?.size ?: 0
+            val qtdAssinaturasDoc10 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-10-1", "campo-part-doc-demo-10-2"))?.size ?: 0
+            val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
+
+            if (todosDocsExistem && qtdAssinaturasDoc5 >= 2 && qtdAssinaturasDoc10 >= 2 && qtdEventos >= 10) {
+                return
             }
 
             val agora = System.currentTimeMillis()
@@ -1411,11 +1502,24 @@ class DocumentoRepository @Inject constructor(
         val campos = campoAssinaturaDao?.listarPorParticipanteSync(participanteId) ?: emptyList()
         val hashValidador = "hash-sig-${UUID.randomUUID()}"
 
-        campos.forEach { campo ->
+        if (campos.isEmpty()) {
+            val campoFallbackId = "campo-auto-${UUID.randomUUID()}"
+            campoAssinaturaDao?.inserir(
+                CampoAssinaturaEntity(
+                    id = campoFallbackId,
+                    versaoDocumentoId = versaoId,
+                    participanteId = participanteId,
+                    numeroPagina = 1,
+                    normX = 0.5f,
+                    normY = 0.8f,
+                    normLargura = 0.4f,
+                    normAltura = 0.08f
+                )
+            )
             assinaturaDao?.inserir(
                 AssinaturaEntity(
                     id = UUID.randomUUID().toString(),
-                    campoAssinaturaId = campo.id,
+                    campoAssinaturaId = campoFallbackId,
                     participanteId = participanteId,
                     tipoAssinatura = tipoAssinatura,
                     caminhoPngAssinatura = caminhoPngOuSvg,
@@ -1425,6 +1529,22 @@ class DocumentoRepository @Inject constructor(
                     detalhesCertificado = detalhesCertificado
                 )
             )
+        } else {
+            campos.forEach { campo ->
+                assinaturaDao?.inserir(
+                    AssinaturaEntity(
+                        id = UUID.randomUUID().toString(),
+                        campoAssinaturaId = campo.id,
+                        participanteId = participanteId,
+                        tipoAssinatura = tipoAssinatura,
+                        caminhoPngAssinatura = caminhoPngOuSvg,
+                        dataHoraUtc = agora,
+                        ipDispositivo = ipDispositivo,
+                        hashValidador = hashValidador,
+                        detalhesCertificado = detalhesCertificado
+                    )
+                )
+            }
         }
 
         participanteDao.atualizar(participante.copy(situacao = SituacaoParticipante.ASSINADO))

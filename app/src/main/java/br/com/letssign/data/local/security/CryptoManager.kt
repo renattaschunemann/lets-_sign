@@ -27,6 +27,9 @@ class CryptoManager(
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
         private const val GCM_TAG_LENGTH = 128
         private const val IV_LENGTH_BYTES = 12
+
+        @Volatile
+        private var cachedFallbackKey: SecretKey? = null
     }
 
     private val keyStore: KeyStore? = try {
@@ -71,10 +74,13 @@ class CryptoManager(
     }
 
     private fun generateFallbackKey(): SecretKey {
-        // Fallback para execução em testes JVM onde AndroidKeyStore não está disponível
+        // Fallback estável para execução em testes JVM ou quando AndroidKeyStore não estiver disponível
+        cachedFallbackKey?.let { return it }
         val keyBytes = ByteArray(32)
         SecureRandom().nextBytes(keyBytes)
-        return SecretKeySpec(keyBytes, "AES")
+        val k = SecretKeySpec(keyBytes, "AES")
+        cachedFallbackKey = k
+        return k
     }
 
     override fun encrypt(plainText: String): String {

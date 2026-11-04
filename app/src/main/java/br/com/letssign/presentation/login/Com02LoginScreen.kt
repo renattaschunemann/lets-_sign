@@ -189,17 +189,24 @@ fun Com02LoginScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedButton(
-                        onClick = { viewModel.preencherAdminDemo() },
+                        onClick = { viewModel.entrarComoAdminDemo() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "Admin (Carla)", style = LetsSignTheme.typography.labelMedium)
+                        Text(text = "Admin (Carla)", style = LetsSignTheme.typography.labelSmall)
                     }
                     OutlinedButton(
-                        onClick = { viewModel.preencherSignatarioDemo() },
+                        onClick = { viewModel.entrarComoSignatarioDemo() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "Signatário (João)", style = LetsSignTheme.typography.labelMedium)
+                        Text(text = "Signatário (João)", style = LetsSignTheme.typography.labelSmall)
                     }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { viewModel.entrarComoCarlosDemo() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Signatário (Carlos Silva)", style = LetsSignTheme.typography.labelMedium)
                 }
             }
         }

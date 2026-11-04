@@ -45,6 +45,12 @@ interface AdminSignatarioDao {
     @Query("SELECT * FROM admin_signatarios WHERE adminId = :adminId AND signatarioId = :signatarioId LIMIT 1")
     suspend fun buscarSignatarioPorId(adminId: String, signatarioId: String): AdminSignatarioEntity?
 
+    @Query("SELECT * FROM admin_signatarios WHERE email = :email LIMIT 1")
+    suspend fun buscarPorEmailGlobal(email: String): AdminSignatarioEntity?
+
+    @Query("SELECT * FROM admin_signatarios WHERE signatarioId = :signatarioId LIMIT 1")
+    suspend fun buscarPorSignatarioIdGlobal(signatarioId: String): AdminSignatarioEntity?
+
     @Query("DELETE FROM admin_signatarios WHERE adminId = :adminId AND signatarioId = :signatarioId")
     suspend fun deletarSignatario(adminId: String, signatarioId: String)
 }

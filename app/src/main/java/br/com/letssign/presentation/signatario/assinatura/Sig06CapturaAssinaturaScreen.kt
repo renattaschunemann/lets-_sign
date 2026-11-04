@@ -112,12 +112,24 @@ fun Sig06CapturaAssinaturaScreen(
                 }
             }
             val nomeArquivo = "sig_${viewModel.documentoId}_${System.currentTimeMillis()}.png"
-            val caminhoSalvo = AssinaturaStorageManager.salvarBitmapComoPng(context, nomeArquivo, bitmap)
+            val caminhoSalvo = try {
+                AssinaturaStorageManager.salvarBitmapComoPng(context, nomeArquivo, bitmap)
+            } catch (e: Exception) {
+                nomeArquivo
+            }
+
+            val detalhesCodificados = try {
+                if (uiState.detalhesCertificado.isNotBlank()) {
+                    java.net.URLEncoder.encode(uiState.detalhesCertificado, "UTF-8")
+                } else ""
+            } catch (_: Exception) {
+                ""
+            }
 
             aoAssinaturaConfirmada(
                 viewModel.documentoId,
                 uiState.tipoAssinatura.name,
-                uiState.detalhesCertificado,
+                detalhesCodificados,
                 caminhoSalvo
             )
         }

@@ -351,6 +351,10 @@ class WizardEtapas1a6Test {
             db.values.find { it.adminId == adminId && it.email == email }
         override suspend fun buscarSignatarioPorId(adminId: String, signatarioId: String): AdminSignatarioEntity? =
             db.values.find { it.adminId == adminId && it.signatarioId == signatarioId }
+        override suspend fun buscarPorEmailGlobal(email: String): AdminSignatarioEntity? =
+            db.values.find { it.email == email }
+        override suspend fun buscarPorSignatarioIdGlobal(signatarioId: String): AdminSignatarioEntity? =
+            db.values.find { it.signatarioId == signatarioId }
         override suspend fun deletarSignatario(adminId: String, signatarioId: String) {
             db.entries.removeIf { it.value.adminId == adminId && it.value.signatarioId == signatarioId }
             flow.value = db.values.toList()

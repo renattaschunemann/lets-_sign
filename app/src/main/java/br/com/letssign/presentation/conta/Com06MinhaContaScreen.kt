@@ -56,6 +56,10 @@ fun Com06MinhaContaScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val naoInformado = stringResource(R.string.com06_nao_informado)
 
+    LaunchedEffect(Unit) {
+        viewModel.carregarDadosUsuario()
+    }
+
     LaunchedEffect(uiState.logoutConcluido) {
         if (uiState.logoutConcluido) {
             aoSairParaLogin()
@@ -199,10 +203,13 @@ fun Com06MinhaContaScreen(
                             )
                             HorizontalDivider(color = LetsSignTheme.colors.corBorda.copy(alpha = 0.5f))
 
-                            // CPF
+                            // CPF / CNPJ
                             ItemDadoConta(
-                                rotulo = stringResource(R.string.com06_label_cpf),
-                                valor = if (uiState.cpf.isNotBlank()) CadastroValidator.formatarCpf(uiState.cpf) else naoInformado
+                                rotulo = if (CadastroValidator.apenasNumeros(uiState.cpf).length > 11) "CNPJ" else stringResource(R.string.com06_label_cpf),
+                                valor = if (uiState.cpf.isNotBlank()) {
+                                    val dig = CadastroValidator.apenasNumeros(uiState.cpf)
+                                    if (dig.length > 11) CadastroValidator.formatarCnpj(dig) else CadastroValidator.formatarCpf(dig)
+                                } else naoInformado
                             )
                             HorizontalDivider(color = LetsSignTheme.colors.corBorda.copy(alpha = 0.5f))
 

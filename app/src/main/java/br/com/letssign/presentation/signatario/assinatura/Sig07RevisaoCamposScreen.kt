@@ -253,7 +253,7 @@ fun Sig07RevisaoCamposScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Signatário: João Lima",
+                                    text = "Signatário: ${detalhe.participantes.find { p -> p.id == detalhe.participanteId }?.nomeSnapshot ?: "Signatário"}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = LetsSignTheme.colors.corTextoPrincipal
                                 )

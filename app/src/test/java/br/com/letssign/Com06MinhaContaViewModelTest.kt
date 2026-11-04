@@ -233,6 +233,53 @@ class Com06MinhaContaViewModelTest {
         assertEquals("Rua Nova dos Signatários, 456", usuarioAtualizado.endereco)
     }
 
+    @Test
+    fun `quando logado como Carlos Silva, deve carregar perfil fidedigno de Carlos`() = runTest {
+        val carlos = UsuarioEntity(
+            id = "sig-carlos-silva",
+            nome = "Carlos Silva",
+            email = "carlos.silva@empresa.com",
+            telefone = "(11) 95678-9012",
+            perfil = PerfilUsuario.SIGNATARIO,
+            senhaHash = "hashCarlos",
+            dataCriacaoUtc = System.currentTimeMillis(),
+            cpf = "56789012345",
+            dataNascimento = "18091995",
+            endereco = "Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP",
+            profissao = "Arquiteto de Soluções Cloud"
+        )
+        fakeUsuarioDao.inserir(carlos)
+
+        fakeSessionFlow.value = UsuarioSessao(
+            usuarioId = "sig-carlos-silva",
+            nome = "Carlos Silva",
+            email = "carlos.silva@empresa.com",
+            perfil = PerfilUsuario.SIGNATARIO,
+            tokenAcesso = "token-carlos"
+        )
+
+        val handle = SavedStateHandle(mapOf("perfil" to "SIGNATARIO"))
+        val viewModel = Com06MinhaContaViewModel(
+            sessionManager = sessionManager,
+            usuarioDao = fakeUsuarioDao,
+            usuarioRepository = usuarioRepository,
+            savedStateHandle = handle
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("sig-carlos-silva", state.usuarioId)
+        assertEquals("Carlos Silva", state.nome)
+        assertEquals("carlos.silva@empresa.com", state.email)
+        assertEquals("(11) 95678-9012", state.telefone)
+        assertEquals("56789012345", state.cpf)
+        assertEquals("18091995", state.dataNascimento)
+        assertEquals("Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP", state.endereco)
+        assertEquals("Arquiteto de Soluções Cloud", state.profissao)
+        assertEquals("SIGNATARIO", state.perfil)
+    }
+
     // Fakes para suporte ao teste
     private class FakeUsuarioDao : UsuarioDao {
         private val map = mutableMapOf<String, UsuarioEntity>()

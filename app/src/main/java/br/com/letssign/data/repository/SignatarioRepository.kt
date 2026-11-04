@@ -272,8 +272,29 @@ class SignatarioRepository @Inject constructor(
                 )
             )
             for (usuario in usuariosSignatariosDemo) {
-                if (usuarioDao.buscarPorId(usuario.id) == null && usuarioDao.buscarPorEmail(usuario.email) == null) {
+                val existente = usuarioDao.buscarPorId(usuario.id) ?: usuarioDao.buscarPorEmail(usuario.email)
+                if (existente == null) {
                     usuarioDao.inserir(usuario)
+                } else {
+                    if (existente.cpf.isBlank() || existente.endereco.isBlank() || existente.dataNascimento.isBlank() || existente.nome != usuario.nome) {
+                        usuarioDao.atualizar(
+                            existente.copy(
+                                nome = existente.nome.ifBlank { usuario.nome },
+                                cpf = existente.cpf.ifBlank { usuario.cpf },
+                                cpfCnpj = existente.cpfCnpj.ifBlank { usuario.cpfCnpj },
+                                dataNascimento = existente.dataNascimento.ifBlank { usuario.dataNascimento },
+                                endereco = existente.endereco.ifBlank { usuario.endereco },
+                                profissao = existente.profissao.ifBlank { usuario.profissao },
+                                tipoPessoa = existente.tipoPessoa.ifBlank { usuario.tipoPessoa },
+                                cep = existente.cep.ifBlank { usuario.cep },
+                                logradouro = existente.logradouro.ifBlank { usuario.logradouro },
+                                numero = existente.numero.ifBlank { usuario.numero },
+                                bairro = existente.bairro.ifBlank { usuario.bairro },
+                                cidade = existente.cidade.ifBlank { usuario.cidade },
+                                estado = existente.estado.ifBlank { usuario.estado }
+                            )
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -347,6 +368,11 @@ class SignatarioRepository @Inject constructor(
             return Result.failure(IllegalArgumentException("Signatário deve ser maior de 18 anos (P03)"))
         }
 
+        val enderecoCompleto = listOf(logradouro.trim(), numero.trim(), complemento.trim(), bairro.trim(), cidade.trim(), estado.trim())
+            .filter { it.isNotBlank() }
+            .joinToString(", ")
+        val dataNascLimpa = dataNascimento.trim().replace("/", "")
+
         if (signatarioIdExistente != null) {
             // Edição local
             val existente = adminSignatarioDao.buscarSignatarioPorId(adminId, signatarioIdExistente)
@@ -367,6 +393,53 @@ class SignatarioRepository @Inject constructor(
                 estado = estado.trim()
             )
             adminSignatarioDao.atualizar(atualizado)
+
+            // Sincroniza também no usuarioDao para que o perfil do signatário fique sempre atualizado e fidedigno
+            val usuarioAssociado = usuarioDao.buscarPorId(signatarioIdExistente) ?: usuarioDao.buscarPorEmail(emailNorm)
+            if (usuarioAssociado != null) {
+                val usuarioAtualizado = usuarioAssociado.copy(
+                    nome = nome.trim(),
+                    email = emailNorm,
+                    telefone = telefone.trim(),
+                    dataNascimento = if (usuarioAssociado.dataNascimento.isNotBlank()) usuarioAssociado.dataNascimento else dataNascLimpa,
+                    cpf = cpfCnpj.trim(),
+                    tipoPessoa = tipoPessoa,
+                    cpfCnpj = cpfCnpj.trim(),
+                    cep = cep.trim(),
+                    logradouro = logradouro.trim(),
+                    numero = numero.trim(),
+                    complemento = complemento.trim(),
+                    bairro = bairro.trim(),
+                    cidade = cidade.trim(),
+                    estado = estado.trim(),
+                    endereco = if (enderecoCompleto.isNotBlank()) enderecoCompleto else usuarioAssociado.endereco
+                )
+                usuarioDao.atualizar(usuarioAtualizado)
+            } else {
+                val novoUsuario = UsuarioEntity(
+                    id = signatarioIdExistente,
+                    nome = nome.trim(),
+                    email = emailNorm,
+                    telefone = telefone.trim(),
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = senha ?: "Senha123",
+                    dataCriacaoUtc = System.currentTimeMillis(),
+                    cpf = cpfCnpj.trim(),
+                    dataNascimento = dataNascLimpa,
+                    endereco = enderecoCompleto,
+                    profissao = if (tipoPessoa == "PJ") "Pessoa Jurídica" else "Signatário Registrado",
+                    tipoPessoa = tipoPessoa,
+                    cpfCnpj = cpfCnpj.trim(),
+                    cep = cep.trim(),
+                    logradouro = logradouro.trim(),
+                    numero = numero.trim(),
+                    complemento = complemento.trim(),
+                    bairro = bairro.trim(),
+                    cidade = cidade.trim(),
+                    estado = estado.trim()
+                )
+                usuarioDao.inserir(novoUsuario)
+            }
         } else {
             // Novo cadastro
             val usuarioExistente = usuarioDao.buscarPorEmail(emailNorm)
@@ -383,6 +456,10 @@ class SignatarioRepository @Inject constructor(
                     perfil = PerfilUsuario.SIGNATARIO,
                     senhaHash = senha ?: "Senha123",
                     dataCriacaoUtc = agora,
+                    cpf = cpfCnpj.trim(),
+                    dataNascimento = dataNascLimpa,
+                    endereco = enderecoCompleto,
+                    profissao = if (tipoPessoa == "PJ") "Pessoa Jurídica" else "Signatário Registrado",
                     tipoPessoa = tipoPessoa,
                     cpfCnpj = cpfCnpj.trim(),
                     cep = cep.trim(),
@@ -407,6 +484,24 @@ class SignatarioRepository @Inject constructor(
                 } catch (e: Exception) {
                     println("SignatarioRepository: aviso ao sincronizar signatario remotamente: ${e.message}")
                 }
+            } else {
+                val usuarioAtualizado = usuarioExistente.copy(
+                    nome = nome.trim(),
+                    telefone = telefone.trim(),
+                    cpf = cpfCnpj.trim(),
+                    dataNascimento = if (usuarioExistente.dataNascimento.isNotBlank()) usuarioExistente.dataNascimento else dataNascLimpa,
+                    endereco = if (enderecoCompleto.isNotBlank()) enderecoCompleto else usuarioExistente.endereco,
+                    tipoPessoa = tipoPessoa,
+                    cpfCnpj = cpfCnpj.trim(),
+                    cep = cep.trim(),
+                    logradouro = logradouro.trim(),
+                    numero = numero.trim(),
+                    complemento = complemento.trim(),
+                    bairro = bairro.trim(),
+                    cidade = cidade.trim(),
+                    estado = estado.trim()
+                )
+                usuarioDao.atualizar(usuarioAtualizado)
             }
 
             val relacao = AdminSignatarioEntity(

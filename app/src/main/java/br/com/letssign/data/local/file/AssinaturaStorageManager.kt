@@ -42,7 +42,7 @@ object AssinaturaStorageManager {
         FileOutputStream(file).use { out ->
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
-        return "assinaturas/${file.name}"
+        return file.name
     }
 
     /**

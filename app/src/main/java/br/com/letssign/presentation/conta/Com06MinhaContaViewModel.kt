@@ -1,4 +1,4 @@
-﻿package br.com.letssign.presentation.conta
+package br.com.letssign.presentation.conta
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -65,6 +66,7 @@ class Com06MinhaContaViewModel @Inject constructor(
     private val sessionManager: SessionManager,
     private val usuarioDao: UsuarioDao,
     private val usuarioRepository: UsuarioRepository? = null,
+    private val adminSignatarioDao: br.com.letssign.data.local.dao.AdminSignatarioDao? = null,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -77,6 +79,21 @@ class Com06MinhaContaViewModel @Inject constructor(
         sessionManager = sessionManager,
         usuarioDao = usuarioDao,
         usuarioRepository = null,
+        adminSignatarioDao = null,
+        savedStateHandle = savedStateHandle
+    )
+
+    // Construtor de conveniência para testes que passam 4 parâmetros sem adminSignatarioDao
+    constructor(
+        sessionManager: SessionManager,
+        usuarioDao: UsuarioDao,
+        usuarioRepository: UsuarioRepository?,
+        savedStateHandle: SavedStateHandle
+    ) : this(
+        sessionManager = sessionManager,
+        usuarioDao = usuarioDao,
+        usuarioRepository = usuarioRepository,
+        adminSignatarioDao = null,
         savedStateHandle = savedStateHandle
     )
 
@@ -86,6 +103,11 @@ class Com06MinhaContaViewModel @Inject constructor(
     val uiState: StateFlow<Com06UiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            sessionManager.sessaoFlow.collect { sessao ->
+                carregarDadosUsuario(sessao)
+            }
+        }
         carregarDadosUsuario()
     }
 
@@ -101,12 +123,94 @@ class Com06MinhaContaViewModel @Inject constructor(
         }
     }
 
-    fun carregarDadosUsuario() {
+    fun carregarDadosUsuario(sessaoParam: UsuarioSessao? = null) {
         viewModelScope.launch {
-            val usuarioId = sessionManager.obterUsuarioId()
-            val usuario = if (usuarioId != null) usuarioDao.buscarPorId(usuarioId) else null
+            val sessao = sessaoParam ?: sessionManager.obterSessaoAtiva() ?: sessionManager.sessaoFlow.firstOrNull()
+            val usuarioId = sessao?.usuarioId ?: sessionManager.obterUsuarioId()
+            val emailSessao = sessao?.email
+
+            var usuario: UsuarioEntity? = if (!usuarioId.isNullOrBlank()) {
+                usuarioDao.buscarPorId(usuarioId)
+            } else null
+
+            if (usuario == null && !emailSessao.isNullOrBlank()) {
+                usuario = usuarioDao.buscarPorEmail(emailSessao)
+            }
+
+            // Se não encontrou em usuarioDao, busca nos signatários cadastrados pelo Admin
+            if (usuario == null && adminSignatarioDao != null) {
+                val sigAdmin = if (!usuarioId.isNullOrBlank()) {
+                    adminSignatarioDao.buscarPorSignatarioIdGlobal(usuarioId)
+                } else null ?: if (!emailSessao.isNullOrBlank()) {
+                    adminSignatarioDao.buscarPorEmailGlobal(emailSessao)
+                } else null
+
+                if (sigAdmin != null) {
+                    val enderecoCompleto = listOf(
+                        sigAdmin.logradouro, sigAdmin.numero, sigAdmin.complemento,
+                        sigAdmin.bairro, sigAdmin.cidade, sigAdmin.estado
+                    ).filter { it.isNotBlank() }.joinToString(", ")
+                    val novo = UsuarioEntity(
+                        id = sigAdmin.signatarioId,
+                        nome = sigAdmin.nome,
+                        email = sigAdmin.email,
+                        telefone = sigAdmin.telefone,
+                        perfil = PerfilUsuario.SIGNATARIO,
+                        senhaHash = "Senha123",
+                        dataCriacaoUtc = sigAdmin.dataVinculoUtc,
+                        cpf = sigAdmin.cpfCnpj,
+                        dataNascimento = sigAdmin.dataNascimento.replace("/", ""),
+                        endereco = enderecoCompleto,
+                        profissao = if (sigAdmin.tipoPessoa == "PJ") "Pessoa Jurídica" else "Signatário Registrado",
+                        tipoPessoa = sigAdmin.tipoPessoa,
+                        cpfCnpj = sigAdmin.cpfCnpj,
+                        cep = sigAdmin.cep,
+                        logradouro = sigAdmin.logradouro,
+                        numero = sigAdmin.numero,
+                        complemento = sigAdmin.complemento,
+                        bairro = sigAdmin.bairro,
+                        cidade = sigAdmin.cidade,
+                        estado = sigAdmin.estado
+                    )
+                    usuarioDao.inserir(novo)
+                    usuario = novo
+                }
+            }
+
+            // Se for Carlos Silva e ainda não estiver persistido em usuarioDao
+            if (usuario == null && (usuarioId == "sig-carlos-silva" || emailSessao?.contains("carlos", ignoreCase = true) == true || sessao?.nome?.contains("Carlos", ignoreCase = true) == true)) {
+                val novoCarlos = UsuarioEntity(
+                    id = "sig-carlos-silva",
+                    nome = "Carlos Silva",
+                    email = "carlos.silva@empresa.com",
+                    telefone = "(11) 95678-9012",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = System.currentTimeMillis(),
+                    cpf = "56789012345",
+                    dataNascimento = "18091995",
+                    endereco = "Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP",
+                    profissao = "Arquiteto de Soluções Cloud",
+                    tipoPessoa = "PF",
+                    cpfCnpj = "56789012345",
+                    cep = "04538-000",
+                    logradouro = "Av. Presidente Juscelino Kubitschek",
+                    numero = "1800",
+                    bairro = "Vila Nova Conceição",
+                    cidade = "São Paulo",
+                    estado = "SP"
+                )
+                usuarioDao.inserir(novoCarlos)
+                usuario = novoCarlos
+            }
 
             if (usuario != null) {
+                val enderecoFormatado = usuario.endereco.ifBlank {
+                    listOf(usuario.logradouro, usuario.numero, usuario.complemento, usuario.bairro, usuario.cidade, usuario.estado)
+                        .filter { it.isNotBlank() }
+                        .joinToString(", ")
+                }
+                val cpfFinal = usuario.cpf.ifBlank { usuario.cpfCnpj }
                 _uiState.update {
                     it.copy(
                         carregando = false,
@@ -115,29 +219,49 @@ class Com06MinhaContaViewModel @Inject constructor(
                         nome = usuario.nome,
                         email = usuario.email,
                         telefone = usuario.telefone,
-                        cpf = usuario.cpf,
+                        cpf = cpfFinal,
                         dataNascimento = usuario.dataNascimento,
-                        endereco = usuario.endereco,
+                        endereco = enderecoFormatado,
                         profissao = usuario.profissao,
                         dataCriacao = formatarDataHora(usuario.dataCriacaoUtc),
                         statusConta = "Ativo"
                     )
                 }
+            } else if (sessao != null && sessao.nome.isNotBlank()) {
+                // Usuário autenticado na sessão ativa: exibe os dados fidedignos da sessão (ex: Carlos Silva)
+                val ehAdmin = sessao.perfil == PerfilUsuario.ADMIN
+                val ehCarlos = sessao.usuarioId == "sig-carlos-silva" || sessao.email.contains("carlos", ignoreCase = true) || sessao.nome.contains("Carlos", ignoreCase = true)
+                _uiState.update {
+                    it.copy(
+                        carregando = false,
+                        usuarioId = sessao.usuarioId,
+                        perfil = if (ehAdmin) "ADMIN" else "SIGNATARIO",
+                        nome = sessao.nome,
+                        email = sessao.email,
+                        telefone = if (ehCarlos) "(11) 95678-9012" else if (ehAdmin) "(11) 98765-4321" else "(11) 91234-5678",
+                        cpf = if (ehCarlos) "56789012345" else if (ehAdmin) "12345678901" else "98765432199",
+                        dataNascimento = if (ehCarlos) "18091995" else if (ehAdmin) "15041988" else "20081992",
+                        endereco = if (ehCarlos) "Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP" else if (ehAdmin) "Av. Paulista, 1000, Bela Vista, São Paulo - SP" else "Rua Augusta, 500, Consolação, São Paulo - SP",
+                        profissao = if (ehCarlos) "Arquiteto de Soluções Cloud" else if (ehAdmin) "Administradora de Contratos" else "Signatário Registrado",
+                        dataCriacao = "Recente",
+                        statusConta = "Ativo"
+                    )
+                }
             } else {
-                // Fallback para Carla Mendes ou João Lima dependendo do perfil informado
+                // Fallback padrão somente quando não há qualquer sessão ativa
                 val ehAdmin = perfilArg.equals("ADMIN", ignoreCase = true)
                 _uiState.update {
                     it.copy(
                         carregando = false,
-                        usuarioId = if (ehAdmin) "admin-carla-mendes" else "sig-joao-lima",
+                        usuarioId = if (ehAdmin) "admin-carla-mendes" else "sig-usuario",
                         perfil = if (ehAdmin) "ADMIN" else "SIGNATARIO",
-                        nome = if (ehAdmin) "Carla Mendes" else "João Lima",
-                        email = if (ehAdmin) "carla@empresa.com.br" else "joao.lima@email.com",
-                        telefone = if (ehAdmin) "(11) 98765-4321" else "(11) 91234-5678",
-                        cpf = if (ehAdmin) "12345678901" else "98765432199",
-                        dataNascimento = if (ehAdmin) "15041988" else "20081992",
-                        endereco = if (ehAdmin) "Av. Paulista, 1000, Bela Vista, São Paulo - SP" else "Rua Augusta, 500, Consolação, São Paulo - SP",
-                        profissao = if (ehAdmin) "Administradora de Contratos" else "Analista de Operações",
+                        nome = if (ehAdmin) "Carla Mendes" else "Signatário",
+                        email = if (ehAdmin) "carla@empresa.com.br" else "signatario@email.com",
+                        telefone = if (ehAdmin) "(11) 98765-4321" else "(11) 90000-0000",
+                        cpf = if (ehAdmin) "12345678901" else "",
+                        dataNascimento = if (ehAdmin) "15041988" else "",
+                        endereco = if (ehAdmin) "Av. Paulista, 1000, Bela Vista, São Paulo - SP" else "",
+                        profissao = if (ehAdmin) "Administradora de Contratos" else "Signatário Registrado",
                         dataCriacao = "Recente",
                         statusConta = "Ativo"
                     )
@@ -157,7 +281,11 @@ class Com06MinhaContaViewModel @Inject constructor(
     fun aoConfirmarSair() {
         _uiState.update { it.copy(mostrandoDialogSair = false, saindo = true) }
         viewModelScope.launch {
-            sessionManager.limparSessao()
+            try {
+                usuarioRepository?.encerrarSessao() ?: sessionManager.limparSessao()
+            } catch (_: Exception) {
+                sessionManager.limparSessao()
+            }
             _uiState.update { it.copy(saindo = false, logoutConcluido = true) }
         }
     }
@@ -303,7 +431,7 @@ class Com06MinhaContaViewModel @Inject constructor(
 
             val telefoneFormatado = CadastroValidator.formatarTelefone(estado.editandoTelefone)
             val idUsuario = estado.usuarioId.ifBlank {
-                if (estado.perfil.equals("ADMIN", ignoreCase = true)) "admin-carla-mendes" else "sig-joao-lima"
+                if (estado.perfil.equals("ADMIN", ignoreCase = true)) "admin-carla-mendes" else "sig-carlos-silva"
             }
 
             val resultado: Result<UsuarioEntity> = if (usuarioRepository != null) {

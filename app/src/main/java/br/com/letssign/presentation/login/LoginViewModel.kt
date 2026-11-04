@@ -75,6 +75,31 @@ class LoginViewModel @Inject constructor(
         )
     }
 
+    fun entrarComoAdminDemo() {
+        preencherAdminDemo()
+        entrar()
+    }
+
+    fun entrarComoSignatarioDemo() {
+        preencherSignatarioDemo()
+        entrar()
+    }
+
+    fun entrarComoCarlosDemo() {
+        preencherCarlosDemo()
+        entrar()
+    }
+
+    fun preencherCarlosDemo() {
+        _uiState.value = _uiState.value.copy(
+            email = "carlos.silva@empresa.com",
+            senha = "Senha123",
+            erroFormatoEmail = null,
+            erroCredenciais = null,
+            erroConexao = null
+        )
+    }
+
     fun entrar() {
         val state = _uiState.value
         val email = state.email.trim()

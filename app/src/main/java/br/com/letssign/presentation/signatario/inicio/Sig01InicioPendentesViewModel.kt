@@ -53,7 +53,7 @@ class Sig01InicioPendentesViewModel @Inject constructor(
     fun carregarDocumentos() {
         viewModelScope.launch {
             _uiState.update { it.copy(carregando = true, erro = null) }
-            val sessao = sessionManager.sessaoFlow.firstOrNull()
+            val sessao = sessionManager.obterSessaoAtiva() ?: sessionManager.sessaoFlow.firstOrNull()
             val usuarioId = sessao?.usuarioId ?: "sig-joao-lima"
 
             // Inicializa dados de demonstração caso necessário

@@ -68,7 +68,7 @@ class Sig02MeusDocumentosViewModel @Inject constructor(
     fun carregarDocumentos() {
         viewModelScope.launch {
             _uiState.update { it.copy(carregando = true, erro = null) }
-            val sessao = sessionManager.sessaoFlow.firstOrNull()
+            val sessao = sessionManager.obterSessaoAtiva() ?: sessionManager.sessaoFlow.firstOrNull()
             val usuarioId = sessao?.usuarioId ?: "sig-joao-lima"
             try {
                 documentoRepository.inicializarDadosDemoSeNecessario("admin-carla-mendes")

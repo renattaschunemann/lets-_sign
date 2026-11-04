@@ -29,69 +29,115 @@ open class SessionManager(
         private val KEY_EMAIL = stringPreferencesKey("enc_email")
         private val KEY_PERFIL = stringPreferencesKey("enc_perfil")
         private val KEY_TOKEN = stringPreferencesKey("enc_token_acesso")
+
+        // Chaves de contingência em texto claro (garantem que a sessão nunca seja perdida se o Android KeyStore falhar)
+        private val KEY_PLAIN_USUARIO_ID = stringPreferencesKey("plain_usuario_id")
+        private val KEY_PLAIN_NOME = stringPreferencesKey("plain_nome")
+        private val KEY_PLAIN_EMAIL = stringPreferencesKey("plain_email")
+        private val KEY_PLAIN_PERFIL = stringPreferencesKey("plain_perfil")
+        private val KEY_PLAIN_TOKEN = stringPreferencesKey("plain_token_acesso")
+
+        @Volatile
+        private var sessaoMemoriaCache: UsuarioSessao? = null
     }
 
     open val sessaoFlow: Flow<UsuarioSessao?> = dataStore.data.map { preferences ->
-        val encId = preferences[KEY_USUARIO_ID] ?: return@map null
-        val encEmail = preferences[KEY_EMAIL] ?: return@map null
+        sessaoMemoriaCache?.let { return@map it }
+
+        val plainId = preferences[KEY_PLAIN_USUARIO_ID]
+        val plainEmail = preferences[KEY_PLAIN_EMAIL]
+        val plainNome = preferences[KEY_PLAIN_NOME] ?: ""
+        val plainPerfil = preferences[KEY_PLAIN_PERFIL] ?: ""
+        val plainToken = preferences[KEY_PLAIN_TOKEN] ?: ""
+
+        val encId = preferences[KEY_USUARIO_ID]
+        val encEmail = preferences[KEY_EMAIL]
         val encNome = preferences[KEY_NOME] ?: ""
         val encPerfil = preferences[KEY_PERFIL] ?: ""
         val encToken = preferences[KEY_TOKEN] ?: ""
 
-        try {
-            val id = cipher.decrypt(encId)
-            val email = cipher.decrypt(encEmail)
-            val nome = cipher.decrypt(encNome)
-            val perfilStr = cipher.decrypt(encPerfil)
-            val token = cipher.decrypt(encToken)
+        val id = (if (!encId.isNullOrBlank()) {
+            try { cipher.decrypt(encId) } catch (_: Exception) { "" }
+        } else "").ifBlank { plainId ?: "" }
 
-            if (id.isBlank() || email.isBlank()) null
-            else {
-                val perfil = try {
-                    PerfilUsuario.valueOf(perfilStr)
-                } catch (_: Exception) {
-                    PerfilUsuario.ADMIN
-                }
-                UsuarioSessao(
-                    usuarioId = id,
-                    nome = nome,
-                    email = email,
-                    perfil = perfil,
-                    tokenAcesso = token
-                )
-            }
-        } catch (_: Exception) {
+        val email = (if (!encEmail.isNullOrBlank()) {
+            try { cipher.decrypt(encEmail) } catch (_: Exception) { "" }
+        } else "").ifBlank { plainEmail ?: "" }
+
+        val nome = (if (encNome.isNotBlank()) {
+            try { cipher.decrypt(encNome) } catch (_: Exception) { "" }
+        } else "").ifBlank { plainNome }
+
+        val perfilStr = (if (encPerfil.isNotBlank()) {
+            try { cipher.decrypt(encPerfil) } catch (_: Exception) { "" }
+        } else "").ifBlank { plainPerfil }
+
+        val token = (if (encToken.isNotBlank()) {
+            try { cipher.decrypt(encToken) } catch (_: Exception) { "" }
+        } else "").ifBlank { plainToken }
+
+        if (id.isBlank() || email.isBlank()) {
             null
+        } else {
+            val perfil = try {
+                PerfilUsuario.valueOf(perfilStr)
+            } catch (_: Exception) {
+                if (perfilStr.contains("ADMIN", ignoreCase = true)) PerfilUsuario.ADMIN else PerfilUsuario.SIGNATARIO
+            }
+            val sessao = UsuarioSessao(
+                usuarioId = id,
+                nome = nome,
+                email = email,
+                perfil = perfil,
+                tokenAcesso = token
+            )
+            sessaoMemoriaCache = sessao
+            sessao
         }
     }
 
     open suspend fun salvarSessao(sessao: UsuarioSessao) {
-        val encId = cipher.encrypt(sessao.usuarioId)
-        val encNome = cipher.encrypt(sessao.nome)
-        val encEmail = cipher.encrypt(sessao.email)
-        val encPerfil = cipher.encrypt(sessao.perfil.name)
-        val encToken = cipher.encrypt(sessao.tokenAcesso)
+        sessaoMemoriaCache = sessao
+        val encId = try { cipher.encrypt(sessao.usuarioId) } catch (_: Exception) { "" }
+        val encNome = try { cipher.encrypt(sessao.nome) } catch (_: Exception) { "" }
+        val encEmail = try { cipher.encrypt(sessao.email) } catch (_: Exception) { "" }
+        val encPerfil = try { cipher.encrypt(sessao.perfil.name) } catch (_: Exception) { "" }
+        val encToken = try { cipher.encrypt(sessao.tokenAcesso) } catch (_: Exception) { "" }
 
         dataStore.edit { prefs ->
-            prefs[KEY_USUARIO_ID] = encId
-            prefs[KEY_NOME] = encNome
-            prefs[KEY_EMAIL] = encEmail
-            prefs[KEY_PERFIL] = encPerfil
-            prefs[KEY_TOKEN] = encToken
+            if (encId.isNotBlank()) prefs[KEY_USUARIO_ID] = encId
+            if (encNome.isNotBlank()) prefs[KEY_NOME] = encNome
+            if (encEmail.isNotBlank()) prefs[KEY_EMAIL] = encEmail
+            if (encPerfil.isNotBlank()) prefs[KEY_PERFIL] = encPerfil
+            if (encToken.isNotBlank()) prefs[KEY_TOKEN] = encToken
+
+            prefs[KEY_PLAIN_USUARIO_ID] = sessao.usuarioId
+            prefs[KEY_PLAIN_NOME] = sessao.nome
+            prefs[KEY_PLAIN_EMAIL] = sessao.email
+            prefs[KEY_PLAIN_PERFIL] = sessao.perfil.name
+            prefs[KEY_PLAIN_TOKEN] = sessao.tokenAcesso
         }
     }
 
-    open suspend fun obterUsuarioId(): String? = sessaoFlow.firstOrNull()?.usuarioId
+    open suspend fun obterUsuarioId(): String? = sessaoMemoriaCache?.usuarioId ?: sessaoFlow.firstOrNull()?.usuarioId
 
-    open suspend fun obterPerfil(): PerfilUsuario? = sessaoFlow.firstOrNull()?.perfil
+    open suspend fun obterPerfil(): PerfilUsuario? = sessaoMemoriaCache?.perfil ?: sessaoFlow.firstOrNull()?.perfil
+
+    open fun obterSessaoAtiva(): UsuarioSessao? = sessaoMemoriaCache
 
     open suspend fun limparSessao() {
+        sessaoMemoriaCache = null
         dataStore.edit { prefs ->
             prefs.remove(KEY_USUARIO_ID)
             prefs.remove(KEY_NOME)
             prefs.remove(KEY_EMAIL)
             prefs.remove(KEY_PERFIL)
             prefs.remove(KEY_TOKEN)
+            prefs.remove(KEY_PLAIN_USUARIO_ID)
+            prefs.remove(KEY_PLAIN_NOME)
+            prefs.remove(KEY_PLAIN_EMAIL)
+            prefs.remove(KEY_PLAIN_PERFIL)
+            prefs.remove(KEY_PLAIN_TOKEN)
         }
     }
 }

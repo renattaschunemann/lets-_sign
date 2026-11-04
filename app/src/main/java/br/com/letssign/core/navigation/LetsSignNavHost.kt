@@ -456,7 +456,7 @@ fun LetsSignNavHost(
                 aoVoltar = { navController.popBackStack() },
                 aoConclusao = { docId ->
                     navController.navigate(Sig08ConclusaoRoute(docId)) {
-                        popUpTo(Sig01InicioPendentesRoute) { inclusive = false }
+                        popUpTo<Sig05AssinarDocumentoRoute> { inclusive = true }
                         launchSingleTop = true
                     }
                 }

@@ -46,7 +46,13 @@ class Sig07RevisaoCamposViewModel @Inject constructor(
         TipoAssinatura.DESENHADA
     }
 
-    val detalhesCertificado: String? = detalhesCertificadoArg.takeIf { it.isNotBlank() }
+    val detalhesCertificado: String? = try {
+        if (detalhesCertificadoArg.isNotBlank()) {
+            java.net.URLDecoder.decode(detalhesCertificadoArg, "UTF-8").takeIf { it.isNotBlank() }
+        } else null
+    } catch (_: Exception) {
+        detalhesCertificadoArg.takeIf { it.isNotBlank() }
+    }
 
     private val _uiState = MutableStateFlow(
         Sig07UiState(
