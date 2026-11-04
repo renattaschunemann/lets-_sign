@@ -22,7 +22,7 @@ import br.com.letssign.data.local.entities.*
         NotificacaoEntity::class,
         EventoHistoricoEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

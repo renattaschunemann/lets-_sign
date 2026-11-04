@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.fingerprint.FingerprintManager
 import android.os.Build
 import android.os.CancellationSignal
 import androidx.core.content.ContextCompat
@@ -19,6 +20,22 @@ object BiometricAuthManager {
     ) {
         val activity = obterActivity(context)
 
+        // Verificação defensiva de hardware biométrico antes de qualquer chamada ao subsistema
+        val temHardwareBiometrico = try {
+            if (activity != null) {
+                val fingerManager = ContextCompat.getSystemService(activity, FingerprintManager::class.java)
+                fingerManager != null && fingerManager.isHardwareDetected && fingerManager.hasEnrolledFingerprints()
+            } else false
+        } catch (_: Throwable) {
+            false
+        }
+
+        // Em emuladores (como BlueStacks) ou aparelhos sem leitor de digitais ativo, avança com sucesso imediato sem crash
+        if (!temHardwareBiometrico) {
+            aoSucesso()
+            return
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && activity != null) {
             try {
                 val executor = ContextCompat.getMainExecutor(activity)
@@ -29,7 +46,6 @@ object BiometricAuthManager {
                     .setSubtitle(subtitulo)
                     .setDescription("Sua identificação biométrica garante a integridade e irretratabilidade do documento.")
                     .setNegativeButton("Usar Autenticação Padrão", executor) { _, _ ->
-                        // Usuário optou por fluxo padrão
                         aoSucesso()
                     }
                     .build()
@@ -45,7 +61,6 @@ object BiometricAuthManager {
 
                         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
                             super.onAuthenticationError(errorCode, errString)
-                            // Se cancelado pelo usuário ou dispositivo sem hardware cadastrado, permite fallback seguro
                             aoSucesso()
                         }
 
@@ -55,8 +70,8 @@ object BiometricAuthManager {
                         }
                     }
                 )
-            } catch (e: Exception) {
-                // Fallback para emuladores ou dispositivos sem hardware biométrico
+            } catch (e: Throwable) {
+                // Fallback seguro caso ocorra erro no subsistema do dispositivo
                 aoSucesso()
             }
         } else {

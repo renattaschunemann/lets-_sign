@@ -345,6 +345,7 @@ fun LetsSignNavHost(
                 aoFinalizarEnvioComSucesso = {
                     navController.navigate(Adm01DocumentosRoute) {
                         popUpTo(Adm01DocumentosRoute) { inclusive = false }
+                        launchSingleTop = true
                     }
                 },
                 aoVoltarParaCampos = { navController.popBackStack() },
@@ -456,6 +457,7 @@ fun LetsSignNavHost(
                 aoConclusao = { docId ->
                     navController.navigate(Sig08ConclusaoRoute(docId)) {
                         popUpTo(Sig01InicioPendentesRoute) { inclusive = false }
+                        launchSingleTop = true
                     }
                 }
             )

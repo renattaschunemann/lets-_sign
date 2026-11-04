@@ -715,9 +715,7 @@ class DocumentoRepository @Inject constructor(
         conteudoBlob: ByteArray? = null
     ): Result<String> {
         val agora = System.currentTimeMillis()
-        val blob = conteudoBlob ?: if (context != null && pdfPathInterno != null) {
-            br.com.letssign.data.local.file.PdfStorageManager.lerComoBlob(context, pdfPathInterno)
-        } else null
+        val blob = conteudoBlob
 
         val docExistente = documentoDao.buscarPorId(documentoId)
         val doc = docExistente?.copy(
