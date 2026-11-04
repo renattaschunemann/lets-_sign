@@ -50,12 +50,35 @@ fun Adm05SelecionarPdfScreen(
         uri?.let { viewModel.validarECarregarPdf(context, it) }
     }
 
+    val carregarDemoPdf = {
+        try {
+            val demoFile = br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(context)
+            viewModel.validarECarregarPdf(context, android.net.Uri.fromFile(demoFile))
+            android.widget.Toast.makeText(context, "Contrato Demonstrativo carregado com sucesso!", android.widget.Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(context, "Erro ao carregar PDF demonstrativo: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val abrirSeletorPdfSeguro = {
+        try {
+            launcherPdf.launch("application/pdf")
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                context,
+                "Seletor de arquivos do sistema não encontrado. Carregando Contrato Demonstrativo para testes...",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            carregarDemoPdf()
+        }
+    }
+
     if (uiState.erroPdf != null) {
         Mod06ErroPdfDialog(
             tipoErro = uiState.erroPdf!!,
             aoEscolherOutroArquivo = {
                 viewModel.fecharModalErroPdf()
-                launcherPdf.launch("application/pdf")
+                abrirSeletorPdfSeguro()
             }
         )
     }
@@ -133,8 +156,20 @@ fun Adm05SelecionarPdfScreen(
 
                         BotaoTonal(
                             texto = stringResource(R.string.adm05_btn_escolher_pdf),
-                            aoClicar = { launcherPdf.launch("application/pdf") }
+                            aoClicar = { abrirSeletorPdfSeguro() }
                         )
+
+                        OutlinedButton(
+                            onClick = { carregarDemoPdf() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp).padding(end = 6.dp)
+                            )
+                            Text("Usar Contrato Demonstração (PDF)")
+                        }
                     }
                 }
 
@@ -185,7 +220,7 @@ fun Adm05SelecionarPdfScreen(
 
                         BotaoSecundario(
                             texto = stringResource(R.string.adm05_btn_substituir_pdf),
-                            aoClicar = { launcherPdf.launch("application/pdf") },
+                            aoClicar = { abrirSeletorPdfSeguro() },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

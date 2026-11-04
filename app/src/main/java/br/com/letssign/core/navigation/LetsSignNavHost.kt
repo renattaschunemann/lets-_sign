@@ -431,8 +431,10 @@ fun LetsSignNavHost(
             )
         }
 
-        composable<Sig05AssinarDocumentoRoute> {
+        composable<Sig05AssinarDocumentoRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<Sig05AssinarDocumentoRoute>()
             Sig05VisualizacaoDocSignatarioScreen(
+                documentoId = route.documentoId,
                 aoVoltar = { navController.popBackStack() },
                 aoNavegarParaCaptura = { docId -> navController.navigate(Sig06CriarAssinaturaRoute(docId)) },
                 aoNavegarParaRevisao = { docId -> navController.navigate(Sig07AssinaturaSucessoRoute(docId)) }

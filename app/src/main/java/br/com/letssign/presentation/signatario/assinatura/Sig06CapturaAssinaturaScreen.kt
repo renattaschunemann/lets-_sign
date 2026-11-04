@@ -75,6 +75,18 @@ fun Sig06CapturaAssinaturaScreen(
         }
     }
 
+    val abrirSeletorFotoSeguro = {
+        try {
+            launcherFoto.launch("image/*")
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                context,
+                "Seletor de imagem do sistema não disponível no emulador. Utilize a aba 'Desenhar' para assinar na tela.",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
     LaunchedEffect(uiState.assinaturaPronta) {
         if (uiState.assinaturaPronta) {
             val bitmap = when (uiState.abaSelecionada) {
@@ -298,7 +310,7 @@ fun Sig06CapturaAssinaturaScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(220.dp)
-                                .clickable { launcherFoto.launch("image/*") }
+                                .clickable { abrirSeletorFotoSeguro() }
                                 .border(
                                     width = 1.5.dp,
                                     color = if (bitmapUpload != null) LetsSignTheme.colors.corSucesso else LetsSignTheme.colors.corPrimaria,
@@ -363,7 +375,7 @@ fun Sig06CapturaAssinaturaScreen(
                                     color = LetsSignTheme.colors.corSucesso,
                                     fontWeight = FontWeight.Bold
                                 )
-                                TextButton(onClick = { launcherFoto.launch("image/*") }) {
+                                TextButton(onClick = { abrirSeletorFotoSeguro() }) {
                                     Text("Trocar foto")
                                 }
                             }

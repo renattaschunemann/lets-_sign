@@ -5,6 +5,8 @@ import br.com.letssign.data.local.entities.*
 import br.com.letssign.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
@@ -684,6 +686,7 @@ class DocumentoRepository @Inject constructor(
                     .thenByDescending { it.dataUltimaAtualizacaoUtc }
             )
         }
+    .flowOn(Dispatchers.IO)
     }
 
     suspend fun buscarUltimoRascunho(adminId: String): DocumentoEntity? {
@@ -944,6 +947,7 @@ class DocumentoRepository @Inject constructor(
                 cancelamento = cancelamento
             )
         }
+    .flowOn(Dispatchers.IO)
     }
 
     suspend fun reenviarConvite(documentoId: String, participanteId: String): Result<Unit> {
@@ -1210,6 +1214,7 @@ class DocumentoRepository @Inject constructor(
                 )
             }.sortedByDescending { it.dataAtualizacaoUtc }
         }
+    .flowOn(Dispatchers.IO)
     }
 
     fun carregarDetalheParaSignatario(documentoId: String, usuarioId: String): Flow<DetalheDocumentoSignatario?> {
@@ -1255,6 +1260,7 @@ class DocumentoRepository @Inject constructor(
                 pdfPathInterno = versao.pdfPathInterno
             )
         }
+    .flowOn(Dispatchers.IO)
     }
 
     suspend fun validarIdentidadeSignatario(

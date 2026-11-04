@@ -41,8 +41,15 @@ fun Sig05VisualizacaoDocSignatarioScreen(
     aoNavegarParaCaptura: (String) -> Unit,
     aoNavegarParaRevisao: (String) -> Unit,
     modifier: Modifier = Modifier,
+    documentoId: String? = null,
     viewModel: Sig05VisualizacaoDocSignatarioViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(documentoId) {
+        if (!documentoId.isNullOrBlank() && documentoId != viewModel.documentoId) {
+            viewModel.carregarDocumentoECampos(documentoId)
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
