@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.map
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
+import androidx.compose.ui.geometry.Offset
+import br.com.letssign.core.pdf.PdfDemoGenerator
+import br.com.letssign.data.local.file.PdfStorageManager
+import br.com.letssign.data.local.file.AssinaturaStorageManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,29 +43,30 @@ class DocumentoRepository @Inject constructor(
     @ApplicationContext private val context: Context? = null
 ) {
 
-    suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
+        suspend fun inicializarDadosDemoSeNecessario(adminId: String) {
         try {
-            val demoDocIds = listOf("doc-demo-1", "doc-demo-2", "doc-demo-3", "doc-demo-4", "doc-demo-5", "doc-demo-6", "doc-demo-7")
-            var todosDocsExistem = true
+            val demoDocIds = listOf(
+                "doc-demo-1", "doc-demo-2", "doc-demo-3", "doc-demo-4", "doc-demo-5",
+                "doc-demo-6", "doc-demo-7", "doc-demo-8", "doc-demo-9", "doc-demo-10"
+            )
+            
             for (id in demoDocIds) {
                 val doc = documentoDao.buscarPorId(id)
-                if (doc == null) {
-                    todosDocsExistem = false
-                } else if (doc.usuarioAdminId != adminId) {
-                    // Vincula os documentos demo ao admin ativo para visualização imediata
+                if (doc != null && doc.usuarioAdminId != adminId) {
                     documentoDao.atualizar(doc.copy(usuarioAdminId = adminId))
                 }
             }
 
+            val todosDocsExistem = demoDocIds.all { documentoDao.buscarPorId(it) != null }
             val qtdAssinaturasDoc5 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-5-carla", "campo-part-doc-demo-5-joao"))?.size ?: 0
+            val qtdAssinaturasDoc10 = assinaturaDao?.listarPorCamposSync(listOf("campo-part-doc-demo-10-1", "campo-part-doc-demo-10-2"))?.size ?: 0
             val qtdEventos = eventoHistoricoDao?.contarPorVersao("versao-demo-5") ?: 0
 
-            if (todosDocsExistem && qtdAssinaturasDoc5 >= 2 && qtdEventos >= 10) {
-                // Documentos e assinaturas já consolidados para este admin
+            if (todosDocsExistem && qtdAssinaturasDoc5 >= 2 && qtdAssinaturasDoc10 >= 2 && qtdEventos >= 10) {
                 return
             }
 
-            // Garante que os usuários de demonstração existam na tabela 'usuarios' com cadastro completo
+            // Garante que os usuários de demonstração existam na tabela 'usuarios'
             if (usuarioDao != null) {
                 if (usuarioDao.buscarPorId(adminId) == null) {
                     usuarioDao.inserir(
@@ -118,100 +123,185 @@ class DocumentoRepository @Inject constructor(
 
             val agora = System.currentTimeMillis()
 
-        // 1. Contrato de Prestação de Serviços (Parcialmente assinado, 2 de 3)
-        criarDocDemo(
-            docId = "doc-demo-1",
-            versaoId = "versao-demo-1",
-            titulo = "Contrato de Prestação de Serviços",
-            adminId = adminId,
-            versao = 1,
-            situacao = SituacaoDocumento.PARCIALMENTE_ASSINADO,
-            dataUtc = agora - 3600000,
-            obrigatoriosAssinaram = 2,
-            totalObrigatorios = 3
-        )
+            // 1. Contrato de Prestação de Serviços de TI (PARCIALMENTE_ASSINADO, 2 de 3 assinaram)
+            criarDocDemo(
+                docId = "doc-demo-1",
+                versaoId = "versao-demo-1",
+                titulo = "Contrato de Prestação de Serviços de TI",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.PARCIALMENTE_ASSINADO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 3600000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-1-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 91234-5678", "14/03/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "234.567.890-12"),
+                    DemoPartDef("part-doc-demo-1-2", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DIGITADA, "123.456.789-01"),
+                    DemoPartDef("part-doc-demo-1-3", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.TESTEMUNHA, SituacaoParticipante.PENDENTE, 3, null, "987.654.321-99")
+                )
+            )
 
-        // 2. Aditivo 02 (Falha no envio)
-        criarDocDemo(
-            docId = "doc-demo-2",
-            versaoId = "versao-demo-2",
-            titulo = "Aditivo 02",
-            adminId = adminId,
-            versao = 1,
-            situacao = SituacaoDocumento.FALHA_ENVIO,
-            dataUtc = agora - 7200000,
-            obrigatoriosAssinaram = 0,
-            totalObrigatorios = 2
-        )
+            // 2. Aditivo Contratual 02 — Reajuste Anual (FALHA_ENVIO, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-2",
+                versaoId = "versao-demo-2",
+                titulo = "Aditivo Contratual 02 — Reajuste Anual",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.FALHA_ENVIO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 7200000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-2-1", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "456.789.012-34"),
+                    DemoPartDef("part-doc-demo-2-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                )
+            )
 
-        // 3. Contrato de locação — Sala 3 (Rascunho)
-        criarDocDemo(
-            docId = "doc-demo-3",
-            versaoId = "versao-demo-3",
-            titulo = "Contrato de locação — Sala 3",
-            adminId = adminId,
-            versao = 1,
-            situacao = SituacaoDocumento.RASCUNHO,
-            dataUtc = agora - 10800000,
-            obrigatoriosAssinaram = 0,
-            totalObrigatorios = 0
-        )
+            // 3. Contrato de Locação Comercial — Sala 304 (RASCUNHO, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-3",
+                versaoId = "versao-demo-3",
+                titulo = "Contrato de Locação Comercial — Sala 304",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.RASCUNHO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 10800000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-3-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
+                    DemoPartDef("part-doc-demo-3-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                )
+            )
 
-        // 4. Aditivo 02 v2 (Enviado, 0 de 2)
-        criarDocDemo(
-            docId = "doc-demo-4",
-            versaoId = "versao-demo-4",
-            titulo = "Aditivo 02",
-            adminId = adminId,
-            versao = 2,
-            situacao = SituacaoDocumento.ENVIADO,
-            dataUtc = agora - 14400000,
-            obrigatoriosAssinaram = 0,
-            totalObrigatorios = 2
-        )
+            // 4. Acordo de Confidencialidade (NDA) — Projeto Fênix (ENVIADO, SEQUENCIAL, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-4",
+                versaoId = "versao-demo-4",
+                titulo = "Acordo de Confidencialidade (NDA) — Projeto Fênix",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.ENVIADO,
+                tipoOrdem = TipoOrdem.SEQUENCIAL,
+                dataUtc = agora - 14400000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-4-1", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "12.345.678/0001-95"),
+                    DemoPartDef("part-doc-demo-4-2", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 91234-5678", "20/08/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.AGUARDANDO_VEZ, 2, null, "987.654.321-99")
+                )
+            )
 
-        // 5. Concluído
-        criarDocDemo(
-            docId = "doc-demo-5",
-            versaoId = "versao-demo-5",
-            titulo = "Contrato de Prestação de Serviços",
-            adminId = adminId,
-            versao = 2,
-            situacao = SituacaoDocumento.CONCLUIDO,
-            dataUtc = agora - 86400000,
-            obrigatoriosAssinaram = 3,
-            totalObrigatorios = 3
-        )
+            // 5. Contrato de Prestação de Serviços (CONCLUIDO, v2, 3 de 3 assinaram)
+            criarDocDemo(
+                docId = "doc-demo-5",
+                versaoId = "versao-demo-5",
+                titulo = "Contrato de Prestação de Serviços",
+                adminId = adminId,
+                versao = 2,
+                situacao = SituacaoDocumento.CONCLUIDO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 86400000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-5-carla", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/03/1985", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, "123.456.789-01"),
+                    DemoPartDef("part-doc-demo-5-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "987.654.321-99"),
+                    DemoPartDef("part-doc-demo-5-maria", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 3, TipoAssinatura.DIGITADA, "234.567.890-12")
+                )
+            )
 
-        // 6. Recusado
-        criarDocDemo(
-            docId = "doc-demo-6",
-            versaoId = "versao-demo-6",
-            titulo = "Aditivo 02",
-            adminId = adminId,
-            versao = 3,
-            situacao = SituacaoDocumento.RECUSADO,
-            dataUtc = agora - 172800000,
-            obrigatoriosAssinaram = 1,
-            totalObrigatorios = 2
-        )
+            // 6. Termo de Rescisão e Quitação Trabalhista (RECUSADO, 1 assinou, 1 recusou)
+            criarDocDemo(
+                docId = "doc-demo-6",
+                versaoId = "versao-demo-6",
+                titulo = "Termo de Rescisão e Quitação Trabalhista",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.RECUSADO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 172800000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-6-joao", "sig-joao-lima", "João Lima", "joao.lima@email.com", "(11) 98888-7777", "10/05/1992", PapelParticipante.CONTRATADO, SituacaoParticipante.RECUSADO, 1, null, "987.654.321-99"),
+                    DemoPartDef("part-doc-demo-6-pedro", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.TESTEMUNHA, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+                )
+            )
 
-        // 7. Cancelado
-        criarDocDemo(
-            docId = "doc-demo-7",
-            versaoId = "versao-demo-7",
-            titulo = "Contrato de locação — Sala 3",
-            adminId = adminId,
-            versao = 2,
-            situacao = SituacaoDocumento.CANCELADO,
-            dataUtc = agora - 259200000,
-            obrigatoriosAssinaram = 0,
-            totalObrigatorios = 2
-        )
+            // 7. Termo de Consentimento LGPD e Privacidade (CANCELADO, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-7",
+                versaoId = "versao-demo-7",
+                titulo = "Termo de Consentimento LGPD e Privacidade",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.CANCELADO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 259200000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-7-1", "user-maria-souza", "Maria Souza", "maria.souza@empresa.com.br", "(11) 97777-6666", "22/11/1990", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "234.567.890-12"),
+                    DemoPartDef("part-doc-demo-7-2", "sig-carlos-silva", "Carlos Silva", "carlos.silva@empresa.com", "(11) 95678-9012", "12/06/1979", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "567.890.123-45")
+                )
+            )
+
+            // 8. Contrato de Fornecimento de Licenças SaaS (SUBSTITUIDO, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-8",
+                versaoId = "versao-demo-8",
+                titulo = "Contrato de Fornecimento de Licenças SaaS",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.SUBSTITUIDO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 345600000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-8-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "45.678.901/0001-23"),
+                    DemoPartDef("part-doc-demo-8-2", "sig-global-logistics", "Global Logistics & Transportes Ltda", "contato@globallogistics.com.br", "(11) 96789-0123", "18/09/2010", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "34.567.890/0001-12")
+                )
+            )
+
+            // 9. Procuração Ad Negotia com Poderes Bancários (ENVIANDO, 0 de 2)
+            criarDocDemo(
+                docId = "doc-demo-9",
+                versaoId = "versao-demo-9",
+                titulo = "Procuração Ad Negotia com Poderes Bancários",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.ENVIANDO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 1800000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-9-1", adminId, "Carla Mendes", "carla@empresa.com.br", "(11) 98765-4321", "15/04/1988", PapelParticipante.CONTRATANTE, SituacaoParticipante.PENDENTE, 1, null, "123.456.789-01"),
+                    DemoPartDef("part-doc-demo-9-2", "sig-ana-lima", "Ana Lima Consultoria Financeira Ltda", "ana.lima@empresa.com", "(11) 92345-6789", "20/07/2015", PapelParticipante.CONTRATADO, SituacaoParticipante.PENDENTE, 2, null, "12.345.678/0001-95")
+                )
+            )
+
+            // 10. Memorando de Entendimento (MoU) — Parceria Estratégica PJ/PF (CONCLUIDO, 2 de 2 assinaram)
+            criarDocDemo(
+                docId = "doc-demo-10",
+                versaoId = "versao-demo-10",
+                titulo = "Memorando de Entendimento (MoU) — Parceria Estratégica",
+                adminId = adminId,
+                versao = 1,
+                situacao = SituacaoDocumento.CONCLUIDO,
+                tipoOrdem = TipoOrdem.PARALELA,
+                dataUtc = agora - 50000000L,
+                participantesMock = listOf(
+                    DemoPartDef("part-doc-demo-10-1", "sig-techsolutions", "TechSolutions Inovações e Softwares S.A.", "contato@techsolutions.com.br", "(11) 93456-7890", "10/02/2012", PapelParticipante.CONTRATANTE, SituacaoParticipante.ASSINADO, 1, TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ, "45.678.901/0001-23"),
+                    DemoPartDef("part-doc-demo-10-2", "sig-pedro-alves", "Pedro Alves", "pedro.alves@empresa.com", "(11) 94567-8901", "03/11/1985", PapelParticipante.CONTRATADO, SituacaoParticipante.ASSINADO, 2, TipoAssinatura.DESENHADA, "456.789.012-34")
+                )
+            )
         } catch (e: Exception) {
             println("DocumentoRepository: aviso ao inicializar dados demo: ${e.message}")
         }
     }
+
+    private data class DemoPartDef(
+        val partId: String,
+        val userId: String?,
+        val nome: String,
+        val email: String,
+        val telefone: String,
+        val dataNascimento: String,
+        val papel: PapelParticipante,
+        val situacao: SituacaoParticipante,
+        val ordem: Int,
+        val tipoAssinatura: TipoAssinatura?,
+        val documentoIdentidade: String
+    )
 
     private suspend fun criarDocDemo(
         docId: String,
@@ -220,11 +310,10 @@ class DocumentoRepository @Inject constructor(
         adminId: String,
         versao: Int,
         situacao: SituacaoDocumento,
+        tipoOrdem: TipoOrdem,
         dataUtc: Long,
-        obrigatoriosAssinaram: Int,
-        totalObrigatorios: Int
+        participantesMock: List<DemoPartDef>
     ) {
-        val tipoOrdem = if (docId == "doc-demo-4") TipoOrdem.SEQUENCIAL else TipoOrdem.PARALELA
         val doc = DocumentoEntity(
             id = docId,
             usuarioAdminId = adminId,
@@ -234,7 +323,9 @@ class DocumentoRepository @Inject constructor(
             dataUltimaAtualizacaoUtc = dataUtc
         )
         val shaOrig = if (docId == "doc-demo-5") "a3f8b0e71946c2419a77e5d933bb32014c278e9fa07f3521e1a2f60d4b8e211a" else "sha256-mock-$docId"
-        val shaFin = if (docId == "doc-demo-5") "e4b2c9d1852a37f09c64821a7df83c9b74314e1f7d5267e89ab012f45c9d6482" else if (situacao == SituacaoDocumento.CONCLUIDO) "sha256-final-$docId" else null
+        val shaFin = if (situacao == SituacaoDocumento.CONCLUIDO) {
+            if (docId == "doc-demo-5") "e4b2c9d1852a37f09c64821a7df83c9b74314e1f7d5267e89ab012f45c9d6482" else "sha256-final-$docId"
+        } else null
 
         val versaoEntity = VersaoDocumentoEntity(
             id = versaoId,
@@ -252,233 +343,177 @@ class DocumentoRepository @Inject constructor(
         documentoDao.inserir(doc)
         versaoDao.inserir(versaoEntity)
 
-        // Participantes de exemplo para cálculo de progresso
         val participantes = mutableListOf<ParticipanteDocumentoEntity>()
         val campos = mutableListOf<CampoAssinaturaEntity>()
 
-        for (i in 1..totalObrigatorios) {
-            val isDoc5 = docId == "doc-demo-5"
-            val isJoao = when (docId) {
-                "doc-demo-1" -> i == 3 // João é o terceiro, pendente
-                "doc-demo-4" -> i == 2 // João é o segundo, aguardando vez
-                "doc-demo-5" -> i == 2 // João é o contratado assinado
-                "doc-demo-6" -> i == 1 // João recusou
-                else -> false
-            }
-
-            val partId: String
-            val userId: String?
-            val nome: String
-            val email: String
-            val tel: String
-            val dataNasc: String
-            val papel: PapelParticipante
-            val sitPart: SituacaoParticipante
-
-            if (isDoc5) {
-                sitPart = SituacaoParticipante.ASSINADO
-                when (i) {
-                    1 -> {
-                        partId = "part-$docId-carla"
-                        userId = adminId
-                        nome = "Carla Mendes"
-                        email = "carla@empresa.com.br"
-                        tel = "11987654321"
-                        dataNasc = "15/03/1985"
-                        papel = PapelParticipante.CONTRATANTE
-                    }
-                    2 -> {
-                        partId = "part-$docId-joao"
-                        userId = "sig-joao-lima"
-                        nome = "João Lima"
-                        email = "joao.lima@email.com"
-                        tel = "11988887777"
-                        dataNasc = "10/05/1992"
-                        papel = PapelParticipante.CONTRATADO
-                    }
-                    else -> {
-                        partId = "part-$docId-maria"
-                        userId = "user-maria-souza"
-                        nome = "Maria Souza"
-                        email = "maria.souza@empresa.com.br"
-                        tel = "11977776666"
-                        dataNasc = "22/11/1990"
-                        papel = PapelParticipante.TESTEMUNHA
-                    }
-                }
-            } else {
-                partId = if (isJoao) "part-$docId-joao" else "part-$docId-$i"
-                userId = if (isJoao) "sig-joao-lima" else null
-                nome = if (isJoao) "João Lima" else "Signatário $i"
-                email = if (isJoao) "joao.lima@email.com" else "signatario$i@empresa.com"
-                tel = if (isJoao) "11988887777" else "1190000000$i"
-                dataNasc = if (isJoao) "10/05/1992" else "1990-01-01"
-                papel = PapelParticipante.CONTRATADO
-                sitPart = when {
-                    docId == "doc-demo-6" && isJoao -> SituacaoParticipante.RECUSADO
-                    docId == "doc-demo-4" && isJoao -> SituacaoParticipante.AGUARDANDO_VEZ
-                    i <= obrigatoriosAssinaram -> SituacaoParticipante.ASSINADO
-                    else -> SituacaoParticipante.PENDENTE
-                }
-            }
-
+        for (partDef in participantesMock) {
             participantes.add(
                 ParticipanteDocumentoEntity(
-                    id = partId,
+                    id = partDef.partId,
                     versaoDocumentoId = versaoId,
-                    usuarioId = userId,
-                    nomeSnapshot = nome,
-                    emailSnapshot = email,
-                    telefoneSnapshot = tel,
-                    dataNascimentoSnapshot = dataNasc,
-                    papel = papel,
+                    usuarioId = partDef.userId,
+                    nomeSnapshot = partDef.nome,
+                    emailSnapshot = partDef.email,
+                    telefoneSnapshot = partDef.telefone,
+                    dataNascimentoSnapshot = partDef.dataNascimento,
+                    papel = partDef.papel,
                     obrigatorio = true,
-                    ordem = i,
-                    situacao = sitPart
+                    ordem = partDef.ordem,
+                    situacao = partDef.situacao
                 )
             )
 
+            val campoId = "campo-${partDef.partId}"
             campos.add(
                 CampoAssinaturaEntity(
-                    id = "campo-$partId",
+                    id = campoId,
                     versaoDocumentoId = versaoId,
-                    participanteId = partId,
-                    numeroPagina = if (isDoc5) 2 else 1,
+                    participanteId = partDef.partId,
+                    numeroPagina = 2,
                     normX = 0.15f,
-                    normY = 0.20f + ((i - 1) * 0.22f),
+                    normY = 0.28f + ((partDef.ordem - 1) * 0.22f),
                     normLargura = 0.70f,
-                    normAltura = 0.15f
+                    normAltura = 0.16f
                 )
             )
 
-            // Registra assinatura para signatários que já assinaram no mock
-            if (sitPart == SituacaoParticipante.ASSINADO) {
-                val tipoAssinaturaDemo = when (i) {
-                    1 -> TipoAssinatura.CERTIFICADO_DIGITAL_ECPF
-                    2 -> TipoAssinatura.DESENHADA
-                    else -> TipoAssinatura.DIGITADA
+            // Registra assinatura para participantes assinados
+            if (partDef.situacao == SituacaoParticipante.ASSINADO && partDef.tipoAssinatura != null) {
+                val isCert = partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECPF || partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ
+                val detalhesCert = if (isCert) {
+                    val emissor = if (partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ) "e-CNPJ A1 ICP-Brasil • AC SERPRO v5" else "e-CPF A1 ICP-Brasil • AC SERPRO v5"
+                    "$emissor • CN=${partDef.nome}"
+                } else null
+
+                // Gera e salva o PNG físico da assinatura no disco
+                try {
+                    context?.let { ctx ->
+                        val bitmap = when (partDef.tipoAssinatura) {
+                            TipoAssinatura.CERTIFICADO_DIGITAL_ECPF, TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ -> {
+                                val tipoCert = if (partDef.tipoAssinatura == TipoAssinatura.CERTIFICADO_DIGITAL_ECNPJ) "e-CNPJ A1 / ICP-Brasil" else "e-CPF A1 / ICP-Brasil"
+                                AssinaturaStorageManager.gerarBitmapCertificado(
+                                    titular = partDef.nome,
+                                    documento = partDef.documentoIdentidade,
+                                    tipoCertificado = tipoCert,
+                                    autoridadeCertificadora = "AC SERPRO v5"
+                                )
+                            }
+                            TipoAssinatura.DESENHADA -> {
+                                val pontosRubrica = listOf(
+                                    Offset(30f, 130f),
+                                    Offset(70f, 65f),
+                                    Offset(120f, 160f),
+                                    Offset(170f, 80f),
+                                    Offset(230f, 140f),
+                                    Offset(310f, 75f),
+                                    Offset(400f, 125f),
+                                    Offset(500f, 100f)
+                                )
+                                AssinaturaStorageManager.gerarBitmapDesenho(pontosRubrica)
+                            }
+                            else -> {
+                                AssinaturaStorageManager.gerarBitmapDigitado(partDef.nome, "Cursive")
+                            }
+                        }
+                        AssinaturaStorageManager.salvarBitmapComoPng(ctx, "${partDef.partId}.png", bitmap)
+                    }
+                } catch (e: Exception) {
+                    println("DocumentoRepository: aviso ao gravar PNG de assinatura demo: ${e.message}")
                 }
-                val detalhesCert = if (i == 1 && isDoc5) "ICP-Brasil • AC SERPRO v5 • CN=Carla Mendes" else null
+
                 assinaturaDao?.inserir(
                     AssinaturaEntity(
-                        id = "ass-$partId",
-                        campoAssinaturaId = "campo-$partId",
-                        participanteId = partId,
-                        tipoAssinatura = tipoAssinaturaDemo,
-                        caminhoPngAssinatura = "assinaturas/$partId.png",
-                        dataHoraUtc = dataUtc + (i * 3600000L),
-                        ipDispositivo = "201.86.102.1$i",
-                        hashValidador = "hash-demo-$partId",
+                        id = "ass-${partDef.partId}",
+                        campoAssinaturaId = campoId,
+                        participanteId = partDef.partId,
+                        tipoAssinatura = partDef.tipoAssinatura,
+                        caminhoPngAssinatura = "assinaturas/${partDef.partId}.png",
+                        dataHoraUtc = dataUtc + (partDef.ordem * 3600000L),
+                        ipDispositivo = "201.86.102.1${partDef.ordem}",
+                        hashValidador = "hash-demo-${partDef.partId}",
                         detalhesCertificado = detalhesCert
                     )
                 )
             }
         }
+
         participanteDao.inserirVarios(participantes)
         campoAssinaturaDao?.inserirVarios(campos)
 
-        // Se for o documento concluído de demonstração (doc-demo-5), povoa os eventos de histórico completos
-        if (docId == "doc-demo-5") {
-            val eventosHistorico = listOf(
-                EventoHistoricoEntity(
-                    id = "evt-demo-1",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc,
-                    tipoEvento = TipoEventoHistorico.CRIACAO,
-                    autorNome = "Carla Mendes",
-                    detalhe = "Documento 'Contrato de Prestação de Serviços' v2.0 criado com sucesso."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-2",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 300000,
-                    tipoEvento = TipoEventoHistorico.UPLOAD_PDF,
-                    autorNome = "Carla Mendes",
-                    detalhe = "Upload do arquivo contrato_servicos.pdf concluído (SHA-256: $shaOrig)."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-3",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 600000,
-                    tipoEvento = TipoEventoHistorico.CONFIGURACAO_ORDEM,
-                    autorNome = "Carla Mendes",
-                    detalhe = "Modo de assinatura configurado: Paralelo (3 signatários obrigatórios)."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-4",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 900000,
-                    tipoEvento = TipoEventoHistorico.ENVIO,
-                    autorNome = "Sistema LetsSign",
-                    detalhe = "Convites de assinatura despachados por e-mail e push para 3 participantes."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-5",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 3600000,
-                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
-                    autorNome = "Carla Mendes",
-                    detalhe = "Identidade confirmada com sucesso via biometria facial."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-6",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 3900000,
-                    tipoEvento = TipoEventoHistorico.ASSINATURA,
-                    autorNome = "Carla Mendes",
-                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 201.86.102.15 • São Paulo/SP)."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-7",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 7200000,
-                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
-                    autorNome = "João Lima",
-                    detalhe = "Identidade confirmada com sucesso via Token OTP (SMS) e dados cadastrais."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-8",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 7500000,
-                    tipoEvento = TipoEventoHistorico.ASSINATURA,
-                    autorNome = "João Lima",
-                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 189.120.45.12 • São Paulo/SP)."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-9",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 10800000,
-                    tipoEvento = TipoEventoHistorico.CONFIRMACAO_IDENTIDADE,
-                    autorNome = "Maria Souza",
-                    detalhe = "Identidade confirmada com sucesso via link seguro com verificação em duas etapas."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-10",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 11100000,
-                    tipoEvento = TipoEventoHistorico.ASSINATURA,
-                    autorNome = "Maria Souza",
-                    detalhe = "Assinatura eletrônica realizada com sucesso (IP 177.18.99.40 • Rio de Janeiro/RJ)."
-                ),
-                EventoHistoricoEntity(
-                    id = "evt-demo-11",
-                    versaoDocumentoId = versaoId,
-                    dataHoraUtc = dataUtc + 11160000,
-                    tipoEvento = TipoEventoHistorico.CONCLUSAO,
-                    autorNome = "Sistema LetsSign",
-                    detalhe = "Documento 100% concluído! Certificado gerado com SHA-256 final e carimbo de tempo ICP-Brasil."
+        // Gera o arquivo físico do PDF no disco para todos os documentos
+        try {
+            context?.let { ctx ->
+                if (docId == "doc-demo-5") {
+                    PdfDemoGenerator.obterOuCriarContratoDemoPdf(ctx)
+                } else {
+                    PdfDemoGenerator.obterOuCriarDocumentoDemoPdf(
+                        context = ctx,
+                        documentoId = docId,
+                        versao = versao,
+                        titulo = titulo,
+                        situacao = situacao,
+                        partes = participantesMock.map { "${it.papel.rotulo}: ${it.nome} (${it.documentoIdentidade})" }
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            println("DocumentoRepository: aviso ao gerar PDF físico para $docId: ${e.message}")
+        }
+
+        // Se for RECUSADO (doc-demo-6), insere registro de recusa
+        if (docId == "doc-demo-6") {
+            recusaDao?.inserir(
+                RecusaEntity(
+                    id = "recusa-demo-6",
+                    participanteId = "part-doc-demo-6-joao",
+                    dataHoraUtc = dataUtc + 7200000L,
+                    observacao = "Cláusula 4ª de quitação com valor rescisório divergente do acordado preliminarmente.",
+                    senhaConfirmada = true
                 )
             )
-            eventoHistoricoDao?.inserirVarios(eventosHistorico)
+        }
 
-            // Gera o arquivo físico do PDF assinado no armazenamento do app
-            try {
-                context?.let { ctx ->
-                    br.com.letssign.core.pdf.PdfDemoGenerator.obterOuCriarContratoDemoPdf(ctx)
-                }
-            } catch (e: Exception) {
-                println("DocumentoRepository: aviso ao gerar PDF demo físico: ${e.message}")
-            }
+        // Se for CANCELADO (doc-demo-7), insere registro de cancelamento
+        if (docId == "doc-demo-7") {
+            cancelamentoDao?.inserir(
+                CancelamentoEntity(
+                    id = "canc-demo-7",
+                    versaoDocumentoId = versaoId,
+                    adminId = adminId,
+                    dataHoraUtc = dataUtc + 3600000L,
+                    motivo = "Cancelado pelo administrador devido à atualização da minuta jurídica de conformidade LGPD.",
+                    senhaConfirmada = true
+                )
+            )
+        }
+
+        // Se for doc-demo-5, insere os 11 eventos de auditoria completos
+        if (docId == "doc-demo-5") {
+            val eventosHistorico = listOf(
+                EventoHistoricoEntity("evt-demo-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Contrato de Prestação de Serviços' v2.0 criado com sucesso."),
+                EventoHistoricoEntity("evt-demo-2", versaoId, dataUtc + 300000, TipoEventoHistorico.UPLOAD_PDF, "Carla Mendes", "Upload do arquivo contrato_servicos.pdf concluído (SHA-256: $shaOrig)."),
+                EventoHistoricoEntity("evt-demo-3", versaoId, dataUtc + 600000, TipoEventoHistorico.CONFIGURACAO_ORDEM, "Carla Mendes", "Modo de assinatura configurado: Paralelo (3 signatários obrigatórios)."),
+                EventoHistoricoEntity("evt-demo-4", versaoId, dataUtc + 900000, TipoEventoHistorico.ENVIO, "Sistema LetsSign", "Convites de assinatura despachados por e-mail e push para 3 participantes."),
+                EventoHistoricoEntity("evt-demo-5", versaoId, dataUtc + 3600000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Carla Mendes", "Identidade confirmada com sucesso via biometria facial."),
+                EventoHistoricoEntity("evt-demo-6", versaoId, dataUtc + 3900000, TipoEventoHistorico.ASSINATURA, "Carla Mendes", "Assinatura eletrônica realizada com sucesso (IP 201.86.102.15 • São Paulo/SP)."),
+                EventoHistoricoEntity("evt-demo-7", versaoId, dataUtc + 7200000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "João Lima", "Identidade confirmada com sucesso via Token OTP (SMS) e dados cadastrais."),
+                EventoHistoricoEntity("evt-demo-8", versaoId, dataUtc + 7500000, TipoEventoHistorico.ASSINATURA, "João Lima", "Assinatura eletrônica realizada com sucesso (IP 189.120.45.12 • São Paulo/SP)."),
+                EventoHistoricoEntity("evt-demo-9", versaoId, dataUtc + 10800000, TipoEventoHistorico.CONFIRMACAO_IDENTIDADE, "Maria Souza", "Identidade confirmada com sucesso via link seguro com verificação em duas etapas."),
+                EventoHistoricoEntity("evt-demo-10", versaoId, dataUtc + 11100000, TipoEventoHistorico.ASSINATURA, "Maria Souza", "Assinatura eletrônica realizada com sucesso (IP 177.18.99.40 • Rio de Janeiro/RJ)."),
+                EventoHistoricoEntity("evt-demo-11", versaoId, dataUtc + 11160000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento 100% concluído! Certificado gerado com SHA-256 final e carimbo de tempo ICP-Brasil.")
+            )
+            eventoHistoricoDao?.inserirVarios(eventosHistorico)
+        }
+
+        // Se for doc-demo-10, insere eventos de auditoria
+        if (docId == "doc-demo-10") {
+            val eventos10 = listOf(
+                EventoHistoricoEntity("evt-doc10-1", versaoId, dataUtc, TipoEventoHistorico.CRIACAO, "Carla Mendes", "Documento 'Memorando de Entendimento (MoU)' criado com sucesso."),
+                EventoHistoricoEntity("evt-doc10-2", versaoId, dataUtc + 3600000, TipoEventoHistorico.ASSINATURA, "TechSolutions Inovações e Softwares S.A.", "Assinado via Certificado Digital e-CNPJ ICP-Brasil."),
+                EventoHistoricoEntity("evt-doc10-3", versaoId, dataUtc + 7200000, TipoEventoHistorico.ASSINATURA, "Pedro Alves", "Assinatura manuscrita capturada com sucesso."),
+                EventoHistoricoEntity("evt-doc10-4", versaoId, dataUtc + 7300000, TipoEventoHistorico.CONCLUSAO, "Sistema LetsSign", "Documento concluído com sucesso e carimbo de tempo ICP-Brasil emitido.")
+            )
+            eventoHistoricoDao?.inserirVarios(eventos10)
         }
     }
 
@@ -1322,12 +1357,11 @@ class DocumentoRepository @Inject constructor(
             if (!email.isNullOrBlank()) {
                 participanteDao.vincularUsuarioPorEmail(email, usuarioId)
             }
-            val versoesDemo = listOf("versao-demo-1", "versao-demo-4", "versao-demo-5", "versao-demo-6")
+            val versoesDemo = listOf("versao-demo-1", "versao-demo-4", "versao-demo-5", "versao-demo-6", "versao-demo-10")
             for (vId in versoesDemo) {
                 val partes = participanteDao.listarPorVersaoSync(vId)
                 val jaTemUsuario = partes.any { it.usuarioId == usuarioId }
                 if (!jaTemUsuario) {
-                    // Pega o participante do Joao Lima como base e atribui/clona para o usuario ativo
                     val parteBase = partes.find { it.usuarioId == "sig-joao-lima" } ?: partes.firstOrNull()
                     if (parteBase != null) {
                         val novoPartId = "part-$vId-$usuarioId"
@@ -1349,8 +1383,26 @@ class DocumentoRepository @Inject constructor(
                                     participanteId = novoPartId
                                 )
                             )
-                            // Se for versao concluida (doc-demo-5), também vincula assinatura demo
-                            if (vId == "versao-demo-5") {
+                            if (vId == "versao-demo-5" || vId == "versao-demo-10") {
+                                try {
+                                    context?.let { ctx ->
+                                        val pontosRubrica = listOf(
+                                            Offset(30f, 130f),
+                                            Offset(70f, 65f),
+                                            Offset(120f, 160f),
+                                            Offset(170f, 80f),
+                                            Offset(230f, 140f),
+                                            Offset(310f, 75f),
+                                            Offset(400f, 125f),
+                                            Offset(500f, 100f)
+                                        )
+                                        val bitmap = AssinaturaStorageManager.gerarBitmapDesenho(pontosRubrica)
+                                        AssinaturaStorageManager.salvarBitmapComoPng(ctx, "$novoPartId.png", bitmap)
+                                    }
+                                } catch (e: Exception) {
+                                    println("DocumentoRepository: aviso ao gravar PNG de assinatura clonada: ${e.message}")
+                                }
+
                                 assinaturaDao?.inserir(
                                     AssinaturaEntity(
                                         id = "ass-$novoPartId",

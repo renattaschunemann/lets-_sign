@@ -55,16 +55,16 @@ class SignatarioRepository @Inject constructor(
                     email = "maria.souza@empresa.com",
                     telefone = "(11) 91234-5678",
                     dataNascimento = "14/03/1988",
-                    dataVinculoUtc = agora
-                ),
-                AdminSignatarioEntity(
-                    adminId = adminId,
-                    signatarioId = "sig-ana-lima",
-                    nome = "Ana Lima",
-                    email = "ana.lima@empresa.com",
-                    telefone = "(11) 92345-6789",
-                    dataNascimento = "20/07/1990",
-                    dataVinculoUtc = agora
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PF",
+                    cpfCnpj = "23456789012",
+                    cep = "01414-001",
+                    logradouro = "Rua Oscar Freire",
+                    numero = "350",
+                    complemento = "Apto 42",
+                    bairro = "Cerqueira César",
+                    cidade = "São Paulo",
+                    estado = "SP"
                 ),
                 AdminSignatarioEntity(
                     adminId = adminId,
@@ -73,7 +73,52 @@ class SignatarioRepository @Inject constructor(
                     email = "joao.lima@email.com",
                     telefone = "(11) 91234-5678",
                     dataNascimento = "20/08/1992",
-                    dataVinculoUtc = agora
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PF",
+                    cpfCnpj = "98765432199",
+                    cep = "01305-000",
+                    logradouro = "Rua Augusta",
+                    numero = "500",
+                    complemento = "Conjunto 81",
+                    bairro = "Consolação",
+                    cidade = "São Paulo",
+                    estado = "SP"
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-ana-lima",
+                    nome = "Ana Lima Consultoria Financeira Ltda",
+                    email = "ana.lima@empresa.com",
+                    telefone = "(11) 92345-6789",
+                    dataNascimento = "20/07/2015",
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PJ",
+                    cpfCnpj = "12345678000195",
+                    cep = "01419-001",
+                    logradouro = "Alameda Santos",
+                    numero = "800",
+                    complemento = "Sala 12",
+                    bairro = "Cerqueira César",
+                    cidade = "São Paulo",
+                    estado = "SP"
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-techsolutions",
+                    nome = "TechSolutions Inovações e Softwares S.A.",
+                    email = "contato@techsolutions.com.br",
+                    telefone = "(11) 93456-7890",
+                    dataNascimento = "10/02/2012",
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PJ",
+                    cpfCnpj = "45678901000123",
+                    cep = "04538-133",
+                    logradouro = "Av. Brigadeiro Faria Lima",
+                    numero = "3477",
+                    complemento = "14º andar",
+                    bairro = "Itaim Bibi",
+                    cidade = "São Paulo",
+                    estado = "SP"
                 ),
                 AdminSignatarioEntity(
                     adminId = adminId,
@@ -82,7 +127,16 @@ class SignatarioRepository @Inject constructor(
                     email = "pedro.alves@empresa.com",
                     telefone = "(11) 94567-8901",
                     dataNascimento = "03/11/1985",
-                    dataVinculoUtc = agora
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PF",
+                    cpfCnpj = "45678901234",
+                    cep = "01301-100",
+                    logradouro = "Rua da Consolação",
+                    numero = "1200",
+                    complemento = "Bloco B",
+                    bairro = "Consolação",
+                    cidade = "São Paulo",
+                    estado = "SP"
                 ),
                 AdminSignatarioEntity(
                     adminId = adminId,
@@ -91,7 +145,34 @@ class SignatarioRepository @Inject constructor(
                     email = "carlos.silva@empresa.com",
                     telefone = "(11) 95678-9012",
                     dataNascimento = "18/09/1995",
-                    dataVinculoUtc = agora
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PF",
+                    cpfCnpj = "56789012345",
+                    cep = "04538-000",
+                    logradouro = "Av. Presidente Juscelino Kubitschek",
+                    numero = "1800",
+                    complemento = "",
+                    bairro = "Vila Nova Conceição",
+                    cidade = "São Paulo",
+                    estado = "SP"
+                ),
+                AdminSignatarioEntity(
+                    adminId = adminId,
+                    signatarioId = "sig-global-logistics",
+                    nome = "Global Logistics & Transportes Ltda",
+                    email = "operacoes@globallogistics.com.br",
+                    telefone = "(11) 96789-0123",
+                    dataNascimento = "05/08/2018",
+                    dataVinculoUtc = agora,
+                    tipoPessoa = "PJ",
+                    cpfCnpj = "78901234000156",
+                    cep = "07170-350",
+                    logradouro = "Rodovia Presidente Dutra",
+                    numero = "KM 218",
+                    complemento = "Galpão 4",
+                    bairro = "Cumbica",
+                    cidade = "Guarulhos",
+                    estado = "SP"
                 )
             )
             adminSignatarioDao.inserirVarios(demoSignatarios)
@@ -108,21 +189,8 @@ class SignatarioRepository @Inject constructor(
                     dataCriacaoUtc = agora,
                     cpf = "23456789012",
                     dataNascimento = "14031988",
-                    endereco = "Rua Oscar Freire, 350, Cerqueira César, São Paulo - SP",
+                    endereco = "Rua Oscar Freire, 350, Apto 42, Cerqueira César, São Paulo - SP",
                     profissao = "Advogada Corporativa"
-                ),
-                UsuarioEntity(
-                    id = "sig-ana-lima",
-                    nome = "Ana Lima",
-                    email = "ana.lima@empresa.com",
-                    telefone = "(11) 92345-6789",
-                    perfil = PerfilUsuario.SIGNATARIO,
-                    senhaHash = "Senha123",
-                    dataCriacaoUtc = agora,
-                    cpf = "34567890123",
-                    dataNascimento = "20071990",
-                    endereco = "Alameda Santos, 800, Cerqueira César, São Paulo - SP",
-                    profissao = "Consultora Financeira"
                 ),
                 UsuarioEntity(
                     id = "sig-joao-lima",
@@ -134,8 +202,34 @@ class SignatarioRepository @Inject constructor(
                     dataCriacaoUtc = agora,
                     cpf = "98765432199",
                     dataNascimento = "20081992",
-                    endereco = "Rua Augusta, 500, Consolação, São Paulo - SP",
+                    endereco = "Rua Augusta, 500, Conjunto 81, Consolação, São Paulo - SP",
                     profissao = "Analista de Operações"
+                ),
+                UsuarioEntity(
+                    id = "sig-ana-lima",
+                    nome = "Ana Lima Consultoria Financeira Ltda",
+                    email = "ana.lima@empresa.com",
+                    telefone = "(11) 92345-6789",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "12345678000195",
+                    dataNascimento = "20072015",
+                    endereco = "Alameda Santos, 800, Sala 12, Cerqueira César, São Paulo - SP",
+                    profissao = "Consultoria Empresarial e Financeira"
+                ),
+                UsuarioEntity(
+                    id = "sig-techsolutions",
+                    nome = "TechSolutions Inovações e Softwares S.A.",
+                    email = "contato@techsolutions.com.br",
+                    telefone = "(11) 93456-7890",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "45678901000123",
+                    dataNascimento = "10022012",
+                    endereco = "Av. Brigadeiro Faria Lima, 3477, 14º andar, Itaim Bibi, São Paulo - SP",
+                    profissao = "Desenvolvimento de Software e Cloud"
                 ),
                 UsuarioEntity(
                     id = "sig-pedro-alves",
@@ -147,8 +241,8 @@ class SignatarioRepository @Inject constructor(
                     dataCriacaoUtc = agora,
                     cpf = "45678901234",
                     dataNascimento = "03111985",
-                    endereco = "Rua da Consolação, 1200, Consolação, São Paulo - SP",
-                    profissao = "Engenheiro de Produção"
+                    endereco = "Rua da Consolação, 1200, Bloco B, Consolação, São Paulo - SP",
+                    profissao = "Engenheiro Civil e Avaliador"
                 ),
                 UsuarioEntity(
                     id = "sig-carlos-silva",
@@ -160,8 +254,21 @@ class SignatarioRepository @Inject constructor(
                     dataCriacaoUtc = agora,
                     cpf = "56789012345",
                     dataNascimento = "18091995",
-                    endereco = "Av. Brigadeiro Faria Lima, 2500, Itaim Bibi, São Paulo - SP",
-                    profissao = "Arquiteto de Soluções"
+                    endereco = "Av. Presidente Juscelino Kubitschek, 1800, Vila Nova Conceição, São Paulo - SP",
+                    profissao = "Arquiteto de Soluções Cloud"
+                ),
+                UsuarioEntity(
+                    id = "sig-global-logistics",
+                    nome = "Global Logistics & Transportes Ltda",
+                    email = "operacoes@globallogistics.com.br",
+                    telefone = "(11) 96789-0123",
+                    perfil = PerfilUsuario.SIGNATARIO,
+                    senhaHash = "Senha123",
+                    dataCriacaoUtc = agora,
+                    cpf = "78901234000156",
+                    dataNascimento = "05082018",
+                    endereco = "Rodovia Presidente Dutra, KM 218, Galpão 4, Cumbica, Guarulhos - SP",
+                    profissao = "Transporte e Logística Integrada"
                 )
             )
             for (usuario in usuariosSignatariosDemo) {

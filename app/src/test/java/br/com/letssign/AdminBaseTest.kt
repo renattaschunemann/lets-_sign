@@ -88,7 +88,7 @@ class AdminBaseTest {
         docRepo.inicializarDadosDemoSeNecessario(adminId)
 
         val docs = docRepo.listarDocumentosDoAdmin(adminId).first()
-        assertEquals(7, docs.size)
+        assertEquals(10, docs.size)
 
         // Regra do Figma: itens com Falha no envio ficam SEMPRE no topo
         assertEquals(SituacaoDocumento.FALHA_ENVIO, docs.first().situacao)
@@ -98,7 +98,7 @@ class AdminBaseTest {
         docRepo.excluirRascunho(rascunho.id)
 
         val docsAposExclusao = docRepo.listarDocumentosDoAdmin(adminId).first()
-        assertEquals(6, docsAposExclusao.size)
+        assertEquals(9, docsAposExclusao.size)
         assertFalse(docsAposExclusao.any { it.id == rascunho.id })
     }
 
@@ -108,7 +108,7 @@ class AdminBaseTest {
         sigRepo.inicializarDadosDemoSeNecessario(adminId)
 
         val signatarios = sigRepo.listarSignatarios(adminId).first()
-        assertEquals(5, signatarios.size)
+        assertEquals(7, signatarios.size)
 
         // Validação de nome incompleto
         val resNomeInvalido = sigRepo.salvarSignatario(
@@ -159,13 +159,13 @@ class AdminBaseTest {
         assertTrue(resValido.isSuccess)
 
         val signatariosAtualizados = sigRepo.listarSignatarios(adminId).first()
-        assertEquals(6, signatariosAtualizados.size)
+        assertEquals(8, signatariosAtualizados.size)
 
         // Excluir
         val cadastrado = signatariosAtualizados.first { it.email == "novo.teste@empresa.com" }
         sigRepo.excluirSignatario(adminId, cadastrado.signatarioId)
         val signatariosFinais = sigRepo.listarSignatarios(adminId).first()
-        assertEquals(5, signatariosFinais.size)
+        assertEquals(7, signatariosFinais.size)
     }
 
     @Test
