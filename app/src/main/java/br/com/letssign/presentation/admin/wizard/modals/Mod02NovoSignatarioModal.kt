@@ -7,6 +7,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Contacts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,6 +81,57 @@ fun Mod02NovoSignatarioModal(
     var buscandoCep by remember { mutableStateOf(false) }
 
     var mostrarDatePicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val launcherContato = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickContact()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                var contactId = ""
+                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                        val nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                        if (idIndex != -1) contactId = cursor.getString(idIndex) ?: ""
+                        if (nameIndex != -1) nome = cursor.getString(nameIndex) ?: ""
+                    }
+                }
+
+                if (contactId.isNotBlank()) {
+                    context.contentResolver.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                        arrayOf(contactId),
+                        null
+                    )?.use { phoneCursor ->
+                        if (phoneCursor.moveToFirst()) {
+                            val numIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                            if (numIndex != -1) {
+                                val raw = phoneCursor.getString(numIndex) ?: ""
+                                telefone = raw.filter { it.isDigit() }.take(11)
+                            }
+                        }
+                    }
+
+                    context.contentResolver.query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        null,
+                        "${ContactsContract.CommonDataKinds.Email.CONTACT_ID} = ?",
+                        arrayOf(contactId),
+                        null
+                    )?.use { emailCursor ->
+                        if (emailCursor.moveToFirst()) {
+                            val mailIndex = emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
+                            if (mailIndex != -1) {
+                                email = emailCursor.getString(mailIndex) ?: ""
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     var erroCpfCnpj by remember { mutableStateOf<String?>(null) }
     var erroNome by remember { mutableStateOf<String?>(null) }
@@ -137,6 +194,16 @@ fun Mod02NovoSignatarioModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                OutlinedButton(
+                    onClick = { launcherContato.launch(null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = FormaMedia
+                ) {
+                    Icon(Icons.Default.Contacts, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Importar dos Contatos do Celular")
+                }
+
                 // 1. RadioGroup: Pessoa Física vs Pessoa Jurídica
                 Text(
                     text = "Tipo de Signatário",
