@@ -1,5 +1,6 @@
 package br.com.letssign
 
+import br.com.letssign.core.common.contacts.AgendaContatosMockHelper
 import br.com.letssign.data.repository.OperacaoSincronizacaoOffline
 import br.com.letssign.presentation.admin.wizard.CampoVisual
 import br.com.letssign.presentation.admin.wizard.TemplateDocumentoRapido
@@ -62,5 +63,17 @@ class MelhoriasGeraisTest {
         assertTrue(campoDuplo1.normX + campoDuplo1.normLargura <= 0.50f)
         assertTrue(campoDuplo2.normX >= 0.50f)
         assertTrue(campoDuplo2.normX + campoDuplo2.normLargura <= 1.0f)
+    }
+
+    @Test
+    fun `verificar 10 contatos mockados da agenda do administrador`() {
+        val contatos = AgendaContatosMockHelper.CONTATOS_MOCKADOS
+        assertEquals(10, contatos.size)
+        contatos.forEach { contato ->
+            assertTrue("Nome deve estar preenchido", contato.nome.isNotBlank())
+            assertTrue("E-mail deve conter @", contato.email.contains("@"))
+            assertEquals("Telefone deve ter 11 dígitos com DDD", 11, contato.telefone.length)
+            assertTrue("Cargo deve estar preenchido", contato.cargo.isNotBlank())
+        }
     }
 }

@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.letssign.R
+import br.com.letssign.core.common.contacts.AgendaContatosMockHelper
+import br.com.letssign.core.designsystem.components.reusable.ModalSeletorContatosAgenda
 import br.com.letssign.core.common.transformation.CepVisualTransformation
 import br.com.letssign.core.common.transformation.CpfCnpjVisualTransformation
 import br.com.letssign.core.common.transformation.DataNascimentoVisualTransformation
@@ -49,6 +51,7 @@ fun Adm03SignatarioFormScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var mostrarDatePicker by remember { mutableStateOf(false) }
+    var mostrarModalContatosAgenda by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val launcherContato = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickContact()
@@ -121,6 +124,16 @@ fun Adm03SignatarioFormScreen(
         if (uiState.salvoComSucesso) {
             aoConcluirComSucesso()
         }
+    }
+
+    if (mostrarModalContatosAgenda) {
+        ModalSeletorContatosAgenda(
+            aoSelecionarContato = { n, e, t ->
+                viewModel.preencherDadosImportados(nome = n, email = e, telefone = t)
+            },
+            aoAbrirSeletorSistema = { launcherContato.launch(null) },
+            aoFechar = { mostrarModalContatosAgenda = false }
+        )
     }
 
     if (mostrarDatePicker) {
@@ -223,7 +236,10 @@ fun Adm03SignatarioFormScreen(
 
             BotaoSecundario(
                 texto = "Importar dos Contatos do Celular",
-                onClick = { launcherContato.launch(null) },
+                onClick = {
+                    AgendaContatosMockHelper.inserirContatosNoDispositivoSeNecessario(context)
+                    mostrarModalContatosAgenda = true
+                },
                 icone = Icons.Default.Contacts,
                 modifier = Modifier.fillMaxWidth()
             )

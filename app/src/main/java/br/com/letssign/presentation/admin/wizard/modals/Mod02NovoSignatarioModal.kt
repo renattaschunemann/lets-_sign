@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import br.com.letssign.R
+import br.com.letssign.core.common.contacts.AgendaContatosMockHelper
+import br.com.letssign.core.designsystem.components.reusable.ModalSeletorContatosAgenda
 import br.com.letssign.core.common.cep.CepService
 import br.com.letssign.core.common.transformation.CepVisualTransformation
 import br.com.letssign.core.common.transformation.CpfCnpjVisualTransformation
@@ -81,6 +83,7 @@ fun Mod02NovoSignatarioModal(
     var buscandoCep by remember { mutableStateOf(false) }
 
     var mostrarDatePicker by remember { mutableStateOf(false) }
+    var mostrarModalContatosAgenda by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val launcherContato = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickContact()
@@ -148,6 +151,18 @@ fun Mod02NovoSignatarioModal(
     val dataNascTransformation = remember { DataNascimentoVisualTransformation() }
     val cepTransformation = remember { CepVisualTransformation() }
 
+    if (mostrarModalContatosAgenda) {
+        ModalSeletorContatosAgenda(
+            aoSelecionarContato = { n, e, t ->
+                nome = n
+                email = e
+                telefone = t.filter { it.isDigit() }.take(11)
+            },
+            aoAbrirSeletorSistema = { launcherContato.launch(null) },
+            aoFechar = { mostrarModalContatosAgenda = false }
+        )
+    }
+
     if (mostrarDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -195,7 +210,10 @@ fun Mod02NovoSignatarioModal(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { launcherContato.launch(null) },
+                    onClick = {
+                        AgendaContatosMockHelper.inserirContatosNoDispositivoSeNecessario(context)
+                        mostrarModalContatosAgenda = true
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = FormaMedia
                 ) {
